@@ -33,7 +33,9 @@
                   
                   <div align="center" style="font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;" class="">
                       <h1><strong>SISTEM INFORMASI TEKNIK </strong> <br><br>
-                  <img src="<?= base_url()?>assets/gambar/ppi.png" style="width: 40%;" /> 
+                  <!-- <img src="<?= base_url()?>assets/gambar/ppi.png" style="width: 40%;" />  -->
+                  <i style="width: 100%" class="fas fa-cogs"></i>
+
                   </div>
                   
               </div>
