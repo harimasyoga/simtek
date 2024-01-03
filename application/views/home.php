@@ -32,7 +32,7 @@
               <div class="card-body">
                   
                   <div align="center" style="font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;" class="">
-                      <h1><strong>SISTEM INFORMASI PRODUKSI </strong> <br><br>
+                      <h1><strong>SISTEM INFORMASI TEKNIK </strong> <br><br>
                   <img src="<?= base_url()?>assets/gambar/ppi.png" style="width: 40%;" /> 
                   </div>
                   

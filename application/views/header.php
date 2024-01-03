@@ -132,7 +132,7 @@ $setting = $this->db->query("SELECT * FROM m_setting")->row();
 					with font-awesome or any other icon font library -->
 								<li class="nav-item has-treeview">
 								<a href="<?= base_url('Master') ?>" class="nav-link">
-									<h2><i class="fa fa-box-open"></i>
+									<h2><i class="fas fa-cogs"></i>
 										<?= $setting->singkatan ?></h2>
 								</a>
 								</li>
