@@ -59,6 +59,17 @@ class Master extends CI_Controller
 		$this->load->view('Master/v_supplier', $data);
 		$this->load->view('footer');
 	}
+	
+	function Barang()
+	{
+		$data = array(
+			'judul' => "Master Barang"
+		);
+
+		$this->load->view('header', $data);
+		$this->load->view('Master/v_barang', $data);
+		$this->load->view('footer');
+	}
 
 	function plhWilayah()
 	{
@@ -226,15 +237,10 @@ class Master extends CI_Controller
 				$row = array();
 				$row[] = '<div class="text-center"><a href="javascript:void(0)" onclick="tampil_edit('."'".$r->id_supp."'".','."'detail'".')">'.$i."<a></div>";
 
-				if($r->pajak=='PPN')
-				{
-					$pjk='PPN';
-				}else{
-					$pjk='NON PPN';
-
-				}
 				$row[] = $r->nm_supp;
-				$row[] = $pjk;
+				$row[] = $r->alamat;
+				$row[] = $r->no_hp;
+				$row[] = $r->jt;
 
 				$idPelanggan = $r->id_supp;
 				// $cekProduk = $this->db->query("SELECT * FROM m_produk WHERE no_customer='$idPelanggan'")->num_rows();
@@ -242,7 +248,8 @@ class Master extends CI_Controller
 				if (in_array($this->session->userdata('level'), ['Admin','User']))
 				{
 					$btnEdit = '<button type="button" class="btn btn-warning btn-sm" onclick="tampil_edit('."'".$r->id_supp."'".','."'edit'".')"><i class="fas fa-pen"></i></button>';
-					$btnHapus = '<button type="button" class="btn btn-danger btn-sm" onclick="deleteData('."'".$r->id_supp."'".')"><i class="fas fa-times"></i></button>';
+
+					$btnHapus = '<button type="button" class="btn btn-danger btn-sm" onclick="deleteData('."'".$r->id_supp."'".')"><i class="fa fa-trash-alt"></i></i></button>';
 
 				}else{
 
