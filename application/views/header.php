@@ -37,7 +37,7 @@ $setting = $this->db->query("SELECT * FROM m_setting")->row();
 	<link rel="stylesheet" href="<?= base_url('assets/') ?>dist/css/adminlte.min.css?v=1.0">
 
 	<!-- overlayScrollbars -->
-	<link rel="stylesheet" href="<?= base_url('assets/') ?>dist/css/new.css?v=1.1">
+	<link rel="stylesheet" href="<?= base_url('assets/') ?>dist/css/new.css?v=1.0">
 	<!-- Google Font: Source Sans Pro -->
 	<link href="<?= base_url('assets/') ?>plugins/fontawesome-free/css/customFont.css" rel="stylesheet">
 
@@ -212,7 +212,8 @@ $setting = $this->db->query("SELECT * FROM m_setting")->row();
 			<!-- /menu footer buttons -->
 			<div class="sidebar-footer">			
               <a data-toggle="tooltip" data-placement="top" title="Logout">
-                <img width="50"  src="<?= base_url('assets/gambar/ppi.png')?>" alt=""></span>
+                <!-- <img width="50"  src="<?= base_url('assets/gambar/ppi.png')?>" alt=""></span> -->
+				<i style="color:white" class="fas fa-cogs"></i>
               </a>
             </div>
 			<!-- <div style="position:absolute;bottom:0;right:0;left:0;padding:5px 5px 5px 10px; background-image: linear-gradient(180deg,#cc193800 10%,#450410ad 100%);">
