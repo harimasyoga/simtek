@@ -36,9 +36,12 @@
 				<table id="datatable" class="table table-bordered table-striped" width="100%">
 					<thead>
 						<tr>
-							<th style="text-align: center; width:5%">NO</th>
-							<th style="text-align: center; width:24%">Supplier</th>
-							<th style="text-align: center; width:24%">Pajak</th>
+							<th style="text-align: center; width:5%">NO.</th>
+							<th style="text-align: center; width:24%">Pimpinan</th>
+							<th style="text-align: center; width:24%">Nama Instansi</th>
+							<th style="text-align: center; width:34%">Alamat</th>
+							<th style="text-align: center; width:34%">NPWP</th>
+							<th style="text-align: center; width:34%">No Telp</th>
 							<th style="text-align: center; width:10%">AKSI</th>
 						</tr>
 					</thead>
@@ -64,95 +67,46 @@
 			</div>
 			<div class="modal-body">
 				<form role="form" method="post" id="myForm">
-					
 					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">KODE BARANG</label>
+						<label class="col-sm-2 col-form-label">PIMPINAN</label>
 						<div class="col-sm-10">
-							<input type="hidden" class="form-control" id="id_supp">
-							<input type="hidden" class="form-control" id="nm_supp_old">
-							<input type="text" class="form-control" id="nm_supp" placeholder="KODE BARANG" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
+							<input type="text" class="form-control" id="pimpinan" placeholder="ATAS NAMA" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
 						</div>
 					</div>
-					
 					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">NAMA BARANG</label>
+						<label class="col-sm-2 col-form-label">NAMA INSTANSI</label>
 						<div class="col-sm-10">
-							<input type="text" class="form-control" id="nm_supp" placeholder="NAMA BARANG" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
-						</div>
-					</div>
-					
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">MEREK</label>
-						<div class="col-sm-10">
-							<input type="text" class="form-control" id="nm_supp" placeholder="MEREK" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
+							<input type="hidden" class="form-control" id="id_cs">
+							<input type="hidden" class="form-control" id="nm_cs_old">
+							<input type="text" class="form-control" id="nm_cs" placeholder="NAMA PELANGGAN" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
 						</div>
 					</div>
 					
 					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">SPESIFIKASI</label>
+						<label class="col-sm-2 col-form-label">ALAMAT</label>
 						<div class="col-sm-10">
-							<input type="text" class="form-control" id="nm_supp" placeholder="SPESIFIKASI" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
+							<textarea class="form-control" id="alamat" placeholder="ALAMAT" oninput="this.value = this.value.toUpperCase()"></textarea>
 						</div>
-					</div>
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">SATUAN 1</label>
-						<div class="col-sm-10">
-							<select name="sat1" id="sat1" class="select2 form-control">
-								<option value="PCS">PCS</option>
-							</select>
-						</div>
-					</div>
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">SATUAN 2</label>
-						<div class="col-sm-10">
-							<select name="sat2" id="sat2" class="select2 form-control">
-								<option value="PPN">PPN</option>
-								<option value="NON_PPN">NON PPN</option>
-							</select>
-						</div>
-					</div>
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">SATUAN 3</label>
-						<div class="col-sm-10">
-							<select name="sat3" id="sat3" class="select2 form-control">
-								<option value="PPN">PPN</option>
-								<option value="NON_PPN">NON PPN</option>
-							</select>
-						</div>
-					</div>
+					</div>				
 					
 					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">UPLOAD FOTO</label>
+						<label class="col-sm-2 col-form-label">NPWP</label>
 						<div class="col-sm-10">
-							<div class="col-9">
-								<input type="file" data-max-size="2048" name="filefoto" id="filefoto" accept=".jpg,.jpeg,.png">
-							</div>
-							<div id="div_preview_foto" style="display: none;">											
-								<img id="preview_img" src="#" alt="Preview Foto" width="100" class="shadow-sm img-thumbnail"/>
-								<span class="help-block"></span>
-							</div>	
+							<input type="text" class="form-control" id="npwp" placeholder="-" autocomplete="off" >
+						</div>
+					</div>	
+					<div class="form-group row">
+						<label class="col-sm-2 col-form-label">NO TELP</label>
+						<div class="col-sm-10">
+							<input type="text" class="angka form-control" id="no_telp" placeholder="-" autocomplete="off" maxlength="16">
 						</div>
 					</div>
 					<div class="form-group row">
-						<div class="col-sm-12">
-
-						<br><br>
-							<table id="datatable" class="table table-bordered table-striped table-scrollable" width="100%">
-								<thead class="color-tabel">
-									<tr>
-										<th style="text-align: center; width:3%">No</th>
-										<th style="text-align: center; width:15%">KETERANGAN</th>
-										<th style="text-align: center; width:20%">HARGA JUAL</th>
-										<th style="text-align: center; width:20%;">Aksi</th>
-									</tr>
-								</thead>
-								<tbody>
-								</tbody>
-							</table>
-							<button type="button" style="font-family:Cambria;" class="tambah_data btn  btn-success "><i class="fa fa-plus" ></i></button>
+						<label class="col-sm-2 col-form-label">KODE POS</label>
+						<div class="col-sm-10">
+							<input type="text" class="angka form-control" id="kode_pos" placeholder="-" autocomplete="off" maxlength="10">
 						</div>
 					</div>
-
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-primary" id="btn-simpan" onclick="simpan()"><i class="fas fa-save"></i> Simpan</button>
@@ -195,7 +149,7 @@
 			"pageLength": true,
 			"paging": true,
 			"ajax": {
-				"url": '<?php echo base_url(); ?>Master/load_data/supplier',
+				"url": '<?php echo base_url(); ?>Master/load_data/customer',
 				"type": "POST",
 			},
 			responsive: true,
@@ -214,12 +168,16 @@
 	function simpan() 
 	{
 		$("#btn-simpan").prop("disabled", true);
-		id_supp         = $("#id_supp").val();
-		nm_supp       = $("#nm_supp").val();
-		nm_supp_old   = $("#nm_supp_old").val();
-		pajak         = $("#pajak").val();
+		id_cs       = $("#id_cs").val();
+		pimpinan    = $("#pimpinan").val();
+		nm_cs       = $("#nm_cs").val();
+		nm_cs_old   = $("#nm_cs_old").val();
+		alamat      = $("#alamat").val();
+		npwp        = $("#npwp").val();
+		no_telp     = $("#no_telp").val();
+		kode_pos    = $("#kode_pos").val();
 
-		if ( nm_supp == "" || pajak == "") {
+		if ( pimpinan == "" || nm_cs == "" || alamat == "" ) {
 			swal("HARAP LENGKAPI FORM!", "", "info")
 			$("#btn-simpan").prop("disabled", false);
 			return;
@@ -239,9 +197,7 @@
 				});
 			},
 			data: ({
-				 id_supp ,nm_supp ,nm_supp_old, pajak, 
-				 jenis: 'm_supplier', 
-				 status: status
+				 id_cs, pimpinan ,nm_cs, nm_cs_old ,alamat ,npwp ,no_telp ,kode_pos, jenis: 'm_customer', status: status
 			}),
 			success: function(res) {
 				data = JSON.parse(res)
@@ -265,11 +221,14 @@
 
 	function kosong() 
 	{
-		$("#id_supp").val("");
-		$("#nm_supp_old").val("");		
-		$("#nm_supp").val("");		
-		$("#pajak").select2("val", 'PPN');
-		$('#pajak').val('PPN').trigger('change');		
+		$("#id_cs").val("");
+		$("#pimpinan").val("");
+		$("#nm_cs_old").val("");
+		$("#nm_cs").val("");
+		$("#alamat").val("");
+		$("#npwp").val("");
+		$("#no_telp").val("");
+		$("#kode_pos").val("");
 		status = 'insert';
 		$("#btn-simpan").show().prop("disabled", false);
 	}
@@ -288,7 +247,7 @@
 
 		$("#jenis").val('Update');
 		$.ajax({
-			url: '<?php echo base_url('Master/edit_supp'); ?>',
+			url: '<?php echo base_url('Master/edit_cs'); ?>',
 			type: 'POST',
 			beforeSend: function() {
 				swal({
@@ -308,10 +267,14 @@
 			data = JSON.parse(json)
 			// console.log(data)
 
-			$("#id_supp").val(data.supp.id_supp);
-			$("#nm_supp_old").val(data.supp.nm_supp);
-			$("#nm_supp").val(data.supp.nm_supp);
-			$('#pajak').val(data.supp.pajak).trigger('change');
+			$("#id_cs").val(data.cs.id_cs);
+			$("#pimpinan").val(data.cs.pimpinan);
+			$("#nm_cs_old").val(data.cs.nm_cs);
+			$("#nm_cs").val(data.cs.nm_cs);
+			$("#alamat").val(data.cs.alamat);
+			$("#npwp").val(data.cs.npwp);
+			$("#no_telp").val(data.cs.no_telp);
+			$("#kode_pos").val(data.cs.kode_pos);
 			swal.close()
 		})
 	}
@@ -340,8 +303,8 @@
 				},
 				data: ({
 					id: id,
-					jenis: 'm_supplier',
-					field: 'id_supp'
+					jenis: 'm_customer',
+					field: 'id_cs'
 				}),
 				type: "POST",
 				success: function(data) {

@@ -66,93 +66,23 @@
 				<form role="form" method="post" id="myForm">
 					
 					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">KODE BARANG</label>
+						<label class="col-sm-2 col-form-label">NAMA SUPPLIER</label>
 						<div class="col-sm-10">
 							<input type="hidden" class="form-control" id="id_supp">
 							<input type="hidden" class="form-control" id="nm_supp_old">
-							<input type="text" class="form-control" id="nm_supp" placeholder="KODE BARANG" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
+							<input type="text" class="form-control" id="nm_supp" placeholder="NAMA SUPPLIER" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
 						</div>
 					</div>
 					
 					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">NAMA BARANG</label>
+						<label class="col-sm-2 col-form-label">PAJAK</label>
 						<div class="col-sm-10">
-							<input type="text" class="form-control" id="nm_supp" placeholder="NAMA BARANG" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
-						</div>
-					</div>
-					
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">MEREK</label>
-						<div class="col-sm-10">
-							<input type="text" class="form-control" id="nm_supp" placeholder="MEREK" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
-						</div>
-					</div>
-					
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">SPESIFIKASI</label>
-						<div class="col-sm-10">
-							<input type="text" class="form-control" id="nm_supp" placeholder="SPESIFIKASI" autocomplete="off" maxlength="50" oninput="this.value = this.value.toUpperCase()">
-						</div>
-					</div>
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">SATUAN 1</label>
-						<div class="col-sm-10">
-							<select name="sat1" id="sat1" class="select2 form-control">
-								<option value="PCS">PCS</option>
-							</select>
-						</div>
-					</div>
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">SATUAN 2</label>
-						<div class="col-sm-10">
-							<select name="sat2" id="sat2" class="select2 form-control">
+							<select name="pajak" id="pajak" class="select2 form-control">
 								<option value="PPN">PPN</option>
 								<option value="NON_PPN">NON PPN</option>
 							</select>
 						</div>
 					</div>
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">SATUAN 3</label>
-						<div class="col-sm-10">
-							<select name="sat3" id="sat3" class="select2 form-control">
-								<option value="PPN">PPN</option>
-								<option value="NON_PPN">NON PPN</option>
-							</select>
-						</div>
-					</div>
-					
-					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">UPLOAD FOTO</label>
-						<div class="col-sm-10">
-							<div class="col-9">
-								<input type="file" data-max-size="2048" name="filefoto" id="filefoto" accept=".jpg,.jpeg,.png">
-							</div>
-							<div id="div_preview_foto" style="display: none;">											
-								<img id="preview_img" src="#" alt="Preview Foto" width="100" class="shadow-sm img-thumbnail"/>
-								<span class="help-block"></span>
-							</div>	
-						</div>
-					</div>
-					<div class="form-group row">
-						<div class="col-sm-12">
-
-						<br><br>
-							<table id="datatable" class="table table-bordered table-striped table-scrollable" width="100%">
-								<thead class="color-tabel">
-									<tr>
-										<th style="text-align: center; width:3%">No</th>
-										<th style="text-align: center; width:15%">KETERANGAN</th>
-										<th style="text-align: center; width:20%">HARGA JUAL</th>
-										<th style="text-align: center; width:20%;">Aksi</th>
-									</tr>
-								</thead>
-								<tbody>
-								</tbody>
-							</table>
-							<button type="button" style="font-family:Cambria;" class="tambah_data btn  btn-success "><i class="fa fa-plus" ></i></button>
-						</div>
-					</div>
-
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-primary" id="btn-simpan" onclick="simpan()"><i class="fas fa-save"></i> Simpan</button>

@@ -90,7 +90,98 @@ class M_master extends CI_Model{
     }
 	
     
-    function m_pelanggan($table,$status){
+    function m_customer($table,$status)
+	{
+		$id_cs        = $_POST["id_cs"];
+		$nm_cs        = $_POST["nm_cs"];
+		$nm_cs_old    = $_POST["nm_cs_old"];
+		
+		$cekKode      = $this->db->query("SELECT*FROM m_customer WHERE nm_cs='$nm_cs'");
+
+		if( $status=='insert' && $cekKode->num_rows() > 0 )
+		{
+			return array(
+				'data' => false,
+				'isi' => 'NAMA CUSTOMER SUDAH TERPAKAI!',
+			);
+		}else if( $status=='update' && $cekKode->num_rows() > 0 && $cekKode->row()->nm_cs != $nm_cs_old )
+		{
+			return array(
+				'data' => false,
+				'isi' => 'NAMA CUSTOMER SUDAH TERPAKAI!',
+			);
+		}else{
+			$data = array(
+				'pimpinan'    => $_POST["pimpinan"],
+				'nm_cs'       => $_POST["nm_cs"],
+				'alamat'      => $_POST["alamat"],
+				'npwp'        => $_POST["npwp"],
+				'no_telp'     => $_POST["no_telp"],
+				'kode_pos'    => $_POST["kode_pos"],
+			);
+
+			if ($status == 'insert') {
+				$this->db->set("add_user", $this->username);
+				$inputData = $this->db->insert($table, $data);
+			}else{
+				$this->db->set("edit_user", $this->username);
+				$this->db->set("edit_time", date('Y-m-d H:i:s'));
+				$this->db->where("id_cs", $_POST["id_cs"]);
+				$inputData = $this->db->update($table, $data);
+			}
+			
+			return array(
+				'data' => true,
+				'isi' => $inputData,
+			);
+		}
+    }
+   
+	function m_supplier($table,$status)
+	{
+		$id_supp        = $_POST["id_supp"];
+		$nm_supp        = $_POST["nm_supp"];
+		$nm_supp_old    = $_POST["nm_supp_old"];
+		
+		$cekKode      = $this->db->query("SELECT*FROM m_supplier WHERE nm_supp='$nm_supp'");
+
+		if( $status=='insert' && $cekKode->num_rows() > 0 )
+		{
+			return array(
+				'data' => false,
+				'isi' => 'NAMA SUPPLIER SUDAH TERPAKAI!',
+			);
+		}else if( $status=='update' && $cekKode->num_rows() > 0 && $cekKode->row()->nm_supp != $nm_supp_old )
+		{
+			return array(
+				'data' => false,
+				'isi' => 'NAMA SUPPLIER SUDAH TERPAKAI!',
+			);
+		}else{
+			$data = array(
+				'pajak'    => $_POST["pajak"],
+				'nm_supp'  => $_POST["nm_supp"],
+			);
+
+			if ($status == 'insert') {
+				$this->db->set("add_user", $this->username);
+				$inputData = $this->db->insert($table, $data);
+			}else{
+				$this->db->set("edit_user", $this->username);
+				$this->db->set("edit_time", date('Y-m-d H:i:s'));
+				$this->db->where("id_supp", $_POST["id_supp"]);
+				$inputData = $this->db->update($table, $data);
+			}
+			
+			return array(
+				'data' => true,
+				'isi' => $inputData,
+			);
+		}
+    }
+    
+	function m_pelanggan($table,$status)
+	{
 		$kode_lama = $_POST["kode_lama"];
 		$kode_pelanggan = $_POST["kode_pelanggan"];
 		$cekKode = $this->db->query("SELECT*FROM m_pelanggan WHERE kode_unik='$kode_pelanggan'")->num_rows();
@@ -366,24 +457,6 @@ class M_master extends CI_Model{
         return $this->db->update($table);
 
     }
-
-  
-	function m_sales($jenis, $status){
-		$data = array(
-			'nm_sales' => $_POST["nm_sales"],
-			'no_sales' => $_POST["no_hp"],
-		);
-
-		if($status == "insert"){
-			$result = $this->db->insert($jenis, $data);
-		}else{
-			$this->db->where("id_sales", $_POST["id_sales"]);
-			$result = $this->db->update($jenis, $data);
-		}
-
-		return $result;
-	}
-  
 
     function  get_romawi($bln){
 		switch  ($bln){

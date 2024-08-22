@@ -2547,7 +2547,7 @@
  [class*=sidebar-light-] .nav-treeview>.nav-item>.nav-link:hover{background-color:rgba(0,0,0,.1)}
  [class*=sidebar-light-] .nav-flat .nav-item .nav-treeview .nav-treeview{border-color:rgba(0,0,0,.1)}
  [class*=sidebar-light-] .nav-flat .nav-item .nav-treeview>.nav-item>.nav-link,[class*=sidebar-light-] .nav-flat .nav-item .nav-treeview>.nav-item>.nav-link.active{border-color:rgba(0,0,0,.1)}
- [class*=sidebar-dark-]{background-color:#343a40;background-image: linear-gradient(180deg,#ff7e94 10%,#c50c2d 100%);} 
+ [class*=sidebar-dark-]{background-color:#343a40;background-image: linear-gradient(180deg,#3bb1ff 10%,#0c517e 100%);} 
  [class*=sidebar-dark-] .user-panel a:hover{color:#fff}
  [class*=sidebar-dark-] .user-panel .status{background:rgba(255,255,255,.1);color:#c2c7d0}
  [class*=sidebar-dark-] .user-panel .status:active,[class*=sidebar-dark-] .user-panel .status:focus,[class*=sidebar-dark-] .user-panel .status:hover{background:rgba(247,247,247,.1);color:#fff}
@@ -2871,7 +2871,7 @@
  @media (min-width:576px){.navbar-nav>.user-menu .user-image{float:none;line-height:10px;margin-right:.4rem;margin-top:-8px}
 }
  .nav-pills .nav-link{color:#6c757d}
- .nav-pills .nav-link:not(.active):hover{color:#fff;background-image: linear-gradient(180deg,#f6a9b7bf 10%,#ff7e94b3 100%);} 
+ .nav-pills .nav-link:not(.active):hover{color:#fff;background-image: linear-gradient(180deg,#97c8f3bf 10%,#5a9ff3b3 100%);} 
  .nav-pills .nav-item.dropdown.show .nav-link:hover{color:#fff}
  .nav-tabs.flex-column{border-bottom:0;border-right:1px solid #dee2e6}
  .nav-tabs.flex-column .nav-link{border-bottom-left-radius:.25rem;border-top-right-radius:0;margin-right:-1px}
@@ -2908,7 +2908,7 @@
  .navbar-green{background-color:#28a745}
  .navbar-teal{background-color:#20c997}
  .navbar-cyan{background-color:#17a2b8}
- .navbar-white{background-image: linear-gradient(180deg,#ffbfca 10%,#fc8ca0 100%);}
+ .navbar-white{background-image: linear-gradient(180deg,#70c3fa 10%,#0fa2ff 100%);}
  .navbar-gray{background-color:#6c757d}
  .navbar-gray-dark{background-color:#343a40}
  .form-group.has-icon{position:relative}
@@ -4195,7 +4195,7 @@
  .login-logo,.register-logo{font-size:2.1rem;font-weight:300;margin-bottom:.9rem;text-align:center}
  .login-logo a,.register-logo a{color:#fff}
  .login-page,.register-page{-ms-flex-align:center;align-items:center;
-  background-image: linear-gradient(180deg,#ff7e94 10%,#c50c2d 100%);display:-ms-flexbox;display:flex;-ms-flex-direction:column;flex-direction:column;height:90vh;-ms-flex-pack:center;justify-content:center}
+  background-image: linear-gradient(180deg,#287fb8 10%,#0a3856 100%);display:-ms-flexbox;display:flex;-ms-flex-direction:column;flex-direction:column;height:90vh;-ms-flex-pack:center;justify-content:center}
  .login-box,.register-box{width:360px}
  @media (max-width:576px){.login-box,.register-box{margin-top:.5rem;width:90%}
 }
