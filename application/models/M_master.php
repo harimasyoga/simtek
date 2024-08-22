@@ -140,8 +140,11 @@ class M_master extends CI_Model{
 	function m_supplier($table,$status)
 	{
 		$id_supp        = $_POST["id_supp"];
-		$nm_supp        = $_POST["nm_supp"];
 		$nm_supp_old    = $_POST["nm_supp_old"];
+		$nm_supp        = $_POST["nm_supp"];
+		$alamat         = $_POST["alamat"];
+		$no_hp          = $_POST["no_hp"];
+		$jt             = $_POST["jt"];
 		
 		$cekKode      = $this->db->query("SELECT*FROM m_supplier WHERE nm_supp='$nm_supp'");
 
@@ -159,12 +162,15 @@ class M_master extends CI_Model{
 			);
 		}else{
 			$data = array(
-				'pajak'    => $_POST["pajak"],
-				'nm_supp'  => $_POST["nm_supp"],
+				'nm_supp'   => $_POST["nm_supp"],
+				'alamat'    => $_POST["alamat"],
+				'no_hp'     => $_POST["no_hp"],
+				'jt'        => $_POST["jt"],
 			);
 
 			if ($status == 'insert') {
 				$this->db->set("add_user", $this->username);
+				$this->db->set("add_time", date('Y-m-d H:i:s'));
 				$inputData = $this->db->insert($table, $data);
 			}else{
 				$this->db->set("edit_user", $this->username);
