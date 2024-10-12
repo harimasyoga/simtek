@@ -65,11 +65,322 @@ class Master extends CI_Controller
 		$data = array(
 			'judul' => "Master Barang"
 		);
-
 		$this->load->view('header', $data);
 		$this->load->view('Master/v_barang', $data);
 		$this->load->view('footer');
 	}
+
+	function cekNamaBarang()
+	{
+		$n_barang = $_POST["n_barang"];
+		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_barang)));
+		$cekBarang = $this->db->query("SELECT*FROM m_barang_header WHERE nm_barang='$cleanTxt'");
+		if($n_barang == '' || $cleanTxt == ''){
+			$data = false; $msg = 'NAMA BARANG BARU TIDAK BOLEH KOSONG!';
+		}else if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
+			$data = false; $msg = 'NAMA BARANG HANYA BOLEH HURUF ATAU ANGKA!';
+		}else if($cekBarang->num_rows() != 0){
+			$data = false; $msg = 'NAMA BARANG SUDAH ADA!';
+		}else{
+			$data = true; $msg = '';
+		}
+		echo json_encode([
+			'cleanTxt' => $cleanTxt,
+			'data' => $data,
+			'msg' => $msg,
+		]);
+	}
+
+	function addBarang()
+	{
+		$i_barang = $_POST["i_barang"];
+		$n_barang = $_POST["n_barang"];
+		if($i_barang == '+'){
+			$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_barang)));
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_header WHERE nm_barang='$cleanTxt'");
+			if($n_barang == ""){
+				echo json_encode(array('data' => false, 'isi' => 'NAMA BARANG BARU TIDAK BOLEH KOSONG!')); return;
+			}else if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
+				echo json_encode(array('data' => false, 'isi' => 'NAMA BARANG HANYA BOLEH HURUF ATAU ANGKA!')); return;
+			}else if($cekBarang->num_rows() != 0){
+				echo json_encode(array('data' => false, 'isi' => 'NAMA BARANG SUDAH ADA!')); return;
+			}else{
+				$nm_barang = $cleanTxt;
+				// KODE BARANG
+				// $nm = $n_barang;
+				// $arr = explode(' ', $nm);
+				// $kode = '';
+				// foreach($arr as $kata)
+				// {
+				// 	$kode .= substr($kata, 0, 1);
+				// }
+				// $cekKode = $this->db->query("SELECT*FROM m_barang_header WHERE kode_barang='$kode'");
+			}
+		}else{
+			if($i_barang == ""){
+				echo json_encode(array('data' => false, 'isi' => 'PILIH BARANG DAHULU!')); return;
+			}else{
+				$b = $this->db->query("SELECT*FROM m_barang_header WHERE id_barang='$i_barang'")->row();
+				$nm_barang = $b->nm_barang;
+				// $kode_barang = $b->kode_barang;
+			}
+		}
+
+		$data = array(
+			'id' => $_POST["id_cart"],
+			'name' => 'barang_'.$_POST["id_cart"],
+			'price' => 0,
+			'qty' => 1,
+			'options' => array(
+				'nm_barang' => $nm_barang,
+				// 'kode_barang' => $kode_barang,
+			)
+		);
+		// $this->cart->insert($data);
+		echo json_encode(array('data' => $data, 'isi' => 'OK!'));
+	}
+
+	function loadJenisTipe()
+	{
+		$cari = $_POST["cari"];
+		$id_mbh = $_POST["barang"];
+		if($cari == 'jenis_tipe'){
+			$cekJenisTipe = $this->db->query("SELECT*FROM m_barang_detail GROUP BY jenis_tipe");
+		}else{
+			$cekJenisTipe = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' GROUP BY jenis_tipe");
+		}
+		$html = '';
+		if($cekJenisTipe->num_rows() != 0){
+			$data = true;
+			$html .='<option value="" id_mbh="">PILIH</option>';
+			foreach($cekJenisTipe->result() as $r){
+				$html .='<option value="'.$r->jenis_tipe.'" id_mbh="'.$id_mbh.'">'.$r->jenis_tipe.'</option>';
+			}
+			$html .='<option value="+" id_mbh="'.$id_mbh.'">+</option>';
+		}else{
+			$data = false;
+			$html .= '<option value="">PILIH</option>';
+		}
+
+		echo json_encode([
+			'data' => $data,
+			'html' => $html,
+		]);
+	}
+
+	function cekJenisTipe()
+	{
+		$id_mbh = $_POST["id_mbh"];
+		$n_jenis_tipe = $_POST["n_jenis_tipe"];
+		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_jenis_tipe)));
+		if($id_mbh == '+'){
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE jenis_tipe='$cleanTxt'");
+		}else{
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$cleanTxt'");
+		}
+		if($n_jenis_tipe == '' || $cleanTxt == ''){
+			$data = false; $msg = 'JENIS / TIPE BARU TIDAK BOLEH KOSONG!';
+		}else if($cekBarang->num_rows() != 0){
+			$data = false; $msg = 'JENIS / TIPE SUDAH ADA!';
+		}else{
+			$data = true; $msg = '';
+		}
+		echo json_encode([
+			'cleanTxt' => $cleanTxt,
+			'data' => $data,
+			'msg' => $msg,
+		]);
+	}
+
+	function loadMaterial()
+	{
+		$cari = $_POST["cari"];
+		$id_mbh = $_POST["barang"];
+		$jenis_tipe = $_POST["jenis_tipe"];
+		if($cari == 'material' || $id_mbh == '+'){
+			$cekMaterial = $this->db->query("SELECT*FROM m_barang_detail GROUP BY material");
+		}else{
+			$cekMaterial = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' GROUP BY material");
+		}
+		$html = '';
+		if($cekMaterial->num_rows() != 0){
+			$data = true;
+			$html .='<option value="">PILIH</option>';
+			foreach($cekMaterial->result() as $r){
+				$html .='<option value="'.$r->material.'">'.$r->material.'</option>';
+			}
+			$html .='<option value="+">+</option>';
+		}else{
+			$data = false;
+			$html .= '<option value="">PILIH</option>';
+		}
+
+		echo json_encode([
+			'data' => $data,
+			'html' => $html,
+		]);
+	}
+
+	function cekMaterial()
+	{
+		$id_mbh = $_POST["id_mbh"];
+		$i_jenis_tipe = $_POST["i_jenis_tipe"];
+		$n_material = $_POST["n_material"];
+		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_material)));
+		if($id_mbh == '+' || $i_jenis_tipe == '+'){
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE material='$cleanTxt'");
+		}else{
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$cleanTxt'");
+		}
+		if($n_material == '' || $cleanTxt == ''){
+			$data = false; $msg = 'MATERIAL BARU TIDAK BOLEH KOSONG!';
+		}else if($cekBarang->num_rows() != 0){
+			$data = false; $msg = 'MATERIAL SUDAH ADA!';
+		}else{
+			$data = true; $msg = '';
+		}
+		echo json_encode([
+			'cleanTxt' => $cleanTxt,
+			'data' => $data,
+			'msg' => $msg,
+		]);
+	}
+
+	function loadSize()
+	{
+		$cari = $_POST["cari"];
+		$id_mbh = $_POST["barang"];
+		$jenis_tipe = $_POST["jenis_tipe"];
+		$material = $_POST["material"];
+		if($cari == 'size' || $id_mbh == '+' || $jenis_tipe == '+'){
+			$cekSize = $this->db->query("SELECT*FROM m_barang_detail s GROUP BY s.size");
+		}else{
+			$cekSize = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' AND material='$material' GROUP BY s.size");
+		}
+		$html = '';
+		if($cekSize->num_rows() != 0){
+			$data = true;
+			$html .='<option value="">PILIH</option>';
+			foreach($cekSize->result() as $r){
+				$html .='<option value="'.$r->size.'">'.$r->size.'</option>';
+			}
+			$html .='<option value="+">+</option>';
+		}else{
+			$data = false;
+			$html .= '<option value="">PILIH</option>';
+		}
+
+		echo json_encode([
+			'data' => $data,
+			'html' => $html,
+		]);
+	}
+
+	function cekSize()
+	{
+		$id_mbh = $_POST["id_mbh"];
+		$i_jenis_tipe = $_POST["i_jenis_tipe"];
+		$i_material = $_POST["i_material"];
+		$n_size = $_POST["n_size"];
+		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_size)));
+		if($id_mbh == '+' || $i_jenis_tipe == '+' || $i_material == '+'){
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE s.size='$cleanTxt'");
+		}else{
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$i_material' AND s.size='$cleanTxt'");
+		}
+		if($n_size == '' || $cleanTxt == ''){
+			$data = false; $msg = 'SIZE BARU TIDAK BOLEH KOSONG!';
+		}else if($cekBarang->num_rows() != 0){
+			$data = false; $msg = 'SIZE SUDAH ADA!';
+		}else{
+			$data = true; $msg = '';
+		}
+		echo json_encode([
+			'cleanTxt' => $cleanTxt,
+			'data' => $data,
+			'msg' => $msg,
+		]);
+	}
+
+	function loadMerk()
+	{
+		$cari = $_POST["cari"];
+		$id_mbh = $_POST["barang"];
+		$jenis_tipe = $_POST["jenis_tipe"];
+		$material = $_POST["material"];
+		$size = $_POST["size"];
+		if($cari == 'merk' || $id_mbh == '+' || $jenis_tipe == '+' || $material == '+'){
+			$cekMerk = $this->db->query("SELECT*FROM m_barang_detail s GROUP BY merk");
+		}else{
+			$cekMerk = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' AND material='$material' AND s.size='$size' GROUP BY merk");
+		}
+		$html = '';
+		if($cekMerk->num_rows() != 0){
+			$data = true;
+			$html .='<option value="">PILIH</option>';
+			foreach($cekMerk->result() as $r){
+				$html .='<option value="'.$r->merk.'">'.$r->merk.'</option>';
+			}
+			$html .='<option value="+">+</option>';
+		}else{
+			$data = false;
+			$html .= '<option value="">PILIH</option>';
+		}
+
+		echo json_encode([
+			'data' => $data,
+			'html' => $html,
+		]);
+	}
+
+	function cekMerk()
+	{
+		$id_mbh = $_POST["id_mbh"];
+		$i_jenis_tipe = $_POST["i_jenis_tipe"];
+		$i_material = $_POST["i_material"];
+		$i_size = $_POST["i_size"];
+		$n_merk = $_POST["n_merk"];
+		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_merk)));
+		if($id_mbh == '+' || $i_jenis_tipe == '+' || $i_material == '+' || $i_size == '+'){
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE merk='$cleanTxt'");
+		}else{
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$i_material' AND s.size='$i_size' AND merk='$cleanTxt'");
+		}
+		if($n_merk == '' || $cleanTxt == ''){
+			$data = false; $msg = 'MERK BARU TIDAK BOLEH KOSONG!';
+		}else if($cekBarang->num_rows() != 0){
+			$data = false; $msg = 'MERK SUDAH ADA!';
+		}else{
+			$data = true; $msg = '';
+		}
+		echo json_encode([
+			'cleanTxt' => $cleanTxt,
+			'data' => $data,
+			'msg' => $msg,
+		]);
+	}
+
+	// function cartBarang()
+	// {
+	// 	$html = '';
+	// 	if($this->cart->total_items() == 0){
+	// 		$html .= 'LIST KOSONG!';
+	// 	}
+	// 	if($this->cart->total_items() != 0){
+	// 		$html .='<table class="table table-bordered table-striped">';
+	// 		$html .='<tr>
+	// 			<th style="padding:6px;text-align:center">NO.</th>
+	// 		</tr>';
+	// 	}
+	// 	$i = 0;
+	// 	foreach($this->cart->contents() as $r){
+	// 		$i++;
+	// 		$r['options']['order_pori'];
+	// 	}
+	// 	if($this->cart->total_items() != 0){
+	// 	}
+	// 	echo $html;
+	// }
 
 	function plhWilayah()
 	{
