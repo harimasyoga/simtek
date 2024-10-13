@@ -14,6 +14,15 @@
 		</div>
 	</section>
 
+	<style>
+		/* Chrome, Safari, Edge, Opera */
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+			-webkit-appearance: none;
+			margin: 0;
+		}
+	</style>
+
 	<section class="content">
 		<div class="card">
 			<div class="card-header" style="font-family:Cambria">
@@ -62,8 +71,8 @@
 							</button>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">NAMA BARANG</div>
-							<div class="col-md-5">
+							<div class="col-md-2">NAMA BARANG <span style="color:#f00">*</span></div>
+							<div class="col-md-4">
 								<select id="i_barang" class="form-control select2" onchange="namaBarang('lama')">
 									<?php
 										$query = $this->db->query("SELECT*FROM m_barang_header ORDER BY nm_barang");
@@ -77,79 +86,146 @@
 									?>
 								</select>
 							</div>
-							<div class="col-md-5">
+							<div class="col-md-4">
 								<div id="p_barang" style="display:none">
 									<input type="text" id="n_barang" class="form-control" style="font-weight:bold" autocomplete="off" onchange="namaBarang('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="NAMA BARANG BARU">
 									<div id="k_barang"></div>
 								</div>
 							</div>
+							<div class="col-md-2"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">JENIS / TIPE</div>
-							<div class="col-md-5">
+							<div class="col-md-2">JENIS / TIPE <span style="color:#f00">*</span></div>
+							<div class="col-md-4">
 								<select id="i_jenis_tipe" class="form-control select2" onchange="jenisTipe('lama')" disabled>
 									<option value="">PILIH</option>
 								</select>
 							</div>
-							<div class="col-md-5">
+							<div class="col-md-4">
 								<div id="p_jenis_tipe" style="display:none">
-									<input type="text" id="n_jenis_tipe" class="form-control" style="font-weight:bold" autocomplete="off" onchange="jenisTipe('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="JENIS / TIPE BARU">
+									<input type="text" id="n_jenis_tipe" class="form-control" style="font-weight:bold" autocomplete="off" onchange="jenisTipe('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
 									<div id="k_jenis_tipe"></div>
 								</div>
 							</div>
+							<div class="col-md-2"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">MATERIAL</div>
-							<div class="col-md-5">
+							<div class="col-md-2">MATERIAL <span style="color:#f00">*</span></div>
+							<div class="col-md-4">
 								<select id="i_material" class="form-control select2" onchange="material('lama')" disabled>
 									<option value="">PILIH</option>
 								</select>
 							</div>
-							<div class="col-md-5">
+							<div class="col-md-4">
 								<div id="p_material" style="display:none">
-									<input type="text" id="n_material" class="form-control" style="font-weight:bold" autocomplete="off" onchange="material('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="MATERIAL BARU">
+									<input type="text" id="n_material" class="form-control" style="font-weight:bold" autocomplete="off" onchange="material('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
 									<div id="k_material"></div>
 								</div>
 							</div>
+							<div class="col-md-2"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">SIZE</div>
-							<div class="col-md-5">
+							<div class="col-md-2">SIZE <span style="color:#f00">*</span></div>
+							<div class="col-md-4">
 								<select id="i_size" class="form-control select2" onchange="ukuran('lama')" disabled>
 									<option value="">PILIH</option>
 								</select>
 							</div>
-							<div class="col-md-5">
+							<div class="col-md-4">
 								<div id="p_size" style="display:none">
-									<input type="text" id="n_size" class="form-control" style="font-weight:bold" autocomplete="off" onchange="ukuran('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="SIZE BARU">
+									<input type="text" id="n_size" class="form-control" style="font-weight:bold" autocomplete="off" onchange="ukuran('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
 									<div id="k_size"></div>
 								</div>
 							</div>
+							<div class="col-md-2"></div>
 						</div>
-						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">MERK</div>
-							<div class="col-md-5">
+						<div class="card-body row" style="font-weight:bold;padding:0 0 16px">
+							<div class="col-md-2">MERK <span style="color:#f00">*</span></div>
+							<div class="col-md-4">
 								<select id="i_merk" class="form-control select2" onchange="merk('lama')" disabled>
 									<option value="">PILIH</option>
 								</select>
 							</div>
-							<div class="col-md-5">
+							<div class="col-md-4">
 								<div id="p_merk" style="display:none">
-									<input type="text" id="n_merk" class="form-control" style="font-weight:bold" autocomplete="off" onchange="merk('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="MERK BARU">
+									<input type="text" id="n_merk" class="form-control" style="font-weight:bold" autocomplete="off" onchange="merk('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
 									<div id="k_merk"></div>
 								</div>
 							</div>
+							<div class="col-md-2"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">PILIH SATUAN <span style="color:#f00">*</span></div>
+							<div class="col-md-2">
+								<select id="pilih_satuan" class="form-control select2" onchange="pilihSatuan()" disabled>
+									<option value="">PILIH</option>
+									<option value="1">1 SATUAN</option>
+									<option value="2">2 SATUAN</option>
+									<option value="3">3 SATUAN</option>
+								</select>
+							</div>
+							<div class="col-md-8"></div>
+						</div>
+						<div class="card-body row row-satuan-terbesar" style="display:none">
+							<div class="col-md-2">SATUAN TERBESAR <span style="color:#f00">*</span></div>
+							<div class="col-md-2" style="padding-bottom:3px">
+								<input type="number" id="satuan_terbesar" class="form-control" style="font-weight:bold;text-align:right" onkeyup="keyupSatuan('satuan_terbesar')" placeholder="0">
+							</div>
+							<div class="col-md-2" style="padding-bottom:3px">
+								<select id="p_satuan_terbesar" class="form-control select2" onchange="keyupSatuan('satuan_terbesar')">
+									<option value="">PILIH</option>
+									<option value="BOX">BOX</option>
+									<option value="PCS">PCS</option>
+									<option value="ROLL">ROLL</option>
+								</select>
+							</div>
+							<div class="col-md-6"></div>
+						</div>
+						<div class="card-body row row-satuan-tengah" style="display:none">
+							<div class="col-md-2">SATUAN TENGAH <span style="color:#f00">*</span></div>
+							<div class="col-md-2" style="padding-bottom:3px">
+								<input type="number" id="satuan_tengah" class="form-control" style="font-weight:bold;text-align:right" onkeyup="keyupSatuan('satuan_tengah')" placeholder="0">
+							</div>
+							<div class="col-md-2" style="padding-bottom:3px">
+								<select id="p_satuan_tengah" class="form-control select2" onchange="keyupSatuan('satuan_tengah')">
+									<option value="">PILIH</option>
+									<option value="BOX">BOX</option>
+									<option value="PCS">PCS</option>
+									<option value="ROLL">ROLL</option>
+								</select>
+							</div>
+							<div class="col-md-6"></div>
+						</div>
+						<div class="card-body row row-satuan-terkecil" style="display:none">
+							<div class="col-md-2">SATUAN TERKECIL <span style="color:#f00">*</span></div>
+							<div class="col-md-2" style="padding-bottom:3px">
+								<input type="number" id="satuan_terkecil" class="form-control" style="font-weight:bold;text-align:right" onkeyup="keyupSatuan('satuan_terkecil')" placeholder="0">
+							</div>
+							<div class="col-md-2" style="padding-bottom:3px">
+								<select id="p_satuan_terkecil" class="form-control select2" onchange="keyupSatuan('satuan_terkecil')">
+									<option value="">PILIH</option>
+									<option value="BOX">BOX</option>
+									<option value="PCS">PCS</option>
+									<option value="ROLL">ROLL</option>
+								</select>
+							</div>
+							<div class="col-md-6"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0">
 							<div class="col-md-2"></div>
 							<div class="col-md-10">
-								<button type="button" class="btn btn-sm btn-success" style="font-weight:bold" onclick="addBarang()">ADD</button>
+								<div id="simpan_barang"></div>
 							</div>
+						</div>
+
+						<div style="overflow:auto;white-space:nowrap">
+							<div class="list-barang"></div>
 						</div>
 					</div>
 				</div>
 			</div>
 			<input type="hidden" id="id_cart" value="0">
+			<input type="hidden" id="destroy">
 		</div>
 		<!-- INPUT DATA -->
 	</section>
@@ -158,6 +234,7 @@
 <script type="text/javascript">
 	status = "insert";
 	$(document).ready(function() {
+		$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
 		$(".select2").select2()
 		// load_data()
 	});
@@ -177,6 +254,7 @@
 		$("#p_"+opsi).attr('style', 'display:none')
 		$("#n_"+opsi).val('').removeClass('is-valid').removeClass('is-invalid')
 		$("#k_"+opsi).html('')
+		$("#pilih_satuan").val('').trigger('change').prop('disabled', true)
 	}
 		
 	function namaBarang(opsi)
@@ -462,8 +540,22 @@
 		}
 	}
 
+	$("#n_size").on({
+		keydown: function(e) {
+			if (e.which === 32)
+				return false;
+		},
+		keyup: function(){
+			this.value = this.value.toUpperCase();
+		},
+		change: function() {
+			this.value = this.value.replace(/\s/g, "");
+		}
+	});
+
 	function loadMerk(opsi)
 	{
+		$("#pilih_satuan").val('').trigger('change').prop('disabled', true)
 		let barang = $("#i_barang").val()
 		let jenis_tipe = $("#i_jenis_tipe").val()
 		let material = $("#i_material").val()
@@ -513,7 +605,7 @@
 			$("#n_merk").val('').removeClass('is-valid').removeClass('is-invalid')
 			$("#k_merk").html('');
 			(merk == '+') ? $("#p_merk").attr('style', 'padding-top:4px') : $("#p_merk").attr('style', 'display:none');
-			// load('lama')
+			$("#pilih_satuan").val('').trigger('change').prop('disabled', (merk != '+' && merk != '') ? false : true)
 		}
 		if(opsi == 'baru'){
 			$("#n_merk").removeClass('is-invalid').removeClass('is-valid')
@@ -533,49 +625,119 @@
 					if(data.data){
 						$("#n_merk").removeClass('is-invalid').addClass('is-valid')
 						$("#k_merk").html('')
-						// load('baru')
 					}else{
 						$("#n_merk").removeClass('is-valid').addClass('is-invalid')
 						$("#k_merk").html(`${data.msg}`).attr('style', 'font-style:italic;font-size:12px;color:#f00')
-						// load('lama')
 					}
 					$("#n_merk").val(data.cleanTxt)
+					$("#pilih_satuan").val('').trigger('change').prop('disabled', (data.data) ? false : true)
 				}
 			})
 		}
 	}
 
-	// function addBarang()
-	// {
-	// 	let id_cart = parseInt($("#id_cart").val()) + 1;
-	// 	$("#id_cart").val(id_cart)
-	// 	let i_barang = $("#i_barang").val()
-	// 	let n_barang = $("#n_barang").val()
-	// 	$.ajax({
-	// 		url: '<?php echo base_url('Master/addBarang')?>',
-	// 		type: "POST",
-	// 		data : ({
-	// 			id_cart, i_barang, n_barang
-	// 		}),
-	// 		success: function(res){
-	// 			data = JSON.parse(res)
-	// 			console.log(data)
-	// 		}
-	// 	})
-	// }
+	function pilihSatuan()
+	{
+		let pilih_satuan = $("#pilih_satuan").val()
+		$("#simpan_barang").html('')
+		$("#satuan_terbesar").val('')
+		$("#p_satuan_terbesar").val('').trigger('change')
+		$("#satuan_tengah").val('')
+		$("#p_satuan_tengah").val('').trigger('change')
+		$("#satuan_terkecil").val('')
+		$("#p_satuan_terkecil").val('').trigger('change')
+		if(pilih_satuan == 1){
+			$(".row-satuan-terbesar").attr('style', 'display:none')
+			$(".row-satuan-tengah").attr('style', 'display:none')
+			$(".row-satuan-terkecil").attr('style', 'font-weight:bold;padding:0 0 4px')
+		}else if(pilih_satuan == 2){
+			$(".row-satuan-terbesar").attr('style', 'font-weight:bold;padding:0 0 4px')
+			$(".row-satuan-tengah").attr('style', 'display:none')
+			$(".row-satuan-terkecil").attr('style', 'font-weight:bold;padding:0 0 4px')
+		}else if(pilih_satuan == 3){
+			$(".row-satuan-terbesar").attr('style', 'font-weight:bold;padding:0 0 4px')
+			$(".row-satuan-tengah").attr('style', 'font-weight:bold;padding:0 0 4px')
+			$(".row-satuan-terkecil").attr('style', 'font-weight:bold;padding:0 0 4px')
+		}else{
+			$(".row-satuan-terbesar").attr('style', 'display:none')
+			$(".row-satuan-tengah").attr('style', 'display:none')
+			$(".row-satuan-terkecil").attr('style', 'display:none')
+		}
+		if(pilih_satuan != ''){
+			$("#simpan_barang").html(`<button type="button" class="btn btn-sm btn-success" style="font-weight:bold" onclick="addBarang()"><i class="fas fa-plus"></i> TAMBAH</button>`)
+		}
+	}
 
-	// $("#kode_barang").on({
-	// 	keydown: function(e) {
-	// 		if (e.which === 32)
-	// 			return false;
-	// 	},
-	// 	keyup: function(){
-	// 		this.value = this.value.toUpperCase();
-	// 	},
-	// 	change: function() {
-	// 		this.value = this.value.replace(/\s/g, "");
-	// 	}
-	// });
+	function keyupSatuan(opsi)
+	{
+		const rupiah = new Intl.NumberFormat('id-ID', {styles: 'currency', currency: 'IDR'})
+		let nominal = $("#"+opsi).val().split('.').join('')
+		let pilihan = $("#p_"+opsi).val();
+		(nominal < 0 || nominal == '' || nominal.length >= 7) ? nominal = 0 : nominal = nominal
+		$("#"+opsi).val(rupiah.format(nominal))
+	}
+
+	function addBarang()
+	{
+		let id_cart = parseInt($("#id_cart").val()) + 1;
+		$("#id_cart").val(id_cart)
+		let i_barang = $("#i_barang").val()
+		let n_barang = $("#n_barang").val()
+		let i_jenis_tipe = $("#i_jenis_tipe").val()
+		let n_jenis_tipe = $("#n_jenis_tipe").val()
+		let i_material = $("#i_material").val()
+		let n_material = $("#n_material").val()
+		let i_size = $("#i_size").val()
+		let n_size = $("#n_size").val()
+		let i_merk = $("#i_merk").val()
+		let n_merk = $("#n_merk").val()
+		let pilih_satuan = $("#pilih_satuan").val()
+		let satuan_terbesar = $("#satuan_terbesar").val()
+		let p_satuan_terbesar = $("#p_satuan_terbesar").val()
+		let satuan_tengah = $("#satuan_tengah").val()
+		let p_satuan_tengah = $("#p_satuan_tengah").val()
+		let satuan_terkecil = $("#satuan_terkecil").val()
+		let p_satuan_terkecil = $("#p_satuan_terkecil").val()
+		$.ajax({
+			url: '<?php echo base_url('Master/addBarang')?>',
+			type: "POST",
+			data : ({
+				id_cart, i_barang, n_barang, i_jenis_tipe, n_jenis_tipe, i_material, n_material, i_size, n_size, i_merk, n_merk, pilih_satuan, satuan_terbesar, p_satuan_terbesar, satuan_tengah, p_satuan_tengah, satuan_terkecil, p_satuan_terkecil
+			}),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				if(data.data){
+					cartBarang()
+				}
+			}
+		})
+	}
+
+	function cartBarang()
+	{
+		$(".list-barang").html('')
+		$.ajax({
+			url: '<?php echo base_url('Master/cartBarang')?>',
+			type: "POST",
+			success: function(res){
+				data = JSON.parse(res)
+				$(".list-barang").html(data.html)
+			}
+		})
+	}
+
+	function hapusCart(rowid)
+	{
+		$.ajax({
+			url: '<?php echo base_url('Master/hapusCart')?>',
+			type: "POST",
+			data: ({ rowid }),
+			success: function(res){
+				cartBarang()
+			}
+		})
+	}
 
 	// function load_data() 
 	// {

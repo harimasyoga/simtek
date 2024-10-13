@@ -91,55 +91,6 @@ class Master extends CI_Controller
 		]);
 	}
 
-	function addBarang()
-	{
-		$i_barang = $_POST["i_barang"];
-		$n_barang = $_POST["n_barang"];
-		if($i_barang == '+'){
-			$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_barang)));
-			$cekBarang = $this->db->query("SELECT*FROM m_barang_header WHERE nm_barang='$cleanTxt'");
-			if($n_barang == ""){
-				echo json_encode(array('data' => false, 'isi' => 'NAMA BARANG BARU TIDAK BOLEH KOSONG!')); return;
-			}else if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
-				echo json_encode(array('data' => false, 'isi' => 'NAMA BARANG HANYA BOLEH HURUF ATAU ANGKA!')); return;
-			}else if($cekBarang->num_rows() != 0){
-				echo json_encode(array('data' => false, 'isi' => 'NAMA BARANG SUDAH ADA!')); return;
-			}else{
-				$nm_barang = $cleanTxt;
-				// KODE BARANG
-				// $nm = $n_barang;
-				// $arr = explode(' ', $nm);
-				// $kode = '';
-				// foreach($arr as $kata)
-				// {
-				// 	$kode .= substr($kata, 0, 1);
-				// }
-				// $cekKode = $this->db->query("SELECT*FROM m_barang_header WHERE kode_barang='$kode'");
-			}
-		}else{
-			if($i_barang == ""){
-				echo json_encode(array('data' => false, 'isi' => 'PILIH BARANG DAHULU!')); return;
-			}else{
-				$b = $this->db->query("SELECT*FROM m_barang_header WHERE id_barang='$i_barang'")->row();
-				$nm_barang = $b->nm_barang;
-				// $kode_barang = $b->kode_barang;
-			}
-		}
-
-		$data = array(
-			'id' => $_POST["id_cart"],
-			'name' => 'barang_'.$_POST["id_cart"],
-			'price' => 0,
-			'qty' => 1,
-			'options' => array(
-				'nm_barang' => $nm_barang,
-				// 'kode_barang' => $kode_barang,
-			)
-		);
-		// $this->cart->insert($data);
-		echo json_encode(array('data' => $data, 'isi' => 'OK!'));
-	}
-
 	function loadJenisTipe()
 	{
 		$cari = $_POST["cari"];
@@ -178,9 +129,9 @@ class Master extends CI_Controller
 		}else{
 			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$cleanTxt'");
 		}
-		if($n_jenis_tipe == '' || $cleanTxt == ''){
-			$data = false; $msg = 'JENIS / TIPE BARU TIDAK BOLEH KOSONG!';
-		}else if($cekBarang->num_rows() != 0){
+		if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
+			$data = false; $msg = 'JENIS / TIPE BARU HANYA BOLEH HURUF ATAU ANGKA!';
+		}else if($cekBarang->num_rows() != 0 || $cleanTxt == '+'){
 			$data = false; $msg = 'JENIS / TIPE SUDAH ADA!';
 		}else{
 			$data = true; $msg = '';
@@ -232,9 +183,9 @@ class Master extends CI_Controller
 		}else{
 			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$cleanTxt'");
 		}
-		if($n_material == '' || $cleanTxt == ''){
-			$data = false; $msg = 'MATERIAL BARU TIDAK BOLEH KOSONG!';
-		}else if($cekBarang->num_rows() != 0){
+		if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
+			$data = false; $msg = 'MATERIAL BARU HANYA BOLEH HURUF ATAU ANGKA!';
+		}else if($cekBarang->num_rows() != 0 || $cleanTxt == '+'){
 			$data = false; $msg = 'MATERIAL SUDAH ADA!';
 		}else{
 			$data = true; $msg = '';
@@ -282,15 +233,15 @@ class Master extends CI_Controller
 		$i_jenis_tipe = $_POST["i_jenis_tipe"];
 		$i_material = $_POST["i_material"];
 		$n_size = $_POST["n_size"];
-		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_size)));
+		$cleanTxt = trim(preg_replace('/\s\s+/', '', str_replace("\n", "", $n_size)));
 		if($id_mbh == '+' || $i_jenis_tipe == '+' || $i_material == '+'){
 			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE s.size='$cleanTxt'");
 		}else{
 			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$i_material' AND s.size='$cleanTxt'");
 		}
-		if($n_size == '' || $cleanTxt == ''){
-			$data = false; $msg = 'SIZE BARU TIDAK BOLEH KOSONG!';
-		}else if($cekBarang->num_rows() != 0){
+		if(!preg_match("/^[A-Z0-9]*$/", $cleanTxt)){
+			$data = false; $msg = 'SIZE BARU HANYA BOLEH HURUF ATAU ANGKA!';
+		}else if($cekBarang->num_rows() != 0 || $cleanTxt == '+'){
 			$data = false; $msg = 'SIZE SUDAH ADA!';
 		}else{
 			$data = true; $msg = '';
@@ -346,9 +297,9 @@ class Master extends CI_Controller
 		}else{
 			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$i_material' AND s.size='$i_size' AND merk='$cleanTxt'");
 		}
-		if($n_merk == '' || $cleanTxt == ''){
-			$data = false; $msg = 'MERK BARU TIDAK BOLEH KOSONG!';
-		}else if($cekBarang->num_rows() != 0){
+		if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
+			$data = false; $msg = 'SIZE BARU HANYA BOLEH HURUF ATAU ANGKA!';
+		}else if($cekBarang->num_rows() != 0 || $cleanTxt == '+'){
 			$data = false; $msg = 'MERK SUDAH ADA!';
 		}else{
 			$data = true; $msg = '';
@@ -360,27 +311,265 @@ class Master extends CI_Controller
 		]);
 	}
 
-	// function cartBarang()
-	// {
-	// 	$html = '';
-	// 	if($this->cart->total_items() == 0){
-	// 		$html .= 'LIST KOSONG!';
-	// 	}
-	// 	if($this->cart->total_items() != 0){
-	// 		$html .='<table class="table table-bordered table-striped">';
-	// 		$html .='<tr>
-	// 			<th style="padding:6px;text-align:center">NO.</th>
-	// 		</tr>';
-	// 	}
-	// 	$i = 0;
-	// 	foreach($this->cart->contents() as $r){
-	// 		$i++;
-	// 		$r['options']['order_pori'];
-	// 	}
-	// 	if($this->cart->total_items() != 0){
-	// 	}
-	// 	echo $html;
-	// }
+	function addBarang()
+	{
+		$i_barang = $_POST["i_barang"];
+		$n_barang = $_POST["n_barang"];
+		$i_jenis_tipe = $_POST["i_jenis_tipe"];
+		$n_jenis_tipe = $_POST["n_jenis_tipe"];
+		$i_material = $_POST["i_material"];
+		$n_material = $_POST["n_material"];
+		$i_size = $_POST["i_size"];
+		$n_size = $_POST["n_size"];
+		$i_merk = $_POST["i_merk"];
+		$n_merk = $_POST["n_merk"];
+		$pilih_satuan = $_POST["pilih_satuan"];
+		$satuan_terbesar = $_POST["satuan_terbesar"];
+		$p_satuan_terbesar = $_POST["p_satuan_terbesar"];
+		$satuan_tengah = $_POST["satuan_tengah"];
+		$p_satuan_tengah = $_POST["p_satuan_tengah"];
+		$satuan_terkecil = $_POST["satuan_terkecil"];
+		$p_satuan_terkecil = $_POST["p_satuan_terkecil"];
+
+		if(($satuan_terkecil == 0 || $satuan_terkecil == '') && $pilih_satuan == 1){
+			echo json_encode(['data' => false, 'isi' => 'HARAP ISI SATUAN!']); return;
+		}
+		if($p_satuan_terkecil == '' && $pilih_satuan == 1){
+			echo json_encode(['data' => false, 'isi' => 'HARAP PILIH SATUAN!']); return;
+		}
+		if(($satuan_terbesar == 0 || $satuan_terbesar == '' || $satuan_terkecil == 0 || $satuan_terkecil == '') && $pilih_satuan == 2){
+			echo json_encode(['data' => false, 'isi' => 'HARAP ISI SATUAN!']); return;
+		}
+		if(($p_satuan_terbesar == '' || $p_satuan_terkecil == '') && $pilih_satuan == 2){
+			echo json_encode(['data' => false, 'isi' => 'HARAP PILIH SATUAN!']); return;
+		}
+		if(($satuan_terbesar == 0 || $satuan_terbesar == '' || $satuan_tengah == 0 || $satuan_tengah == '' || $satuan_terkecil == 0 || $satuan_terkecil == '') && $pilih_satuan == 3){
+			echo json_encode(['data' => false, 'isi' => 'HARAP ISI SATUAN!']); return;
+		}
+		if(($p_satuan_terbesar == '' || $p_satuan_tengah == '' || $p_satuan_terkecil == '') && $pilih_satuan == 3){
+			echo json_encode(['data' => false, 'isi' => 'HARAP PILIH SATUAN!']); return;
+		}
+		if($pilih_satuan == 2 && ($p_satuan_terbesar == $p_satuan_terkecil)){
+			echo json_encode(['data' => false, 'isi' => 'SATUAN TIDAK BOLEH SAMA!']); return;
+		}
+		if($pilih_satuan == 3 && ($p_satuan_terbesar == $p_satuan_tengah || $p_satuan_terbesar == $p_satuan_terkecil || $p_satuan_tengah == $p_satuan_terkecil)){
+			echo json_encode(['data' => false, 'isi' => 'SATUAN TIDAK BOLEH SAMA!']); return;
+		}
+
+		// HEADER
+		$kode_barang = '';
+		if($i_barang == '+'){
+			$nm_barang = $n_barang;
+			// KODE NAMA BARANG BARU
+			$arr = explode(' ', $n_barang);
+			$kode = '';
+			foreach($arr as $kata) { $kode .= substr($kata, 0, 1); }
+			$cek = $this->db->query("SELECT*FROM m_barang_header WHERE kode_barang LIKE '$kode-%'");
+			if($cek->num_rows() != 0){
+				$lastKode = $this->db->query("SELECT*FROM m_barang_header WHERE kode_barang LIKE '$kode-%' ORDER BY kode_barang DESC LIMIT 1")->row();
+				$plus = str_pad(preg_replace("/[^0-9]/", "", $lastKode->kode_barang)+1, 2, "0", STR_PAD_LEFT);
+				$kode_barang .= preg_replace("/[^A-Z]/", "", $cek->row()->kode_barang).'-'.$plus;
+			}else{
+				$kode_barang .= $kode.'-01';
+			}
+		}else{
+			$nm = $this->db->query("SELECT*FROM m_barang_header WHERE id_mbh='$i_barang'")->row();
+			$nm_barang = $nm->nm_barang;
+			$kode_barang .= $nm->kode_barang;
+		}
+		$kode_header = $kode_barang;
+
+		// DETAIL
+		($i_jenis_tipe == '+') ? $jenis_tipe = $n_jenis_tipe : $jenis_tipe = $i_jenis_tipe;
+		($i_material == '+') ? $material = $n_material : $material = $i_material;
+		($i_size == '+') ? $size = $n_size : $size = $i_size;
+		($i_merk == '+') ? $merk = $n_merk : $merk = $i_merk;
+		// KODE TAHUN
+		$kode_barang .= '/'.substr(date('Y'),2,2);
+		// KODE JENIS / TIPE
+		$jt = explode(' ', $jenis_tipe);
+		$txtJT = '';
+		foreach($jt as $kataJT) { $txtJT .= substr($kataJT, 0, 1); }
+		($jenis_tipe == '') ? $kode_barang .= '' : $kode_barang .= '/'.$txtJT;
+		// KODE MATERIAL
+		$m = explode(' ', $material);
+		$txtM = '';
+		foreach($m as $kataM) { $txtM .= substr($kataM, 0, 1); }
+		($material == '') ? $kode_barang .= '' : $kode_barang .= '/'.$txtM;
+		// KODE MERK
+		$mr = explode(' ', $merk);
+		$txtMr = '';
+		foreach($mr as $kataMr) { $txtMr .= substr($kataMr, 0, 1); }
+		($merk == '') ? $kode_barang .= '' : $kode_barang .= '/'.$txtMr;
+
+		// KODE URUT
+		$cekKode = $this->db->query("SELECT*FROM m_barang_detail WHERE kode_detail LIKE '$kode_barang-%'");
+		$lastDtl = $this->db->query("SELECT*FROM m_barang_detail WHERE kode_detail LIKE '$kode_barang-%' ORDER BY kode_detail DESC LIMIT 1")->row();
+		if($this->cart->total_items() != 0){
+			foreach($this->cart->contents() as $r){
+				if($kode_barang == $r['options']['kode_barang']){
+					$kd = $r['options']['no_urut']+1;
+				}else{
+					($cekKode->num_rows() != 0) ? $kd = str_pad(substr($lastDtl->kode_detail, -3), 3, "0", STR_PAD_LEFT) : $kd = 0;
+				}
+			}
+		}else{
+			($cekKode->num_rows() != 0) ? $kd = str_pad(substr($lastDtl->kode_detail, -3), 3, "0", STR_PAD_LEFT) : $kd = 0;
+		}
+		if($cekKode->num_rows() != 0){
+			$pdtl = str_pad($kd+1, 3, "0", STR_PAD_LEFT);
+			$kode_urut = $pdtl;
+			$no_urut = $kd;
+		}else{
+			$kode_urut = str_pad($kd+1, 3, "0", STR_PAD_LEFT);
+			$no_urut = $kd;
+		}
+
+		$data = array(
+			'id' => $_POST["id_cart"],
+			'name' => 'bb_'.$_POST["id_cart"],
+			'price' => 0,
+			'qty' => 1,
+			'options' => array(
+				'no_urut' => $no_urut,
+				'id_mbh' => $i_barang,
+				'nm_barang' => $nm_barang,
+				'kode_header' => $kode_header,
+				'kode_barang' => $kode_barang,
+				'kode_urut' => $kode_urut,
+				'i_jenis_tipe' => $i_jenis_tipe,
+				'n_jenis_tipe' => $n_jenis_tipe,
+				'i_material' => $i_material,
+				'n_material' => $n_material,
+				'i_size' => $i_size,
+				'n_size' => $n_size,
+				'i_merk' => $i_merk,
+				'n_merk' => $n_merk,
+				'jenis_tipe' => $jenis_tipe,
+				'material' => $material,
+				'size' => $size,
+				'merk' => $merk,
+				'pilih_satuan' => $pilih_satuan,
+				'satuan_terbesar' => $satuan_terbesar,
+				'p_satuan_terbesar' => $p_satuan_terbesar,
+				'satuan_tengah' => $satuan_tengah,
+				'p_satuan_tengah' => $p_satuan_tengah,
+				'satuan_terkecil' => $satuan_terkecil,
+				'p_satuan_terkecil' => $p_satuan_terkecil,
+			)
+		);
+
+		if($this->cart->total_items() != 0){
+			foreach($this->cart->contents() as $r){
+				// CEK KODE BARANG
+				$kode_baru = $kode_barang.'-'.$kode_urut;
+				$kode_lama = $r['options']['kode_barang'].'-'.$r['options']['kode_urut'];
+				if($kode_baru == $kode_lama){
+					echo json_encode(array('data' => false, 'isi' => 'KODE BARANG SUDAH TERPAKAI!')); return;
+				}
+				// CEK INPUTAN
+				if(
+					$nm_barang == $r['options']['nm_barang'] &&
+					$jenis_tipe == $r['options']['jenis_tipe'] &&
+					$material == $r['options']['material'] &&
+					$size == $r['options']['size'] &&
+					$merk == $r['options']['merk'] &&
+					$pilih_satuan == $r['options']['pilih_satuan'] &&
+					$satuan_terbesar == $r['options']['satuan_terbesar'] &&
+					$p_satuan_terbesar == $r['options']['p_satuan_terbesar'] &&
+					$satuan_tengah == $r['options']['satuan_tengah'] &&
+					$p_satuan_tengah == $r['options']['p_satuan_tengah'] &&
+					$satuan_terkecil == $r['options']['satuan_terkecil'] &&
+					$p_satuan_terkecil == $r['options']['p_satuan_terkecil']
+				){
+					echo json_encode(array('data' => false, 'isi' => 'DATA SUDAH MASUK DI LIST!')); return;
+				}
+			}
+			$this->cart->insert($data);
+			echo json_encode(array('data' => true, 'isi' => $data));
+		}else{
+			$this->cart->insert($data);
+			echo json_encode(array('data' => true, 'isi' => $data));
+		}
+	}
+
+	function destroy()
+	{
+		$this->cart->destroy();
+	}
+
+	function hapusCart()
+	{
+		$data = array(
+			'rowid' => $_POST['rowid'],
+			'qty' => 0,
+		);
+		$this->cart->update($data);
+	}
+
+	function cartBarang()
+	{
+		$html = '';
+		if($this->cart->total_items() == 0){
+			$html .= '';
+		}
+		if($this->cart->total_items() != 0){
+			$html .='<table class="table table-bordered table-striped" style="margin-top:20px">';
+				$html .='<tr>
+					<th style="padding:6px;text-align:center">KODE BARANG</th>
+					<th style="padding:6px;text-align:center">NAMA BARANG</th>
+					<th style="padding:6px;text-align:center">JENIS/TIPE</th>
+					<th style="padding:6px;text-align:center">MATERIAL</th>
+					<th style="padding:6px;text-align:center">SIZE</th>
+					<th style="padding:6px;text-align:center">MERK</th>
+					<th style="padding:6px;text-align:center" colspan="2">SATUAN</th>
+					<th style="padding:6px;text-align:center">AKSI</th>
+				</tr>
+				<tr>
+					<td style="padding:2px;border:0" colspan="9"></td>
+				</tr>';
+				$i = 0;
+				foreach($this->cart->contents() as $r){
+					$i++;
+					($r['options']['jenis_tipe'] == '') ? $jenis_tipe = '-' : $jenis_tipe = $r['options']['jenis_tipe'];
+					($r['options']['material'] == '') ? $material = '-' : $material = $r['options']['material'];
+					($r['options']['size'] == '') ? $size = '-' : $size = $r['options']['size'];
+					($r['options']['merk'] == '') ? $merk = '-' : $merk = $r['options']['merk'];
+					// SATUAN
+					if($r['options']['pilih_satuan'] == 1){
+						$htmlSat = '<td style="padding:6px">TERKECIL</td>
+						<td style="padding:6px">'.$r['options']['satuan_terkecil'].' '.$r['options']['p_satuan_terkecil'].'</td>';
+					}
+					if($r['options']['pilih_satuan'] == 2){
+						$htmlSat = '<td style="padding:6px">TERBESAR<br>TERKECIL</td>
+						<td style="padding:6px">'.$r['options']['satuan_terbesar'].' '.$r['options']['p_satuan_terbesar'].'<br>'.$r['options']['satuan_terkecil'].' '.$r['options']['p_satuan_terkecil'].'</td>';
+					}
+					if($r['options']['pilih_satuan'] == 3){
+						$htmlSat = '<td style="padding:6px">TERBESAR<br>TENGAH<br>TERKECIL</td>
+						<td style="padding:6px">'.$r['options']['satuan_terbesar'].' '.$r['options']['p_satuan_terbesar'].'<br>'.$r['options']['satuan_tengah'].' '.$r['options']['p_satuan_tengah'].'<br>'.$r['options']['satuan_terkecil'].' '.$r['options']['p_satuan_terkecil'].'</td>';
+					}
+					$html .= '<tr>
+						<td style="padding:6px">'.$r['options']['kode_barang'].'-'.$r['options']['kode_urut'].'</td>
+						<td style="padding:6px">'.$r['options']['nm_barang'].'</td>
+						<td style="padding:6px">'.$jenis_tipe.'</td>
+						<td style="padding:6px">'.$material.'</td>
+						<td style="padding:6px">'.$size.'</td>
+						<td style="padding:6px">'.$merk.'</td>
+						'.$htmlSat.'
+						<td style="padding:6px;text-align:center">
+							<button type="button" class="btn btn-xs btn-danger" onclick="hapusCart('."'".$r['rowid']."'".')">batal</button>
+						</td>
+					</tr>
+					<tr>
+						<td style="padding:2px;border:0" colspan="9"></td>
+					</tr>';
+				}
+			$html .='</table>';
+		}
+		echo json_encode([
+			'html' => $html,
+		]);
+	}
 
 	function plhWilayah()
 	{
