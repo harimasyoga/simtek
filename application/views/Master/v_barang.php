@@ -34,7 +34,7 @@
 			</div>
 			<div class="card-body">
 				<div style="margin-bottom:16px">
-					<button type="button" style="font-family:Cambria;" class="tambah_data btn btn-info pull-right">
+					<button type="button" style="font-family:Cambria;" class="tambah_data btn btn-info pull-right" onclick="tambahKembali('tambah')">
 						<i class="fa fa-plus"></i>&nbsp;&nbsp;<b>Tambah Data</b>
 					</button>
 				</div>
@@ -42,13 +42,10 @@
 					<table id="datatable" class="table table-bordered table-striped" width="100%">
 						<thead class="color-tabel">
 							<tr>
-								<th style="text-align:center">NO</th>
-								<th style="text-align:center">SUPPLIER</th>
-								<th style="text-align:center">KODE BARANG</th>
-								<th style="text-align:center">NAMA BARANG</th>
-								<th style="text-align:center">KETERANGAN</th>
-								<th style="text-align:center">HARGA</th>
-								<th style="text-align:center">AKSI</th>
+								<th style="width:5%;text-align:center">#</th>
+								<th style="width:10%;text-align:center">KODE</th>
+								<th style="width:80%;text-align:center">NAMA BARANG</th>
+								<th style="width:5%;text-align:center">AKSI</th>
 							</tr>
 						</thead>
 						<tbody></tbody>
@@ -66,7 +63,7 @@
 					</div>
 					<div class="card-body" style="padding:12px">
 						<div style="margin-bottom:6px">
-							<button type="button" class="btn btn-sm btn-info pull-right">
+							<button type="button" class="btn btn-sm btn-info pull-right" onclick="tambahKembali('kembali')">
 								<i class="fas fa-arrow-left"></i>&nbsp;&nbsp;<b>Kembali</b>
 							</button>
 						</div>
@@ -220,6 +217,7 @@
 
 						<div style="overflow:auto;white-space:nowrap">
 							<div class="list-barang"></div>
+							<div class="vlist-barang"></div>
 						</div>
 					</div>
 				</div>
@@ -236,7 +234,7 @@
 	$(document).ready(function() {
 		$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
 		$(".select2").select2()
-		// load_data()
+		load_data()
 	});
 
 	function reloadTable() {
@@ -247,6 +245,37 @@
 	function kosong() 
 	{			
 		status = 'insert';
+	}
+
+	function tambahKembali(opsi)
+	{
+		$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
+		$(".list-barang").html('')
+		$(".vlist-barang").html('')
+		$("#i_barang").val('').trigger('change').prop('disabled', false)
+		if(opsi == 'kembali'){
+			load_data()
+		}
+	}
+
+	function load_data() 
+	{
+		var table = $('#datatable').DataTable();
+		table.destroy();
+		tabel = $('#datatable').DataTable({
+			"processing": true,
+			"pageLength": true,
+			"paging": true,
+			"ajax": {
+				"url": '<?php echo base_url(); ?>Master/loadDataBarang',
+				"type": "POST",
+			},
+			responsive: false,
+			"pageLength": 10,
+			"language": {
+				"emptyTable": "Tidak ada data.."
+			}
+		});
 	}
 
 	function hideAll(opsi){
@@ -323,7 +352,7 @@
 				success: function(res){
 					data = JSON.parse(res)
 					console.log(data)
-					$("#i_jenis_tipe").html(data.html).prop('disabled', (data.data) ? false : true)
+					$("#i_jenis_tipe").html(data.html).prop('disabled', false)
 				}
 			})
 			let jenis_tipe = $("#i_jenis_tipe").val()
@@ -406,7 +435,7 @@
 				success: function(res){
 					data = JSON.parse(res)
 					console.log(data)
-					$("#i_material").html(data.html).prop('disabled', (data.data) ? false : true)
+					$("#i_material").html(data.html).prop('disabled', false)
 				}
 			})
 			let material = $("#i_material").val()
@@ -490,7 +519,7 @@
 				success: function(res){
 					data = JSON.parse(res)
 					console.log(data)
-					$("#i_size").html(data.html).prop('disabled', (data.data) ? false : true)
+					$("#i_size").html(data.html).prop('disabled', false)
 				}
 			})
 			let size = $("#i_size").val()
@@ -589,7 +618,7 @@
 				success: function(res){
 					data = JSON.parse(res)
 					console.log(data)
-					$("#i_merk").html(data.html).prop('disabled', (data.data) ? false : true)
+					$("#i_merk").html(data.html).prop('disabled', false)
 				}
 			})
 			let merk = $("#i_merk").val()
@@ -739,23 +768,43 @@
 		})
 	}
 
-	// function load_data() 
-	// {
-	// 	var table = $('#datatable').DataTable();
-	// 	table.destroy();
-	// 	tabel = $('#datatable').DataTable({
-	// 		"processing": true,
-	// 		"pageLength": true,
-	// 		"paging": true,
-	// 		"ajax": {
-	// 			"url": '<?php echo base_url(); ?>Master/load_data/supplier',
-	// 			"type": "POST",
-	// 		},
-	// 		responsive: true,
-	// 		"pageLength": 10,
-	// 		"language": {
-	// 			"emptyTable": "Tidak ada data.."
-	// 		}
-	// 	});
-	// }
+	function viewBarang(id_mbh)
+	{
+		$(".vlist-barang").html('')
+		console.log(id_mbh)
+		$.ajax({
+			url: '<?php echo base_url('Master/viewBarang')?>',
+			type: "POST",
+			data: ({ id_mbh }),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				$("#i_barang").val(id_mbh).trigger('change').prop('disabled', true)
+				// $("#i_jenis_tipe").val(data.id_mbh).trigger('change')
+				// $("#i_material").val(data.id_mbh).trigger('change')
+				// $("#i_size").val(data.id_mbh).trigger('change')
+				// $("#i_merk").val(data.id_mbh).trigger('change')
+				// $("#pilih_satuan").val(data.p_satuan).trigger('change')
+				// $("#satuan_terbesar").val()
+				// $("#p_satuan_terbesar").val()
+				// $("#satuan_tengah").val()
+				// $("#p_satuan_tengah").val()
+				// $("#satuan_terkecil").val()
+				// $("#p_satuan_terkecil").val()
+				$(".vlist-barang").html(data.html)
+			}
+		})
+	}
+
+	function simpanBarang()
+	{
+		$.ajax({
+			url: '<?php echo base_url('Master/simpanBarang')?>',
+			type: "POST",
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+			}
+		})
+	}
 </script>

@@ -70,6 +70,105 @@ class Master extends CI_Controller
 		$this->load->view('footer');
 	}
 
+	function loadDataBarang()
+	{
+		$data = array();
+		$query = $this->m_master->query("SELECT*FROM m_barang_header ORDER BY nm_barang")->result();
+			$i = 0;
+			foreach ($query as $r) {
+				$i++;
+				$row = array();
+				// $row[] = '<div class="text-center"><a href="javascript:void(0)" onclick="tampil_edit('."'".$r->id_supp."'".','."'detail'".')">'.$i."<a></div>";
+				$row[] = '<div class="text-center">'.$i.'</div>';
+				$row[] = $r->kode_header;
+				$row[] = $r->nm_barang;
+				$row[] = '<div class="text-center">
+					<button type="button" class="btn btn-info btn-sm" onclick="viewBarang('."'".$r->id_mbh."'".')"><i class="fas fa-search"></i></button>
+				</div>';
+				// $cekProduk = $this->db->query("SELECT * FROM m_produk WHERE no_customer='$idPelanggan'")->num_rows();
+				// if (in_array($this->session->userdata('level'), ['Admin','User']))
+				// {
+				// 	$btnEdit = '<button type="button" class="btn btn-warning btn-sm" onclick="tampil_edit('."'".$r->id_supp."'".','."'edit'".')"><i class="fas fa-pen"></i></button>';
+				// 	$btnHapus = '<button type="button" class="btn btn-danger btn-sm" onclick="deleteData('."'".$r->id_supp."'".')"><i class="fa fa-trash-alt"></i></i></button>';
+				// }else{
+				// 	$btnEdit = '';
+				// 	$btnHapus = '';
+				// }
+				// $row[] = $btnEdit.' '.$btnHapus ;
+				$data[] = $row;
+			}
+		$output = array(
+			"data" => $data,
+		);
+		echo json_encode($output);
+	}
+
+	function viewBarang()
+	{
+		$id_mbh = $_POST["id_mbh"];
+		$html = '';
+		$html .='<table class="table table-bordered table-striped" style="margin-top:20px">';
+			$html .='<tr>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KODE BARANG</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">NAMA BARANG</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">JENIS/TIPE</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MATERIAL</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SIZE</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MERK</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="2">SATUAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">AKSI</th>
+			</tr>
+			<tr>
+				<td style="padding:0;border:0" colspan="9"></td>
+			</tr>';
+			$header = $this->db->query("SELECT*FROM m_barang_header WHERE id_mbh='$id_mbh'")->row();
+			$detail = $this->db->query("SELECT h.nm_barang,d.* FROM m_barang_detail d
+			INNER JOIN m_barang_header h ON d.id_mbh=h.id_mbh
+			WHERE h.id_mbh='$id_mbh'
+			ORDER BY d.kode_barang,h.nm_barang,d.jenis_tipe,d.material,d.size,d.merk,d.p_satuan");
+			$i = 0;
+			foreach($detail->result() as $r){
+				$i++;
+				// SATUAN
+				if($r->p_satuan == 1){
+					$htmlSat = '<td style="padding:6px">TERKECIL</td>
+					<td style="padding:6px">'.round($r->qty3,2).' '.$r->satuan3.'</td>';
+				}
+				if($r->p_satuan == 2){
+					$htmlSat = '<td style="padding:6px">TERBESAR<br>TERKECIL</td>
+					<td style="padding:6px">'.round($r->qty1,2).' '.$r->satuan1.'<br>'.round($r->qty3,2).' '.$r->satuan3.'</td>';
+				}
+				if($r->p_satuan == 3){
+					$htmlSat = '<td style="padding:6px">TERBESAR<br>TENGAH<br>TERKECIL</td>
+					<td style="padding:6px">'.round($r->qty1,2).' '.$r->satuan1.'<br>'.round($r->qty2,2).' '.$r->satuan2.'<br>'.round($r->qty3,2).' '.$r->satuan3.'</td>';
+				}
+				$html .= '<tr>
+					<td style="padding:6px">'.$r->kode_barang.'</td>
+					<td style="padding:6px">'.$r->nm_barang.'</td>
+					<td style="padding:6px">'.$r->jenis_tipe.'</td>
+					<td style="padding:6px">'.$r->material.'</td>
+					<td style="padding:6px">'.$r->size.'</td>
+					<td style="padding:6px">'.$r->merk.'</td>
+					'.$htmlSat.'
+					<td style="padding:6px;text-align:center">
+						<button type="button" class="btn btn-sm" onclick=""><i class="fas fa-edit"></i></button>
+						<button type="button" class="btn btn-sm" onclick=""><i class="fas fa-times-circle" style="color:#f00"></i></button>
+					</td>
+				</tr>';
+				if($detail->num_rows() != $i){
+					$html .= '<tr>
+						<td style="padding:2px;border:0" colspan="9"></td>
+					</tr>';
+				}
+			}
+		$html .= '</table>';
+
+		echo json_encode([
+			'header' => $header,
+			'html' => $html,
+		]);
+	}
+
 	function cekNamaBarang()
 	{
 		$n_barang = $_POST["n_barang"];
@@ -77,8 +176,8 @@ class Master extends CI_Controller
 		$cekBarang = $this->db->query("SELECT*FROM m_barang_header WHERE nm_barang='$cleanTxt'");
 		if($n_barang == '' || $cleanTxt == ''){
 			$data = false; $msg = 'NAMA BARANG BARU TIDAK BOLEH KOSONG!';
-		}else if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
-			$data = false; $msg = 'NAMA BARANG HANYA BOLEH HURUF ATAU ANGKA!';
+		}else if(!preg_match("/^[A-Z ]*$/", $cleanTxt)){
+			$data = false; $msg = 'NAMA BARANG HANYA BOLEH HURUF!';
 		}else if($cekBarang->num_rows() != 0){
 			$data = false; $msg = 'NAMA BARANG SUDAH ADA!';
 		}else{
@@ -103,14 +202,14 @@ class Master extends CI_Controller
 		$html = '';
 		if($cekJenisTipe->num_rows() != 0){
 			$data = true;
-			$html .='<option value="" id_mbh="">PILIH</option>';
+			$html .='<option value="">PILIH</option>';
 			foreach($cekJenisTipe->result() as $r){
-				$html .='<option value="'.$r->jenis_tipe.'" id_mbh="'.$id_mbh.'">'.$r->jenis_tipe.'</option>';
+				$html .='<option value="'.$r->jenis_tipe.'">'.$r->jenis_tipe.'</option>';
 			}
-			$html .='<option value="+" id_mbh="'.$id_mbh.'">+</option>';
+			$html .='<option value="+">+</option>';
 		}else{
 			$data = false;
-			$html .= '<option value="">PILIH</option>';
+			$html .= '<option value="">PILIH</option><option value="+">+</option>';
 		}
 
 		echo json_encode([
@@ -163,7 +262,7 @@ class Master extends CI_Controller
 			$html .='<option value="+">+</option>';
 		}else{
 			$data = false;
-			$html .= '<option value="">PILIH</option>';
+			$html .= '<option value="">PILIH</option><option value="+">+</option>';
 		}
 
 		echo json_encode([
@@ -218,7 +317,7 @@ class Master extends CI_Controller
 			$html .='<option value="+">+</option>';
 		}else{
 			$data = false;
-			$html .= '<option value="">PILIH</option>';
+			$html .= '<option value="">PILIH</option><option value="+">+</option>';
 		}
 
 		echo json_encode([
@@ -275,7 +374,7 @@ class Master extends CI_Controller
 			$html .='<option value="+">+</option>';
 		}else{
 			$data = false;
-			$html .= '<option value="">PILIH</option>';
+			$html .= '<option value="">PILIH</option><option value="+">+</option>';
 		}
 
 		echo json_encode([
@@ -364,18 +463,18 @@ class Master extends CI_Controller
 			$arr = explode(' ', $n_barang);
 			$kode = '';
 			foreach($arr as $kata) { $kode .= substr($kata, 0, 1); }
-			$cek = $this->db->query("SELECT*FROM m_barang_header WHERE kode_barang LIKE '$kode-%'");
+			$cek = $this->db->query("SELECT*FROM m_barang_header WHERE kode_header LIKE '$kode-%'");
 			if($cek->num_rows() != 0){
-				$lastKode = $this->db->query("SELECT*FROM m_barang_header WHERE kode_barang LIKE '$kode-%' ORDER BY kode_barang DESC LIMIT 1")->row();
-				$plus = str_pad(preg_replace("/[^0-9]/", "", $lastKode->kode_barang)+1, 2, "0", STR_PAD_LEFT);
-				$kode_barang .= preg_replace("/[^A-Z]/", "", $cek->row()->kode_barang).'-'.$plus;
+				$lastKode = $this->db->query("SELECT*FROM m_barang_header WHERE kode_header LIKE '$kode-%' ORDER BY kode_header DESC LIMIT 1")->row();
+				$plus = str_pad(preg_replace("/[^0-9]/", "", $lastKode->kode_header)+1, 2, "0", STR_PAD_LEFT);
+				$kode_barang .= preg_replace("/[^A-Z]/", "", $cek->row()->kode_header).'-'.$plus;
 			}else{
 				$kode_barang .= $kode.'-01';
 			}
 		}else{
 			$nm = $this->db->query("SELECT*FROM m_barang_header WHERE id_mbh='$i_barang'")->row();
 			$nm_barang = $nm->nm_barang;
-			$kode_barang .= $nm->kode_barang;
+			$kode_barang .= $nm->kode_header;
 		}
 		$kode_header = $kode_barang;
 
@@ -390,31 +489,31 @@ class Master extends CI_Controller
 		$jt = explode(' ', $jenis_tipe);
 		$txtJT = '';
 		foreach($jt as $kataJT) { $txtJT .= substr($kataJT, 0, 1); }
-		($jenis_tipe == '') ? $kode_barang .= '' : $kode_barang .= '/'.$txtJT;
+		($jenis_tipe == '' || $jenis_tipe == '-') ? $kode_barang .= '' : $kode_barang .= '/'.$txtJT;
 		// KODE MATERIAL
 		$m = explode(' ', $material);
 		$txtM = '';
 		foreach($m as $kataM) { $txtM .= substr($kataM, 0, 1); }
-		($material == '') ? $kode_barang .= '' : $kode_barang .= '/'.$txtM;
+		($material == '' || $material == '-') ? $kode_barang .= '' : $kode_barang .= '/'.$txtM;
 		// KODE MERK
 		$mr = explode(' ', $merk);
 		$txtMr = '';
 		foreach($mr as $kataMr) { $txtMr .= substr($kataMr, 0, 1); }
-		($merk == '') ? $kode_barang .= '' : $kode_barang .= '/'.$txtMr;
+		($merk == '' || $merk == '-') ? $kode_barang .= '' : $kode_barang .= '/'.$txtMr;
 
 		// KODE URUT
-		$cekKode = $this->db->query("SELECT*FROM m_barang_detail WHERE kode_detail LIKE '$kode_barang-%'");
-		$lastDtl = $this->db->query("SELECT*FROM m_barang_detail WHERE kode_detail LIKE '$kode_barang-%' ORDER BY kode_detail DESC LIMIT 1")->row();
+		$cekKode = $this->db->query("SELECT*FROM m_barang_detail WHERE kode_barang LIKE '$kode_barang-%'");
+		$lastDtl = $this->db->query("SELECT*FROM m_barang_detail WHERE kode_barang LIKE '$kode_barang-%' ORDER BY kode_barang DESC LIMIT 1");
 		if($this->cart->total_items() != 0){
 			foreach($this->cart->contents() as $r){
 				if($kode_barang == $r['options']['kode_barang']){
 					$kd = $r['options']['no_urut']+1;
 				}else{
-					($cekKode->num_rows() != 0) ? $kd = str_pad(substr($lastDtl->kode_detail, -3), 3, "0", STR_PAD_LEFT) : $kd = 0;
+					($cekKode->num_rows() != 0) ? $kd = str_pad(substr($lastDtl->row()->kode_barang, -3), 3, "0", STR_PAD_LEFT) : $kd = 0;
 				}
 			}
 		}else{
-			($cekKode->num_rows() != 0) ? $kd = str_pad(substr($lastDtl->kode_detail, -3), 3, "0", STR_PAD_LEFT) : $kd = 0;
+			($cekKode->num_rows() != 0) ? $kd = str_pad(substr($lastDtl->row()->kode_barang, -3), 3, "0", STR_PAD_LEFT) : $kd = 0;
 		}
 		if($cekKode->num_rows() != 0){
 			$pdtl = str_pad($kd+1, 3, "0", STR_PAD_LEFT);
@@ -423,6 +522,29 @@ class Master extends CI_Controller
 		}else{
 			$kode_urut = str_pad($kd+1, 3, "0", STR_PAD_LEFT);
 			$no_urut = $kd;
+		}
+
+		// CEK DATA BARANG SUDAH DI INPUT
+		if($i_barang == '+'){
+			$whIdMbh = "AND h.nm_barang='$nm_barang'";
+		}else{
+			$whIdMbh = "AND h.id_mbh='$i_barang'";
+		}
+		// SATUAN
+		if($pilih_satuan == 1){
+			$whSatuan = "AND d.qty3='$satuan_terkecil' AND d.satuan3='$p_satuan_terkecil'";
+		}
+		if($pilih_satuan == 2){
+			$whSatuan = "AND d.qty1='$satuan_terbesar' AND d.satuan1='$p_satuan_terbesar' AND d.qty3='$satuan_terkecil' AND d.satuan3='$p_satuan_terkecil'";
+		}
+		if($pilih_satuan == 3){
+			$whSatuan = "AND d.qty1='$satuan_terbesar' AND d.satuan1='$p_satuan_terbesar' AND d.qty2='$satuan_tengah' AND d.satuan2='$p_satuan_tengah' AND d.qty3='$satuan_terkecil' AND d.satuan3='$p_satuan_terkecil'";
+		}
+		$cekData = $this->db->query("SELECT h.nm_barang,d.* FROM m_barang_detail d
+		INNER JOIN m_barang_header h ON d.id_mbh=h.id_mbh
+		WHERE d.jenis_tipe='$jenis_tipe' AND d.material='$material' AND d.size='$size' AND d.merk='$merk' $whIdMbh $whSatuan");
+		if($cekData->num_rows() != 0){
+			echo json_encode(['data' => false, 'isi' => 'DATA SUDAH ADA!']); return;
 		}
 
 		$data = array(
@@ -507,6 +629,12 @@ class Master extends CI_Controller
 		$this->cart->update($data);
 	}
 
+	function simpanBarang()
+	{
+		$result = $this->m_master->simpanBarang();
+		echo json_encode($result);
+	}
+
 	function cartBarang()
 	{
 		$html = '';
@@ -516,17 +644,17 @@ class Master extends CI_Controller
 		if($this->cart->total_items() != 0){
 			$html .='<table class="table table-bordered table-striped" style="margin-top:20px">';
 				$html .='<tr>
-					<th style="padding:6px;text-align:center">KODE BARANG</th>
-					<th style="padding:6px;text-align:center">NAMA BARANG</th>
-					<th style="padding:6px;text-align:center">JENIS/TIPE</th>
-					<th style="padding:6px;text-align:center">MATERIAL</th>
-					<th style="padding:6px;text-align:center">SIZE</th>
-					<th style="padding:6px;text-align:center">MERK</th>
-					<th style="padding:6px;text-align:center" colspan="2">SATUAN</th>
-					<th style="padding:6px;text-align:center">AKSI</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KODE BARANG</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">NAMA BARANG</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">JENIS/TIPE</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MATERIAL</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SIZE</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MERK</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="2">SATUAN</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">AKSI</th>
 				</tr>
 				<tr>
-					<td style="padding:2px;border:0" colspan="9"></td>
+					<td style="padding:0;border:0" colspan="9"></td>
 				</tr>';
 				$i = 0;
 				foreach($this->cart->contents() as $r){
@@ -557,13 +685,20 @@ class Master extends CI_Controller
 						<td style="padding:6px">'.$merk.'</td>
 						'.$htmlSat.'
 						<td style="padding:6px;text-align:center">
-							<button type="button" class="btn btn-xs btn-danger" onclick="hapusCart('."'".$r['rowid']."'".')">batal</button>
+							<button type="button" class="btn btn-sm" onclick="hapusCart('."'".$r['rowid']."'".')"><i class="fas fa-times-circle" style="color:#f00"></i></button>
 						</td>
-					</tr>
-					<tr>
-						<td style="padding:2px;border:0" colspan="9"></td>
 					</tr>';
+					if($this->cart->total_items() != $i){
+						$html .= '<tr>
+							<td style="padding:2px;border:0" colspan="9"></td>
+						</tr>';
+					}
 				}
+				$html .= '<tr>
+					<td style="padding:6px;text-align:right" colspan="9">
+						<button type="button" class="btn btn-sm btn-primary" style="font-weight:bold" onclick="simpanBarang()"><i class="fas fa-save"></i> SIMPAN</button>
+					</td>
+				</tr>';
 			$html .='</table>';
 		}
 		echo json_encode([
