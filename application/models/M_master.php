@@ -390,6 +390,20 @@ class M_master extends CI_Model{
 		];
 	}
 
+	function editBarang($data = '')
+	{
+		$id_mbh = $_POST["id_mbh"];
+		$id_mbd = $_POST["id_mbd"];
+		$status = $_POST["status"];
+
+		return [
+			'id_mbh' => $id_mbh,
+			'id_mbd' => $id_mbd,
+			'status' => $status,
+			'data' => $data,
+		];
+	}
+
     function m_setting($table,$status){
         $data = array(
             'nm_aplikasi'  => $this->input->post('nm_aplikasi'),

@@ -42,9 +42,8 @@
 					<table id="datatable" class="table table-bordered table-striped" width="100%">
 						<thead class="color-tabel">
 							<tr>
-								<th style="width:5%;text-align:center">#</th>
 								<th style="width:10%;text-align:center">KODE</th>
-								<th style="width:80%;text-align:center">NAMA BARANG</th>
+								<th style="width:85%;text-align:center">NAMA BARANG</th>
 								<th style="width:5%;text-align:center">AKSI</th>
 							</tr>
 						</thead>
@@ -62,25 +61,13 @@
 						<h3 class="card-title" style="font-weight:bold;font-size:18px">INPUT MASTER BARANG</h3>
 					</div>
 					<div class="card-body" style="padding:12px">
-						<div style="margin-bottom:6px">
-							<button type="button" class="btn btn-sm btn-info pull-right" onclick="tambahKembali('kembali')">
-								<i class="fas fa-arrow-left"></i>&nbsp;&nbsp;<b>Kembali</b>
-							</button>
+						<div style="margin-bottom:12px">
+							<div class="btn-tambah"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
 							<div class="col-md-2">NAMA BARANG <span style="color:#f00">*</span></div>
 							<div class="col-md-4">
 								<select id="i_barang" class="form-control select2" onchange="namaBarang('lama')">
-									<?php
-										$query = $this->db->query("SELECT*FROM m_barang_header ORDER BY nm_barang");
-										$html = '';
-										$html .='<option value="">PILIH</option>';
-										foreach($query->result() as $r){
-											$html .='<option value="'.$r->id_mbh.'">'.$r->nm_barang.'</option>';
-										}
-										$html .='<option value="+">+</option>';
-										echo $html
-									?>
 								</select>
 							</div>
 							<div class="col-md-4">
@@ -222,6 +209,8 @@
 					</div>
 				</div>
 			</div>
+			<input type="hidden" id="id_mbh" value="">
+			<input type="hidden" id="id_mbd" value="">
 			<input type="hidden" id="id_cart" value="0">
 			<input type="hidden" id="destroy">
 		</div>
@@ -235,6 +224,7 @@
 		$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
 		$(".select2").select2()
 		load_data()
+		editBarang('')
 	});
 
 	function reloadTable() {
@@ -242,14 +232,14 @@
 		tabel.ajax.reload(null, false);
 	}
 
-	function kosong() 
-	{			
-		status = 'insert';
-	}
-
 	function tambahKembali(opsi)
 	{
+		status = 'insert';
 		$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
+		$("#id_mbh").val('')
+		$("#id_mbd").val('')
+		$("#id_cart").val(0)
+		$(".btn-tambah").html(`<button type="button" class="btn btn-sm btn-info pull-right" onclick="tambahKembali('kembali')"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;<b>Kembali</b></button>`)
 		$(".list-barang").html('')
 		$(".vlist-barang").html('')
 		$("#i_barang").val('').trigger('change').prop('disabled', false)
@@ -668,6 +658,7 @@
 	function pilihSatuan()
 	{
 		let pilih_satuan = $("#pilih_satuan").val()
+		let id_mbd = $("#id_mbd").val()
 		$("#simpan_barang").html('')
 		$("#satuan_terbesar").val('')
 		$("#p_satuan_terbesar").val('').trigger('change')
@@ -693,7 +684,12 @@
 			$(".row-satuan-terkecil").attr('style', 'display:none')
 		}
 		if(pilih_satuan != ''){
-			$("#simpan_barang").html(`<button type="button" class="btn btn-sm btn-success" style="font-weight:bold" onclick="addBarang()"><i class="fas fa-plus"></i> TAMBAH</button>`)
+			if(status == 'insert'){
+				$("#simpan_barang").html(`<button type="button" class="btn btn-sm btn-success" style="font-weight:bold" onclick="addBarang()"><i class="fas fa-plus"></i> TAMBAH</button>`)
+			}
+			if(status == 'update'){
+				$("#simpan_barang").html(`<button type="button" class="btn btn-sm btn-warning" style="font-weight:bold" onclick="addBarang()"><i class="fas fa-plus"></i> EDIT</button>`)
+			}
 		}
 	}
 
@@ -708,6 +704,8 @@
 
 	function addBarang()
 	{
+		let id_mbh = $("#id_mbh").val()
+		let id_mbd = $("#id_mbd").val()
 		let id_cart = parseInt($("#id_cart").val()) + 1;
 		$("#id_cart").val(id_cart)
 		let i_barang = $("#i_barang").val()
@@ -731,12 +729,12 @@
 			url: '<?php echo base_url('Master/addBarang')?>',
 			type: "POST",
 			data : ({
-				id_cart, i_barang, n_barang, i_jenis_tipe, n_jenis_tipe, i_material, n_material, i_size, n_size, i_merk, n_merk, pilih_satuan, satuan_terbesar, p_satuan_terbesar, satuan_tengah, p_satuan_tengah, satuan_terkecil, p_satuan_terkecil
+				id_mbh, id_mbd, id_cart, i_barang, n_barang, i_jenis_tipe, n_jenis_tipe, i_material, n_material, i_size, n_size, i_merk, n_merk, pilih_satuan, satuan_terbesar, p_satuan_terbesar, satuan_tengah, p_satuan_tengah, satuan_terkecil, p_satuan_terkecil, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
 				console.log(data)
-				if(data.data){
+				if(data.data && status == 'insert'){
 					cartBarang()
 				}
 			}
@@ -770,28 +768,73 @@
 
 	function viewBarang(id_mbh)
 	{
+		$("#id_mbh").val(id_mbh)
+		let id_mbd = $("#id_mbd").val()
 		$(".vlist-barang").html('')
-		console.log(id_mbh)
 		$.ajax({
 			url: '<?php echo base_url('Master/viewBarang')?>',
 			type: "POST",
-			data: ({ id_mbh }),
+			data: ({ id_mbh, id_mbd }),
 			success: function(res){
 				data = JSON.parse(res)
 				console.log(data)
-				$("#i_barang").val(id_mbh).trigger('change').prop('disabled', true)
-				// $("#i_jenis_tipe").val(data.id_mbh).trigger('change')
-				// $("#i_material").val(data.id_mbh).trigger('change')
-				// $("#i_size").val(data.id_mbh).trigger('change')
-				// $("#i_merk").val(data.id_mbh).trigger('change')
-				// $("#pilih_satuan").val(data.p_satuan).trigger('change')
-				// $("#satuan_terbesar").val()
-				// $("#p_satuan_terbesar").val()
-				// $("#satuan_tengah").val()
-				// $("#p_satuan_tengah").val()
-				// $("#satuan_terkecil").val()
-				// $("#p_satuan_terkecil").val()
+				if(id_mbd == ''){
+					$("#i_barang").val(id_mbh).trigger('change').prop('disabled', true)
+					$(".btn-tambah").html(`<button type="button" class="btn btn-sm btn-info pull-right" onclick="tambahKembali('kembali')"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;<b>Kembali</b></button>
+					<button type="button" class="btn btn-sm btn-success pull-right" onclick="editBarang('')"><i class="fas fa-plus"></i>&nbsp;&nbsp;<b>Tambah</b></button>`)
+				}
 				$(".vlist-barang").html(data.html)
+			}
+		})
+	}
+
+	function editBarang(id_mbd)
+	{
+		let id_mbh = $("#id_mbh").val()
+		$("#id_mbd").val(id_mbd)
+		$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
+		$(".list-barang").html('')
+		$("#simpan_barang").html('')
+		$.ajax({
+			url: '<?php echo base_url('Master/editBarang')?>',
+			type: "POST",
+			data: ({ id_mbh, id_mbd, status }),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				if(id_mbd != ''){
+					$("#i_jenis_tipe").html(data.jenis_tipe).prop('disabled', false)
+					$("#i_material").html(data.material).prop('disabled', false)
+					$("#i_size").html(data.size).prop('disabled', false)
+					$("#i_merk").html(data.merk).prop('disabled', false)
+					$("#pilih_satuan").val(data.detail.p_satuan).trigger('change').prop('disabled', false)
+					$("#satuan_terbesar").val((data.detail.qty1 == null) ? 0 : parseInt(data.detail.qty1))
+					$("#p_satuan_terbesar").val(data.detail.satuan1).trigger('change')
+					$("#satuan_tengah").val((data.detail.qty2 == null) ? 0 : parseInt(data.detail.qty2))
+					$("#p_satuan_tengah").val(data.detail.satuan2).trigger('change')
+					$("#satuan_terkecil").val((data.detail.qty3 == null) ? 0 : parseInt(data.detail.qty3))
+					$("#p_satuan_terkecil").val(data.detail.satuan3).trigger('change')
+					$("#simpan_barang").html(`<button type="button" class="btn btn-sm btn-warning" style="font-weight:bold" onclick="addBarang()"><i class="fas fa-plus"></i> EDIT</button>`)
+					status = 'update'
+				}else{
+					$("#i_barang").html(data.header).prop('disabled', false)
+					status = 'insert'
+				}
+				viewBarang(id_mbh)
+			}
+		})
+	}
+
+	function btnEditBarang(id_mbd)
+	{
+		let id_mbh = $("#id_mbh").val()
+		$.ajax({
+			url: '<?php echo base_url('Master/btnEditBarang')?>',
+			type: "POST",
+			data: ({ id_mbh, id_mbd }),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
 			}
 		})
 	}
