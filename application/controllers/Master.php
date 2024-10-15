@@ -105,7 +105,7 @@ class Master extends CI_Controller
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MATERIAL</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SIZE</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MERK</th>
-					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="2">SATUAN</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">SATUAN</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">AKSI</th>
 				</tr>
 				<tr>
@@ -123,22 +123,25 @@ class Master extends CI_Controller
 					// SATUAN
 					if($r->p_satuan == 1){
 						$htmlSat = '<td style="padding:6px'.$style.'">TERKECIL</td>
-						<td style="padding:6px'.$style.'">'.round($r->qty3,2).' '.$r->satuan3.'</td>';
+						<td style="padding:6px;text-align:right'.$style.'">'.number_format($r->qty3,0,',','.').'</td>
+						<td style="padding:6px'.$style.'">'.$r->satuan3.'</td>';
 					}
 					if($r->p_satuan == 2){
 						$htmlSat = '<td style="padding:6px'.$style.'">TERBESAR<br>TERKECIL</td>
-						<td style="padding:6px'.$style.'">'.round($r->qty1,2).' '.$r->satuan1.'<br>'.round($r->qty3,2).' '.$r->satuan3.'</td>';
+						<td style="padding:6px;text-align:right'.$style.'">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+						<td style="padding:6px'.$style.'">'.$r->satuan1.'<br>'.$r->satuan3.'</td>';
 					}
 					if($r->p_satuan == 3){
 						$htmlSat = '<td style="padding:6px'.$style.'">TERBESAR<br>TENGAH<br>TERKECIL</td>
-						<td style="padding:6px'.$style.'">'.round($r->qty1,2).' '.$r->satuan1.'<br>'.round($r->qty2,2).' '.$r->satuan2.'<br>'.round($r->qty3,2).' '.$r->satuan3.'</td>';
+						<td style="padding:6px;text-align:right'.$style.'">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty2,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+						<td style="padding:6px'.$style.'">'.$r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'</td>';
 					}
 					// AKSI
 					if($r->id_mbd == $id_mbd){
 						$aksi = '-';
 					}else{
 						$aksi = '<button type="button" class="btn btn-sm" onclick="editBarang('."'".$r->id_mbd."'".')"><i class="fas fa-edit"></i></button>
-						<button type="button" class="btn btn-sm" onclick=""><i class="fas fa-times-circle" style="color:#f00"></i></button>';
+						<button type="button" class="btn btn-sm" onclick="hapusBarang('."'".$r->id_mbd."'".')"><i class="fas fa-times-circle" style="color:#f00"></i></button>';
 					}
 					$html .= '<tr>
 						<td style="padding:6px'.$style.'">'.$r->kode_barang.'</td>
@@ -305,10 +308,11 @@ class Master extends CI_Controller
 
 	function loadMaterial()
 	{
+		$status = $_POST["status"];
 		$cari = $_POST["cari"];
 		$id_mbh = $_POST["barang"];
 		$jenis_tipe = $_POST["jenis_tipe"];
-		if($cari == 'material' || $id_mbh == '+' || $jenis_tipe == '-'){
+		if($cari == 'material' || $id_mbh == '+' || $jenis_tipe == '-' || $status == 'update'){
 			$cekMaterial = $this->db->query("SELECT*FROM m_barang_detail GROUP BY material");
 		}else{
 			$cekMaterial = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' GROUP BY material");
@@ -359,11 +363,12 @@ class Master extends CI_Controller
 
 	function loadSize()
 	{
+		$status = $_POST["status"];
 		$cari = $_POST["cari"];
 		$id_mbh = $_POST["barang"];
 		$jenis_tipe = $_POST["jenis_tipe"];
 		$material = $_POST["material"];
-		if($cari == 'size' || $id_mbh == '+' || $jenis_tipe == '+' || $material == '-'){
+		if($cari == 'size' || $id_mbh == '+' || $jenis_tipe == '+' || $material == '-' || $status == 'update'){
 			$cekSize = $this->db->query("SELECT*FROM m_barang_detail s GROUP BY s.size");
 		}else{
 			$cekSize = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' AND material='$material' GROUP BY s.size");
@@ -415,12 +420,13 @@ class Master extends CI_Controller
 
 	function loadMerk()
 	{
+		$status = $_POST["status"];
 		$cari = $_POST["cari"];
 		$id_mbh = $_POST["barang"];
 		$jenis_tipe = $_POST["jenis_tipe"];
 		$material = $_POST["material"];
 		$size = $_POST["size"];
-		if($cari == 'merk' || $id_mbh == '+' || $jenis_tipe == '+' || $material == '+' || $size == '-'){
+		if($cari == 'merk' || $id_mbh == '+' || $jenis_tipe == '+' || $material == '+' || $size == '-' || $status == 'update'){
 			$cekMerk = $this->db->query("SELECT*FROM m_barang_detail s GROUP BY merk");
 		}else{
 			$cekMerk = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' AND material='$material' AND s.size='$size' GROUP BY merk");
@@ -473,6 +479,7 @@ class Master extends CI_Controller
 
 	function addBarang()
 	{
+		$id_mbd = $_POST["id_mbd"];
 		$i_barang = $_POST["i_barang"];
 		$n_barang = $_POST["n_barang"];
 		$i_jenis_tipe = $_POST["i_jenis_tipe"];
@@ -539,7 +546,6 @@ class Master extends CI_Controller
 			$kode_barang .= $nm->kode_header;
 		}
 		$kode_header = $kode_barang;
-
 		// DETAIL
 		($i_jenis_tipe == '+') ? $jenis_tipe = $n_jenis_tipe : $jenis_tipe = $i_jenis_tipe;
 		($i_material == '+') ? $material = $n_material : $material = $i_material;
@@ -593,20 +599,33 @@ class Master extends CI_Controller
 			$whIdMbh = "AND h.id_mbh='$i_barang'";
 		}
 		// SATUAN
-		if($pilih_satuan == 1){
-			$whSatuan = "AND d.qty3='$satuan_terkecil' AND d.satuan3='$p_satuan_terkecil'";
-		}
-		if($pilih_satuan == 2){
-			$whSatuan = "AND d.qty1='$satuan_terbesar' AND d.satuan1='$p_satuan_terbesar' AND d.qty3='$satuan_terkecil' AND d.satuan3='$p_satuan_terkecil'";
-		}
-		if($pilih_satuan == 3){
-			$whSatuan = "AND d.qty1='$satuan_terbesar' AND d.satuan1='$p_satuan_terbesar' AND d.qty2='$satuan_tengah' AND d.satuan2='$p_satuan_tengah' AND d.qty3='$satuan_terkecil' AND d.satuan3='$p_satuan_terkecil'";
+		if($status == 'update'){
+			$c = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbd='$id_mbd'")->row();
+			if($c->p_satuan == 1 && ($c->qty3 != $satuan_terkecil || $c->satuan3 != $p_satuan_terkecil)){
+				$whSatuan = "AND d.p_satuan='$pilih_satuan' AND d.qty3='$satuan_terkecil' AND d.satuan3='$p_satuan_terkecil'";
+			}else if($c->p_satuan == 2 && ($c->qty1 != $satuan_terbesar || $c->satuan1 != $p_satuan_terbesar || $c->qty3 != $satuan_terkecil || $c->satuan3 != $p_satuan_terkecil)){
+				$whSatuan = "AND d.p_satuan='$pilih_satuan' AND d.qty1='$satuan_terbesar' AND d.satuan1='$p_satuan_terbesar' AND d.qty3='$satuan_terkecil' AND d.satuan3='$p_satuan_terkecil'";
+			}else if($c->p_satuan == 3 && ($c->qty1 != $satuan_terbesar || $c->satuan1 != $p_satuan_terbesar || $c->qty2 != $satuan_tengah || $c->satuan2 != $p_satuan_tengah || $c->qty3 != $satuan_terkecil || $c->satuan3 != $p_satuan_terkecil)){
+				$whSatuan = "AND d.p_satuan='$pilih_satuan' AND d.qty1='$satuan_terbesar' AND d.satuan1='$p_satuan_terbesar' AND d.qty2='$satuan_tengah' AND d.satuan2='$p_satuan_tengah' AND d.qty3='$satuan_terkecil' AND d.satuan3='$p_satuan_terkecil'";
+			}else{
+				$whSatuan = "";
+			}
+		}else{
+			$whSatuan = "AND d.p_satuan='$pilih_satuan'";
 		}
 		$cekData = $this->db->query("SELECT h.nm_barang,d.* FROM m_barang_detail d
 		INNER JOIN m_barang_header h ON d.id_mbh=h.id_mbh
 		WHERE d.jenis_tipe='$jenis_tipe' AND d.material='$material' AND d.size='$size' AND d.merk='$merk' $whIdMbh $whSatuan");
 		if($cekData->num_rows() != 0){
 			echo json_encode(['data' => false, 'isi' => 'DATA SUDAH ADA!']); return;
+		}
+
+		// GET KODE BARANG UPDATE
+		if($status == 'insert'){
+			$detail = '';
+		}else{
+			$ckd = explode('-', $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbd='$id_mbd'")->row()->kode_barang);
+			$detail = $ckd[0].'-'.$ckd[1];
 		}
 
 		$data = array(
@@ -617,8 +636,10 @@ class Master extends CI_Controller
 			'options' => array(
 				'no_urut' => $no_urut,
 				'id_mbh' => $i_barang,
+				'id_mbd' => $id_mbd,
 				'nm_barang' => $nm_barang,
 				'kode_header' => $kode_header,
+				'detail' => $detail,
 				'kode_barang' => $kode_barang,
 				'kode_urut' => $kode_urut,
 				'i_jenis_tipe' => $i_jenis_tipe,
@@ -653,20 +674,7 @@ class Master extends CI_Controller
 						echo json_encode(array('data' => false, 'isi' => 'KODE BARANG SUDAH TERPAKAI!')); return;
 					}
 					// CEK INPUTAN
-					if(
-						$nm_barang == $r['options']['nm_barang'] &&
-						$jenis_tipe == $r['options']['jenis_tipe'] &&
-						$material == $r['options']['material'] &&
-						$size == $r['options']['size'] &&
-						$merk == $r['options']['merk'] &&
-						$pilih_satuan == $r['options']['pilih_satuan'] &&
-						$satuan_terbesar == $r['options']['satuan_terbesar'] &&
-						$p_satuan_terbesar == $r['options']['p_satuan_terbesar'] &&
-						$satuan_tengah == $r['options']['satuan_tengah'] &&
-						$p_satuan_tengah == $r['options']['p_satuan_tengah'] &&
-						$satuan_terkecil == $r['options']['satuan_terkecil'] &&
-						$p_satuan_terkecil == $r['options']['p_satuan_terkecil']
-					){
+					if($nm_barang == $r['options']['nm_barang'] && $jenis_tipe == $r['options']['jenis_tipe'] && $material == $r['options']['material'] && $size == $r['options']['size'] && $merk == $r['options']['merk'] && $pilih_satuan == $r['options']['pilih_satuan']){
 						echo json_encode(array('data' => false, 'isi' => 'DATA SUDAH MASUK DI LIST!')); return;
 					}
 				}
@@ -702,9 +710,9 @@ class Master extends CI_Controller
 		echo json_encode($result);
 	}
 
-	function btnEditBarang()
+	function hapusBarang()
 	{
-		$result = $this->m_master->btnEditBarang();
+		$result = $this->m_master->hapusBarang();
 		echo json_encode($result);
 	}
 
@@ -1041,12 +1049,10 @@ class Master extends CI_Controller
 
 	function hapus()
 	{
-		$jenis   = $_POST['jenis'];
-		$field   = $_POST['field'];
+		$jenis = $_POST['jenis'];
+		$field = $_POST['field'];
 		$id = $_POST['id'];
-
 		$result = $this->m_master->query("DELETE FROM $jenis WHERE  $field = '$id'");
-
 		echo json_encode($result);
 	}
 

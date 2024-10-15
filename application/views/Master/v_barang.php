@@ -24,7 +24,7 @@
 	</style>
 
 	<section class="content">
-		<div class="card">
+		<div class="card card-barang">
 			<div class="card-header" style="font-family:Cambria">
 				<h3 class="card-title" style="color:#4e73df;"><b><?= $judul ?></b></h3>
 				<div class="card-tools">
@@ -54,7 +54,7 @@
 		</div>
 
 		<!-- INPUT DATA -->
-		<div class="row">
+		<div class="row row-input-data" style="display:none">
 			<div class="col-md-12">
 				<div class="card card-primary card-outline">
 					<div class="card-header" style="padding:12px">
@@ -72,7 +72,7 @@
 							</div>
 							<div class="col-md-4">
 								<div id="p_barang" style="display:none">
-									<input type="text" id="n_barang" class="form-control" style="font-weight:bold" autocomplete="off" onchange="namaBarang('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="NAMA BARANG BARU">
+									<input type="text" id="n_barang" class="form-control" style="font-weight:bold" autocomplete="off" onchange="namaBarang('baru')" onkeyup="clearBg('barang')" oninput="this.value=this.value.toUpperCase()" placeholder="NAMA BARANG BARU">
 									<div id="k_barang"></div>
 								</div>
 							</div>
@@ -87,7 +87,7 @@
 							</div>
 							<div class="col-md-4">
 								<div id="p_jenis_tipe" style="display:none">
-									<input type="text" id="n_jenis_tipe" class="form-control" style="font-weight:bold" autocomplete="off" onchange="jenisTipe('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
+									<input type="text" id="n_jenis_tipe" class="form-control" style="font-weight:bold" autocomplete="off" onchange="jenisTipe('baru')" onkeyup="clearBg('jenis_tipe')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
 									<div id="k_jenis_tipe"></div>
 								</div>
 							</div>
@@ -102,7 +102,7 @@
 							</div>
 							<div class="col-md-4">
 								<div id="p_material" style="display:none">
-									<input type="text" id="n_material" class="form-control" style="font-weight:bold" autocomplete="off" onchange="material('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
+									<input type="text" id="n_material" class="form-control" style="font-weight:bold" autocomplete="off" onchange="material('baru')" onkeyup="clearBg('material')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
 									<div id="k_material"></div>
 								</div>
 							</div>
@@ -117,7 +117,7 @@
 							</div>
 							<div class="col-md-4">
 								<div id="p_size" style="display:none">
-									<input type="text" id="n_size" class="form-control" style="font-weight:bold" autocomplete="off" onchange="ukuran('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
+									<input type="text" id="n_size" class="form-control" style="font-weight:bold" autocomplete="off" onchange="ukuran('baru')" onkeyup="clearBg('size')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
 									<div id="k_size"></div>
 								</div>
 							</div>
@@ -132,7 +132,7 @@
 							</div>
 							<div class="col-md-4">
 								<div id="p_merk" style="display:none">
-									<input type="text" id="n_merk" class="form-control" style="font-weight:bold" autocomplete="off" onchange="merk('baru')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
+									<input type="text" id="n_merk" class="form-control" style="font-weight:bold" autocomplete="off" onchange="merk('baru')" onkeyup="clearBg('merk')" oninput="this.value=this.value.toUpperCase()" placeholder="-">
 									<div id="k_merk"></div>
 								</div>
 							</div>
@@ -161,6 +161,7 @@
 									<option value="BOX">BOX</option>
 									<option value="PCS">PCS</option>
 									<option value="ROLL">ROLL</option>
+									<option value="KG">KG</option>
 								</select>
 							</div>
 							<div class="col-md-6"></div>
@@ -176,6 +177,7 @@
 									<option value="BOX">BOX</option>
 									<option value="PCS">PCS</option>
 									<option value="ROLL">ROLL</option>
+									<option value="LT">LT</option>
 								</select>
 							</div>
 							<div class="col-md-6"></div>
@@ -191,6 +193,7 @@
 									<option value="BOX">BOX</option>
 									<option value="PCS">PCS</option>
 									<option value="ROLL">ROLL</option>
+									<option value="KALENG">KALENG</option>
 								</select>
 							</div>
 							<div class="col-md-6"></div>
@@ -235,7 +238,6 @@
 	function tambahKembali(opsi)
 	{
 		status = 'insert';
-		$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
 		$("#id_mbh").val('')
 		$("#id_mbd").val('')
 		$("#id_cart").val(0)
@@ -243,8 +245,15 @@
 		$(".list-barang").html('')
 		$(".vlist-barang").html('')
 		$("#i_barang").val('').trigger('change').prop('disabled', false)
+		if(opsi == 'tambah'){
+			$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
+			$(".card-barang").hide()
+			$(".row-input-data").show()
+		}
 		if(opsi == 'kembali'){
-			load_data()
+			reloadTable()
+			$(".card-barang").show()
+			$(".row-input-data").hide()
 		}
 	}
 
@@ -275,7 +284,13 @@
 		$("#k_"+opsi).html('')
 		$("#pilih_satuan").val('').trigger('change').prop('disabled', true)
 	}
-		
+
+	function clearBg(opsi)
+	{
+		$("#n_"+opsi).removeClass('is-invalid').removeClass('is-valid')
+		$("#k_"+opsi).html('')
+	}
+
 	function namaBarang(opsi)
 	{
 		if(opsi == 'lama'){
@@ -294,7 +309,6 @@
 				data : ({ n_barang }),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					if(data.data){
 						$("#n_barang").removeClass('is-invalid').addClass('is-valid')
 						$("#k_barang").html('')
@@ -320,11 +334,10 @@
 				url: '<?php echo base_url('Master/loadJenisTipe')?>',
 				type: "POST",
 				data : ({
-					barang, cari: '',
+					barang, cari: '', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					$("#i_jenis_tipe").html(data.html).prop('disabled', (data.data) ? false : true)
 				}
 			})
@@ -341,7 +354,6 @@
 				}),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					$("#i_jenis_tipe").html(data.html).prop('disabled', false)
 				}
 			})
@@ -403,11 +415,10 @@
 				url: '<?php echo base_url('Master/loadMaterial')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, cari: ''
+					barang, jenis_tipe, cari: '', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					$("#i_material").html(data.html).prop('disabled', (data.data) ? false : true)
 				}
 			})
@@ -420,11 +431,10 @@
 				url: '<?php echo base_url('Master/loadMaterial')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, cari: 'material'
+					barang, jenis_tipe, cari: 'material', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					$("#i_material").html(data.html).prop('disabled', false)
 				}
 			})
@@ -487,11 +497,10 @@
 				url: '<?php echo base_url('Master/loadSize')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, material, cari: ''
+					barang, jenis_tipe, material, cari: '', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					$("#i_size").html(data.html).prop('disabled', (data.data) ? false : true)
 				}
 			})
@@ -504,11 +513,10 @@
 				url: '<?php echo base_url('Master/loadSize')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, material, cari: 'size'
+					barang, jenis_tipe, material, cari: 'size', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					$("#i_size").html(data.html).prop('disabled', false)
 				}
 			})
@@ -586,11 +594,10 @@
 				url: '<?php echo base_url('Master/loadMerk')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, material, size, cari: ''
+					barang, jenis_tipe, material, size, cari: '', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					$("#i_merk").html(data.html).prop('disabled', (data.data) ? false : true)
 				}
 			})
@@ -603,11 +610,10 @@
 				url: '<?php echo base_url('Master/loadMerk')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, material, size, cari: 'merk'
+					barang, jenis_tipe, material, size, cari: 'merk', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					$("#i_merk").html(data.html).prop('disabled', false)
 				}
 			})
@@ -719,23 +725,39 @@
 		let i_merk = $("#i_merk").val()
 		let n_merk = $("#n_merk").val()
 		let pilih_satuan = $("#pilih_satuan").val()
-		let satuan_terbesar = $("#satuan_terbesar").val()
+		let satuan_terbesar = $("#satuan_terbesar").val().split('.').join('')
 		let p_satuan_terbesar = $("#p_satuan_terbesar").val()
-		let satuan_tengah = $("#satuan_tengah").val()
+		let satuan_tengah = $("#satuan_tengah").val().split('.').join('')
 		let p_satuan_tengah = $("#p_satuan_tengah").val()
-		let satuan_terkecil = $("#satuan_terkecil").val()
+		let satuan_terkecil = $("#satuan_terkecil").val().split('.').join('')
 		let p_satuan_terkecil = $("#p_satuan_terkecil").val()
 		$.ajax({
 			url: '<?php echo base_url('Master/addBarang')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data : ({
 				id_mbh, id_mbd, id_cart, i_barang, n_barang, i_jenis_tipe, n_jenis_tipe, i_material, n_material, i_size, n_size, i_merk, n_merk, pilih_satuan, satuan_terbesar, p_satuan_terbesar, satuan_tengah, p_satuan_tengah, satuan_terkecil, p_satuan_terkecil, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(data.data && status == 'insert'){
+					toastr.success(`<b>BERHASIL SIMPAN!</b>`)
 					cartBarang()
+				}else if(data.update && status == 'update'){
+					toastr.success(`<b>BERHASIL EDIT!</b>`)
+					editBarang(data.data.options.id_mbd)
+				}else{
+					toastr.error(`<b>${data.isi}</b>`)
+					swal.close()
 				}
 			}
 		})
@@ -750,6 +772,7 @@
 			success: function(res){
 				data = JSON.parse(res)
 				$(".list-barang").html(data.html)
+				swal.close()
 			}
 		})
 	}
@@ -759,6 +782,16 @@
 		$.ajax({
 			url: '<?php echo base_url('Master/hapusCart')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({ rowid }),
 			success: function(res){
 				cartBarang()
@@ -774,16 +807,30 @@
 		$.ajax({
 			url: '<?php echo base_url('Master/viewBarang')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({ id_mbh, id_mbd }),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
+				if(id_mbh != ''){
+					$(".card-barang").hide()
+					$(".row-input-data").show()
+				}
 				if(id_mbd == ''){
 					$("#i_barang").val(id_mbh).trigger('change').prop('disabled', true)
 					$(".btn-tambah").html(`<button type="button" class="btn btn-sm btn-info pull-right" onclick="tambahKembali('kembali')"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;<b>Kembali</b></button>
 					<button type="button" class="btn btn-sm btn-success pull-right" onclick="editBarang('')"><i class="fas fa-plus"></i>&nbsp;&nbsp;<b>Tambah</b></button>`)
 				}
 				$(".vlist-barang").html(data.html)
+				swal.close()
 			}
 		})
 	}
@@ -798,10 +845,19 @@
 		$.ajax({
 			url: '<?php echo base_url('Master/editBarang')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({ id_mbh, id_mbd, status }),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(id_mbd != ''){
 					$("#i_jenis_tipe").html(data.jenis_tipe).prop('disabled', false)
 					$("#i_material").html(data.material).prop('disabled', false)
@@ -825,29 +881,56 @@
 		})
 	}
 
-	function btnEditBarang(id_mbd)
+	function simpanBarang()
 	{
-		let id_mbh = $("#id_mbh").val()
+		$("#id_mbh").val('')
+		$("#id_mbd").val('')
 		$.ajax({
-			url: '<?php echo base_url('Master/btnEditBarang')?>',
+			url: '<?php echo base_url('Master/simpanBarang')?>',
 			type: "POST",
-			data: ({ id_mbh, id_mbd }),
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
+				$(".row-input-data").hide()
+				$(".card-barang").show()
+				reloadTable()
+				editBarang('')
 			}
 		})
 	}
 
-	function simpanBarang()
+	function hapusBarang(id_mbd)
 	{
-		$.ajax({
-			url: '<?php echo base_url('Master/simpanBarang')?>',
-			type: "POST",
-			success: function(res){
-				data = JSON.parse(res)
-				console.log(data)
-			}
-		})
+		let id_mbh = $("#id_mbh").val()
+		swal({
+			title: "Apakah Kamu Yakin?",
+			text: "",
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#C00",
+			confirmButtonText: "Delete"
+		}).then(function(result) {
+			$.ajax({
+				url: '<?php echo base_url('Master/hapusBarang')?>',
+				type: "POST",
+				data : ({ id_mbh, id_mbd }),
+				success: function(res){
+					data = JSON.parse(res)
+					if(data.delete && data.header){
+						tambahKembali('kembali')
+					}
+					editBarang('')
+				}
+			})
+		});
 	}
 </script>

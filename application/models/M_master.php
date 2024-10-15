@@ -78,10 +78,8 @@ class M_master extends CI_Model{
         return $this->db->query($query)->row("nomor");
     }
 
-    function delete($tabel,$kolom,$id){
-        
-        $query = "DELETE FROM $tabel WHERE $kolom = '$id' ";
-        $result =  $this->db->query($query);
+    function delete($tabel, $kolom, $id){
+        $result = $this->db->query("DELETE FROM $tabel WHERE $kolom='$id'");
         return $result;
     }
 	
@@ -392,15 +390,54 @@ class M_master extends CI_Model{
 
 	function editBarang($data = '')
 	{
+		$kode_lama = $data['options']['detail'];
+		$kode_barang = $data['options']['kode_barang'];
+		$kode_baru = $kode_barang.'-'.$data['options']['kode_urut'];
+		if($kode_lama != $kode_barang){
+			$this->db->set('kode_barang', $kode_baru);
+		}
+		$this->db->set('jenis_tipe', $data['options']['jenis_tipe']);
+		$this->db->set('material', $data['options']['material']);
+		$this->db->set('size', $data['options']['size']);
+		$this->db->set('merk', $data['options']['merk']);
+		$this->db->set('p_satuan', $_POST['pilih_satuan']);
+		$this->db->set('qty1', ($_POST['satuan_terbesar'] == 0) ? null : $_POST['satuan_terbesar']);
+		$this->db->set('satuan1', ($_POST['p_satuan_terbesar'] == "") ? null : $_POST['p_satuan_terbesar']);
+		$this->db->set('qty2', ($_POST['satuan_tengah'] == 0) ? null : $_POST['satuan_tengah']);
+		$this->db->set('satuan2', ($_POST['p_satuan_tengah'] == "") ? null : $_POST['p_satuan_tengah']);
+		$this->db->set('qty3', $_POST['satuan_terkecil']);
+		$this->db->set('satuan3', $_POST['p_satuan_terkecil']);
+		$this->db->set('edit_by', $this->username);
+		$this->db->set('edit_at', date('Y-m-d H:i:s'));
+		$this->db->where('id_mbh', $_POST['id_mbh']);
+		$this->db->where('id_mbd', $_POST['id_mbd']);
+		$update = $this->db->update('m_barang_detail');
+		return [
+			'data' => $data,
+			'update' => $update,
+		];
+	}
+
+	function hapusBarang()
+	{
 		$id_mbh = $_POST["id_mbh"];
 		$id_mbd = $_POST["id_mbd"];
-		$status = $_POST["status"];
-
+		$this->db->where('id_mbd', $id_mbd);
+		$detail = $this->db->delete('m_barang_detail');
+		if($detail){
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' GROUP BY id_mbh")->num_rows();
+			if($cekBarang == 0){
+				$this->db->where('id_mbh', $id_mbh);
+				$header = $this->db->delete('m_barang_header');
+			}else{
+				$header = false;
+			}
+		}else{
+			$header = false;
+		}
 		return [
-			'id_mbh' => $id_mbh,
-			'id_mbd' => $id_mbd,
-			'status' => $status,
-			'data' => $data,
+			'delete' => $detail,
+			'header' => $header,
 		];
 	}
 
