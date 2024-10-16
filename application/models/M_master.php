@@ -265,26 +265,29 @@ class M_master extends CI_Model{
         $id         = $this->input->post('id_group');
         $nm_group   = $this->input->post('nm_group');
         $val_group  = $this->input->post('val_group');
+        $approve  = $this->input->post('approve');
         $data = array(
-			'nm_group'  	=> $nm_group,
-			'val_group'  	=> $val_group,
+			'nm_group' => $nm_group,
+			'val_group' => $val_group,
+			'approve' => $approve,
 		);
-
-        if ($status == 'insert') {
-				$cek = $this->db->query("SELECT * FROM m_modul_group WHERE nm_group = '$nm_group' and val_group='$val_group' ")->num_rows();
-
-				if ($cek > 0) {
-					return false;
-				}else{
-
-					$result= $this->db->insert($table,$data);
-				}
-
-        }else{
-            $result= $this->db->update($table,$data,array('id_group' => $id));
+		$cek = $this->db->query("SELECT*FROM m_modul_group WHERE val_group='$val_group' ")->num_rows();
+        if($status == 'insert') {
+			if($cek > 0) {
+				return false;
+			}else{
+				$result= $this->db->insert($table,$data);
+			}
         }
-        
-
+		// else{
+		// 	$s = $this->db->query("SELECT*FROM m_modul_group WHERE id_group='$id'")->row();
+		// 	if($cek > 0 != 0 && $s->val_group != $val_group){
+		// 		$result = false;
+		// 	}else{
+		// 		$this->db->where('id_group', $id);
+		// 		$result= $this->db->update($table, $data);
+		// 	}
+        // }
         return $result;
     }
 

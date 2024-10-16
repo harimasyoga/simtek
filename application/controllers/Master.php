@@ -921,14 +921,7 @@ class Master extends CI_Controller
 
 	function load_group()
 	{
-		if($this->session->userdata('level') == 'PPIC')
-		{
-			$cek="WHERE id_group in ('7','8','9') ";
-		}else{
-			$cek="";
-		}
-		$data = $this->db->query("SELECT * FROM m_modul_group $cek
-		ORDER BY nm_group ")->result();
+		$data = $this->db->query("SELECT * FROM m_modul_group ORDER BY nm_group ")->result();
 		echo json_encode($data);
 	}
 
@@ -956,6 +949,19 @@ class Master extends CI_Controller
 	{
 		$result = $this->m_master->simpanBagian();
 		echo json_encode($result);
+	}
+
+	function editUserLevel()
+	{
+		$id = $_POST["id"];
+		$val = $_POST["val"];
+		$cekUser = $this->db->query("SELECT*FROM tb_user u WHERE u.level='$val'")->num_rows();
+		$level = $this->db->query("SELECT*FROM m_modul_group WHERE id_group='$id'")->row();
+
+		echo json_encode([
+			'level' => $level,
+			'num' => $cekUser,
+		]);
 	}
 
 	function load_data()
@@ -1032,49 +1038,35 @@ class Master extends CI_Controller
 				$i++;
 			}
 		} else if ($jenis == "user") {
-			if($this->session->userdata('level') == 'PPIC'){
-				$where = "WHERE u.level='Corrugator' OR u.level='Flexo' OR u.level='Finishing'";
-			}else{
-				$where = "";
-			}
-			$query = $this->m_master->query("SELECT * FROM tb_user u $where ORDER BY u.id")->result();
+			$query = $this->db->query("SELECT * FROM tb_user u ORDER BY u.id")->result();
 			$i = 1;
 			foreach ($query as $r) {
 				$row = array();
-
-				$row[] = '<a href="javascript:void(0)" onclick="tampil_edit(' . "'" . $r->username . "'" . ',' . "'detail'" . ')">' . $r->username . "<a>";
+				$row[] = '<a href="javascript:void(0)" onclick="tampil_edit('."'".$r->username."'".','."'detail'".')">'.$r->username.'</a>';
 				$row[] = $r->nm_user;
 				$row[] = base64_decode($r->password);
 				$row[] = $r->level;
-
-				if($this->session->userdata('level') == 'Admin' || $this->session->userdata('level') == 'PPIC'){
-					if ($r->level == 'Admin') {
-						$aksi = '<a href="javascript:void(0)" onclick="tampil_edit(' . "'" . $r->username . "'" . ',' . "'edit'" . ')" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i>
-						';
-					}else{
-						$aksi = '<a href="javascript:void(0)" onclick="tampil_edit(' . "'" . $r->username . "'" . ',' . "'edit'" . ')" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i>
-
-						<a href="javascript:void(0)" onclick="deleteData(' . "'" . $r->username . "'" . ')" class="btn btn-danger btn-sm" class="btn btn-danger btn-sm"><i class="fas fa-times"></i>';
-					}
+				if($r->level == 'Developer' || $r->level == 'Owner'){
+					$aksi = '<a href="javascript:void(0)" onclick="tampil_edit('."'".$r->username."'".','."'edit'".')" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>';
 				}else{
-					$aksi = '-';
+					$aksi = '<a href="javascript:void(0)" onclick="tampil_edit('."'".$r->username."'".','."'edit'".')" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
+					<a href="javascript:void(0)" onclick="deleteData('."'".$r->username."'".')" class="btn btn-danger btn-sm" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></a>';
 				}
-
 				$row[] = $aksi;
 				$data[] = $row;
 				$i++;
 			}
 		} else if ($jenis == "user_level") {
-			$query = $this->m_master->query("SELECT * FROM m_modul_group ORDER BY id_group")->result();
+			$query = $this->db->query("SELECT*FROM m_modul_group ORDER BY val_group")->result();
 			$i = 1;
 			foreach ($query as $r) {
 				$row = array();
-				$row[] = '<div class="text-center">'.$r->id_group.'</div>';
+				$row[] = '<div class="text-center">'.$i.'</div>';
 				$row[] = $r->nm_group;
+				$row[] = $r->approve;
+				// AKSI
+				// $edit = '<a href="javascript:void(0)" onclick="editUserLevel('."'".$r->id_group."'".','."'".$r->val_group."'".')" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>';
 				$row[] = '<div class="text-center">
-					<a href="javascript:void(0)" onclick="tampil_edit(' . "'" . $r->val_group . "'" . ',' . "'edit'" . ')" class="btn btn-warning btn-sm">
-						<i class="fas fa-edit"></i>
-					</a>
 					<a class="btn btn-sm btn-primary" href="'.base_url("Master/User_level_add?val_group=".$r->id_group."").'" title="EDIT MENU" ><b><i class="fas fa-search"></i> MENU</b></a>
 					<a class="btn btn-sm btn-danger" href="'.base_url("Master/UserBagian?val_group=".$r->id_group."").'" title="EDIT BAGIAN" ><b><i class="fas fa-search"></i> BAGIAN</b></a>
 				</div>';

@@ -28,7 +28,7 @@
 				</div>
 			</div>
 			<div class="card-body">
-				<?php if(in_array($this->session->userdata('level'), ['Admin','PPIC'])) { ?>
+				<?php if(in_array($this->session->userdata('level'), ['Developer'])) { ?>
 					<button type="button" style="font-family:Cambria;" class="tambah_data btn  btn-info pull-right"><i class="fa fa-plus"></i>&nbsp;&nbsp;<b>Tambah Data</button>
 				<?php } ?>
 				
@@ -87,20 +87,7 @@
 					<div class="form-group row">
 						<label class="col-sm-2 col-form-label">Level</label>
 						<div class="col-sm-10">
-							<select class="form-control select2" id="level">
-								<!-- <option value="">PILIH</option>
-								<?php if($this->session->userdata('level') != 'PPIC') { ?>
-									<option value="Owner">Owner</option>
-									<option value="Penjualan">Penjualan</option>
-									<option value="Marketing">Marketing</option>
-									<option value="User">Operator</option>
-									<option value="Keuangan1">Keuangan</option>
-								<?php } ?>
-									<option value="PPIC">PPIC</option>
-									<option value="Corrugator">Corrugator</option>
-									<option value="Flexo">Flexo</option>
-									<option value="Finishing">Finishing</option> -->
-							</select>
+							<select class="form-control select2" id="level"></select>
 						</div>
 					</div>
 			</div>
@@ -213,6 +200,7 @@
 		$("#username_lama").val('');
 		$("#nm_user").val('');
 		$("#password").val('');
+		$("#level").val('').trigger('change');
 		status = 'insert';
 		$("#btn-simpan").show();
 		$("#username").prop("readonly", false);
@@ -226,7 +214,7 @@
 			url: "<?= base_url(); ?>Master/load_group",
 			dataType: 'json',
 			success:function(data){								
-				option = "<option>-- Pilih --</option>";
+				option = '<option value="">-- Pilih --</option>';
 				$.each(data, function(index, val) {
 				option += "<option value='"+val.val_group+"'>"+val.nm_group+"</option>";
 				});

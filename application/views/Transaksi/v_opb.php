@@ -20,456 +20,188 @@
 	</style>
 
 	<section class="content">
-		<div class="card shadow mb-3">
-			<div class="row-list">
-				<div class="card-header" style="font-family:Cambria;">		
-						<h3 class="card-title" style="color:#4e73df;"><b><?= $judul ?></b></h3>
-
-						<div class="card-tools">
-							<button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
-								<i class="fas fa-minus"></i></button>
-						</div>
-				</div>
-				<div class="card-body" >
-					<div class="row">
-					<?php if(in_array($this->session->userdata('level'), ['Admin','konsul_keu','Laminasi','User'])){ ?>
-						<div style="margin-bottom:12px; position: absolute;left: 20px;">
-							<button type="button" class="btn btn-sm btn-info" onclick="add_data()"><i class="fa fa-plus"></i> <b>TAMBAH DATA</b></button>
-						</div>
-
-						<?php } ?>
+		<div class="row row-list">
+			<div class="col-md-12">
+				<div class="card card-primary card-outline">
+					<div class="card-header" style="padding:12px">
+						<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST OPB</h3>
 					</div>
-					<br>
-					<br>
-					
-					<!-- <div style="overflow:auto;white-space:nowrap"> -->
-						<table id="datatable_list" class="table table-bordered table-striped table-scrollable" width="100%">
-							<thead class="color-tabel">
-								<tr>
-									<th class="text-center title-white">NO </th>
-									<th class="text-center title-white">NO PO</th>
-									<th class="text-center title-white">TGL PO</th>
-									<th class="text-center title-white">HUB</th>
-									<th class="text-center title-white">TONASE PO</th>
-									<th class="text-center title-white">TERKIRIM</th>
-									<th class="text-center title-white">SISA</th>
-									<th class="text-center title-white">HARGA</th>
-									<th class="text-center title-white">TOTAL</th>
-									<th class="text-center title-white">AKSI</th>
-								</tr>
-							</thead>
-							<tbody></tbody>
-						</table>
-					<!-- </div> -->
-				</div>
-			</div>			
-		</div>
-	</section>
-
-	<section class="content">
-
-		<!-- Default box -->
-		<div class="card shadow row-input" style="display: none;">
-			<div class="card-header" style="font-family:Cambria;" >
-				<h3 class="card-title" style="color:#4e73df;"><b>INPUT <?= $judul ?></b></h3>
-
-				<div class="card-tools">
-					<button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
-						<i class="fas fa-minus"></i></button>
+					<div class="card-body" style="padding:0">
+						<div style="padding:5px">
+							<button type="button" class="btn btn-primary btn-sm" onclick="tambah()">Tambah Data</button>
+							<button type="button" class="btn btn-default btn-sm"><i class="fas fa-sync-alt"></i></button>
+							<div class="float-right">
+								<button type="button" class="btn btn-default btn-sm"><i class="fas fa-sync-alt"></i></button>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
-			<form role="form" method="post" id="myForm">
-				<div class="col-md-12">
-								
-					<br>
-						
-					<div class="card-body row" style="padding-bottom:1px;font-weight:bold">			
-						
-						<div class="col-md-2">NO PO BAHAN</div>
-						<div class="col-md-3">
-							<input type="hidden" name="sts_input" id="sts_input">
-							<input type="hidden" name="no_po_old" id="no_po_old">
-							<input type="hidden" name="id_po_bhn" id="id_po_bhn">
-							<input type="text" class="angka form-control" name="no_po" id="no_po" value="AUTO" readonly>
-
-						</div>
-						<div class="col-md-1"></div>
-			
-						<div class="col-md-2">TONASE</div>
-						<div class="col-md-3">
-							<div class="input-group">
-								<input type="text" class="form-control" name="ton" id="ton" value ="0" onkeyup="ubah_angka(this.value,this.id),hitung_total()">
-								<div class="input-group-append">
-									<span class="input-group-text">Kg</span>
-								</div>
-							</div>
-						</div>
-					</div>
-											
-					<div class="card-body row" style="padding-bottom:1px;font-weight:bold">
-
-						<div class="col-md-2">TANGGAL</div>
-						<div class="col-md-3">
-							<input type="date" class="form-control" name="tgl_po" id="tgl_po" value ="<?= date('Y-m-d') ?>" >
-						</div>
-
-						<div class="col-md-1"></div>
-
-						<div class="col-md-2">HARGA / Kg</div>
-						<div class="col-md-3">
-							<div class="input-group">								
-								<div class="input-group-append">
-									<span class="input-group-text">Rp</span>
-								</div>
-								<input type="text" class="form-control" name="harga" id="harga" value ="0" onkeyup="ubah_angka(this.value,this.id),hitung_total()">
-							</div>
-						</div>
-
-					</div>
-					
-					<div class="card-body row" style="padding-bottom:1px;font-weight:bold">
-										
-						<div class="col-md-2">HUB</div>
-						<div class="col-md-3">
-							<select class="form-control select2" onchange="load_aka()" name="hub" id="hub" style="width: 100%;">
-							</select>
-							<input type="hidden" name="aka" id="aka">
-						</div>
-
-						<div class="col-md-1"></div>
-									
-						<div class="col-md-2">TOTAL</div>
-						<div class="col-md-3">
-							<div class="input-group">								
-								<div class="input-group-append">
-									<span class="input-group-text">Rp</span>
-								</div>
-								<input type="text" class="form-control" name="total_po" id="total_po" value ="0" readonly>
-							</div>
-						</div>
-						
-
-					</div>
-					
-					<br>
-				
-					<div class="card-body row"style="font-weight:bold">
-						<div class="col-md-4">
-							<button type="button" onclick="kembaliList()" class="btn-tambah-produk btn  btn-danger"><b>
-								<i class="fa fa-undo" ></i> Kembali</b>
-							</button>
-
-							<span id="btn-simpan"></span>
-
-						</div>
-						
-						<div class="col-md-6"></div>
-						
-					</div>
-
-					<br>
-					
-				</div>
-			</form>	
 		</div>
-		<!-- /.card -->
+
+		<div class="row row-input">
+			<div class="col-md-12">
+				<div class="card card-primary card-outline">
+					<div class="card-header" style="padding:12px">
+						<h3 class="card-title" style="font-weight:bold;font-size:18px">INPUT OPB</h3>
+					</div>
+					<div class="card-body" style="padding:6px">
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">PILIH BARANG <span style="color:#f00">*</span></div>
+							<div class="col-md-5">
+								<select id="plh_barang" class="form-control select2" onchange="pilihBarang()">
+									<option value="">PILIH</option>
+								</select>
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">JENIS / TIPE</div>
+							<div class="col-md-5">
+								<div class="jenistipe">
+									<select id="jenistipe" class="form-control select2" onchange="pilihBarang()">
+										<option value="">PILIH</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">MATERIAL</div>
+							<div class="col-md-5">
+								<div class="material">
+									<select id="material" class="form-control select2" onchange="pilihBarang()">
+										<option value="">PILIH</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">SIZE</div>
+							<div class="col-md-5">
+								<div class="ukuran">
+									<select id="ukuran" class="form-control select2" onchange="pilihBarang()">
+										<option value="">PILIH</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">MERK</div>
+							<div class="col-md-5">
+								<div class="merk">
+									<select id="merk" class="form-control select2" onchange="pilihBarang()">
+										<option value="">PILIH</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="padding:0">
+							<div class="col-md-12">
+								<div style="overflow:auto;white-space:nowrap">
+									<div class="list-detail"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input type="hidden" id="id_mbh" value="">
+			<input type="hidden" id="id_cart" value="0">
+			<input type="hidden" id="destroy">
+		</div>
 	</section>
 </div>
 
 <script type="text/javascript">
-
 	const urlAuth = '<?= $this->session->userdata('level')?>';
-
-	$(document).ready(function ()
-	{
-		kosong()
-		load_data()
-		$('.select2').select2();
+	status = 'insert';
+	$(document).ready(function() {
+		// $("#destroy").load("<?php echo base_url('Master/destroy') ?>")
+		$(".select2").select2()
+		// load_data()
 	});
 
-
-	function hitung_total()
-	{
-		var ton   = $("#ton").val().split('.').join('')
-		var harga = $("#harga").val().split('.').join('')
-
-		var total = ton*harga		
-		$("#total_po").val(format_angka(total))
-		
-	}
-
-	function reloadTable() 
-	{
-		table = $('#datatable_list').DataTable();
+	function reloadTable() {
+		table = $('#datatable').DataTable();
 		tabel.ajax.reload(null, false);
 	}
 
-	function load_data() 
+	function tambah()
 	{
-		var list_hub    = $("#list_hub").val()
-		let table       = $('#datatable_list').DataTable();
-		table.destroy();
-		tabel = $('#datatable_list').DataTable({
-			"processing": true,
-			"pageLength": true,
-			"paging": true,
-			"ajax": {
-				"url": '<?php echo base_url('Transaksi/load_data/po_bahan')?>',
-				"type": "POST", 
-				"data"  : { id_hub:list_hub },
-			},
-			"aLengthMenu": [
-				[5, 10, 50, 100, -1],
-				[5, 10, 50, 100, "Semua"]
-			],	
-			"responsive": true,
-			"pageLength": 10,
-			"language": {
-				"emptyTable": "TIDAK ADA DATA.."
+		loadBarang()
+	}
+
+	// function load_data() 
+	// {
+	// 	var table = $('#datatable').DataTable();
+	// 	table.destroy();
+	// 	tabel = $('#datatable').DataTable({
+	// 		"processing": true,
+	// 		"pageLength": true,
+	// 		"paging": true,
+	// 		"ajax": {
+	// 			"url": '<?php echo base_url(); ?>Master/loadDataBarang',
+	// 			"type": "POST",
+	// 		},
+	// 		responsive: false,
+	// 		"pageLength": 10,
+	// 		"language": {
+	// 			"emptyTable": "Tidak ada data.."
+	// 		}
+	// 	});
+	// }
+
+	function loadBarang()
+	{
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/loadBarang')?>',
+			type: "POST",
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				$("#id_mbh").val('')
+				$("#plh_barang").html(data.html)
+				$("#jenistipe").html('<option value="">PILIH</option>')
+				$("#material").html('<option value="">PILIH</option>')
+				$("#ukuran").html('<option value="">PILIH</option>')
+				$("#merk").html('<option value="">PILIH</option>')
+				$(".list-detail").html('')
 			}
 		})
 	}
-	
-	function edit_data(id,kd_po)
+
+	function pilihBarang()
 	{
-		$(".row-input").attr('style', '');
-		$(".row-list").attr('style', 'display:none');
-		$("#sts_input").val('edit');
-
-		$("#btn-simpan").html(`<button type="button" onclick="simpan()" class="btn-tambah-produk btn  btn-primary"><b><i class="fa fa-save" ></i> Update</b> </button>`)
-
+		let id_mbh = $("#plh_barang").val()
+		let id_mbh_lama = $("#id_mbh").val()
+		let jenistipe = $("#jenistipe").val()
+		let material = $("#material").val()
+		let ukuran = $("#ukuran").val()
+		let merk = $("#merk").val()
+		$("#jenistipe").html('<option value="">PILIH</option>')
+		$("#material").html('<option value="">PILIH</option>')
+		$("#ukuran").html('<option value="">PILIH</option>')
+		$(".list-detail").html('')
 		$.ajax({
-			url        : '<?= base_url(); ?>Transaksi/load_data_1',
-			type       : "POST",
-			data       : { id, tbl:'trs_po_bhnbk', jenis :'po_bahan_baku',field :'id_po_bhn' },
-			dataType   : "JSON",
-			beforeSend: function() {
-				swal({
-				title: 'loading data...',
-				allowEscapeKey    : false,
-				allowOutsideClick : false,
-				onOpen: () => {
-					swal.showLoading();
-				}
-				})
-			},
-			success: function(data) {
-				if(data){
-					// header
-					$("#hub").val(data.header.hub).trigger('change');
-					$("#id_po_bhn").val(data.header.id_po_bhn);
-					$("#no_po_old").val(data.header.no_po_bhn);
-					$("#no_po").val(data.header.no_po_bhn);
-					$("#tgl_po").val(data.header.tgl_bhn);
-					$("#ton").val(format_angka(data.header.ton_bhn));
-					$("#harga").val(format_angka(data.header.hrg_bhn));
-					$("#aka").val(data.header.aka);
-					$("#total_po").val(format_angka(data.header.total));
-
-					swal.close();
-
-				} else {
-
-					swal.close();
-					swal({
-						title               : "Cek Kembali",
-						html                : "Gagal Simpan",
-						type                : "error",
-						confirmButtonText   : "OK"
-					});
-					return;
-				}
-			},
-			error: function(jqXHR, textStatus, errorThrown) {
-				// toastr.error('Terjadi Kesalahan');
-				
-				swal.close();
-				swal({
-					title               : "Cek Kembali",
-					html                : "Terjadi Kesalahan",
-					type                : "error",
-					confirmButtonText   : "OK"
-				});
-				
-				return;
+			url: '<?php echo base_url('Transaksi/detailBarang')?>',
+			type: "POST",
+			data: ({
+				id_mbh, id_mbh_lama, jenistipe, material, ukuran, merk
+			}),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				$("#id_mbh").val(id_mbh)
+				$(".list-detail").html(data.html)
+				$("#jenistipe").html(data.htmlJT).val((id_mbh == id_mbh_lama) ? jenistipe : '')
+				$("#material").html(data.htmlM).val((id_mbh == id_mbh_lama) ? material : '')
+				$("#ukuran").html(data.htmlS).val((id_mbh == id_mbh_lama) ? ukuran : '')
+				$("#merk").html(data.htmlMr).val((id_mbh == id_mbh_lama) ? merk : '')
 			}
-		});
-	}
-
-	function kosong()
-	{
-		var tgl_now = '<?= date('Y-m-d') ?>'
-		$("#no_po_old").val("")
-		$("#id_po_bhn").val("")
-		$("#no_po").val("AUTO")
-		$("#ton").val("")
-		$("#tgl_po").val(tgl_now)
-		$("#harga").val("")
-		$("#hub").val("")
-		$("#total_po").val("")		
-		swal.close()
-	}
-
-	function simpan() 
-	{
-		var no_po     = $("#no_po").val();
-		var tgl_po    = $("#tgl_po").val();
-		var ton       = $("#ton").val().split('.').join('');
-		var harga     = $("#harga").val().split('.').join('');
-		var total_po  = $("#total_po").val().split('.').join('');
-		var hub       = $("#hub").val();
-		
-		
-		if ( ton == '' || ton == 0 || no_po == '' || harga == '' || tgl_po == '' || total_po == '' || total_po == 0 || hub == '' ) 
-		{			
-			swal.close();
-			swal({
-				title               : "Cek Kembali",
-				html                : "Harap Lengkapi Form Dahulu",
-				type                : "info",
-				confirmButtonText   : "OK"
-			});
-			return;
-		}
-
-		$.ajax({
-			url        : '<?= base_url(); ?>Transaksi/insert_po_bb',
-			type       : "POST",
-			data       : $('#myForm').serialize(),
-			dataType   : "JSON",
-			beforeSend: function() {
-				swal({
-				title: 'loading ...',
-				allowEscapeKey    : false,
-				allowOutsideClick : false,
-				onOpen: () => {
-					swal.showLoading();
-				}
-				})
-			},
-			success: function(data) {
-				if(data == true){
-					// toastr.success('Berhasil Disimpan');
-					// swal.close();								
-					kosong();
-					location.href = "<?= base_url()?>Transaksi/PO_bhn_bk";
-					swal({
-						title               : "Data",
-						html                : "Berhasil Disimpan",
-						type                : "success",
-						confirmButtonText   : "OK"
-					});
-					
-				} else {
-					// toastr.error('Gagal Simpan');
-					swal.close();
-					swal({
-						title               : "Cek Kembali",
-						html                : "Gagal Simpan",
-						type                : "error",
-						confirmButtonText   : "OK"
-					});
-					return;
-				}
-				reloadTable();
-			},
-			error: function(jqXHR, textStatus, errorThrown) {
-				// toastr.error('Terjadi Kesalahan');
-				
-				swal.close();
-				swal({
-					title               : "Cek Kembali",
-					html                : "Terjadi Kesalahan",
-					type                : "error",
-					confirmButtonText   : "OK"
-				});
-				
-				return;
-			}
-		});
-
-	}
-
-	function add_data()
-	{
-		kosong()
-		$(".row-input").attr('style', '')
-		$(".row-list").attr('style', 'display:none')
-		$("#sts_input").val('add');
-		
-		$("#btn-simpan").html(`<button type="button" onclick="simpan()" class="btn-tambah-produk btn  btn-primary"><b><i class="fa fa-save" ></i> Simpan</b> </button>`)
-	}
-
-	function kembaliList()
-	{
-		kosong()
-		reloadTable()
-		$(".row-input").attr('style', 'display:none')
-		$(".row-list").attr('style', '')
-	}
-
-	function deleteData(id,no_po) 
-	{
-		// let cek = confirm("Apakah Anda Yakin?");
-		swal({
-			title: "HAPUS PEMBAYARAN",
-			html: "<p> Apakah Anda yakin ingin menghapus file ini ?</p><br>"
-			+"<strong>" +no_po+ " </strong> ",
-			type               : "question",
-			showCancelButton   : true,
-			confirmButtonText  : '<b>Hapus</b>',
-			cancelButtonText   : '<b>Batal</b>',
-			confirmButtonClass : 'btn btn-success',
-			cancelButtonClass  : 'btn btn-danger',
-			cancelButtonColor  : '#d33'
-		}).then(() => {
-
-		// if (cek) {
-			$.ajax({
-				url: '<?= base_url(); ?>Transaksi/hapus',
-				data: ({
-					id: id,
-					jenis: 'trs_po_bhnbk',
-					field: 'id_po_bhn'
-				}),
-				type: "POST",
-				beforeSend: function() {
-					swal({
-					title: 'loading ...',
-					allowEscapeKey    : false,
-					allowOutsideClick : false,
-					onOpen: () => {
-						swal.showLoading();
-					}
-					})
-				},
-				success: function(data) {
-					toastr.success('Data Berhasil Di Hapus');
-					swal.close();
-
-					// swal({
-					// 	title               : "Data",
-					// 	html                : "Data Berhasil Di Hapus",
-					// 	type                : "success",
-					// 	confirmButtonText   : "OK"
-					// });
-					reloadTable();
-				},
-				error: function(jqXHR, textStatus, errorThrown) {
-					// toastr.error('Terjadi Kesalahan');
-					swal({
-						title               : "Cek Kembali",
-						html                : "Terjadi Kesalahan",
-						type                : "error",
-						confirmButtonText   : "OK"
-					});
-					return;
-				}
-			});
-		// }
-
-		});
-
-
+		})
 	}
 </script>
