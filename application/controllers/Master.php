@@ -34,27 +34,12 @@ class Master extends CI_Controller
 		$this->load->view('Master/v_customer', $data);
 		$this->load->view('footer');
 	}
-	
-	function Produk()
-	{
 
-		$data = array(
-			'judul' => "Master Produk",
-			// 'pelanggan' => $this->m_master->get_data("m_pelanggan")->result()
-		);
-
-		$this->load->view('header', $data);
-		$this->load->view('Master/v_produk', $data);
-		$this->load->view('footer');
-	}
-
-	
 	function Supplier()
 	{
 		$data = array(
 			'judul' => "Master Supplier"
 		);
-
 		$this->load->view('header', $data);
 		$this->load->view('Master/v_supplier', $data);
 		$this->load->view('footer');
@@ -69,6 +54,18 @@ class Master extends CI_Controller
 		$this->load->view('Master/v_barang', $data);
 		$this->load->view('footer');
 	}
+
+	function Satuan()
+	{
+		$data = array(
+			'judul' => "Master Satuan"
+		);
+		$this->load->view('header', $data);
+		$this->load->view('Master/v_satuan', $data);
+		$this->load->view('footer');
+	}
+
+	// BARANG
 
 	function loadDataBarang()
 	{
@@ -787,6 +784,46 @@ class Master extends CI_Controller
 		]);
 	}
 
+	// SATUAN
+
+	function loadDataSatuan()
+	{
+		$data = array();
+		$query = $this->m_master->query("SELECT*FROM m_satuan ORDER BY kode_satuan ASC")->result();
+			$i = 0;
+			foreach ($query as $r) {
+				$i++;
+				$row = array();
+				($r->ket_satuan == '' || $r->ket_satuan == '-') ? $ket = '' : $ket = ' <span style="font-style:italic;font-size:12px;vertical-align:top">( '.$r->ket_satuan.' )</span>';
+				$row[] = '<div class="text-center">'.$i.'</div>';
+				$row[] = $r->kode_satuan.$ket;
+				$row[] = '<div class="text-center">
+					<button type="button" class="btn btn-warning btn-sm" onclick="editSatuan('."'".$r->id."'".')"><i class="fas fa-edit"></i></button>
+					<button type="button" class="btn btn-danger btn-sm" onclick="hapusSatuan('."'".$r->id."'".')"><i class="fas fa-trash-alt" style="color:#000"></i></button>
+				</div>';
+				$data[] = $row;
+			}
+		$output = array(
+			"data" => $data,
+		);
+		echo json_encode($output);
+	}
+
+	function simpanSatuan()
+	{
+		$result = $this->m_master->simpanSatuan();
+		echo json_encode($result);
+	}
+
+	function editSatuan()
+	{
+		$id = $_POST["id"];
+		$data = $this->db->query("SELECT*FROM m_satuan WHERE id='$id'")->row();
+		echo json_encode([
+			'satuan' => $data,
+		]);
+	}
+
 	function plhWilayah()
 	{
 		$v_prov = $_POST["prov"];
@@ -852,23 +889,33 @@ class Master extends CI_Controller
 	
 	function User_level_add()
 	{
-		
 		$val_group    = $_GET['val_group'];
 		$nama         = $this->db->query("SELECT*FROM m_modul_group a WHERE id_group='$val_group' LIMIT 1 ")->row();
-		
-		$query = $this->db->query("SELECT *
-		FROM m_modul a order by kode")->result();
-
+		$query = $this->db->query("SELECT*FROM m_modul a order by kode")->result();
 		$data = array(
 			'judul'  => "Edit Modul",
 			'judul2' => "$nama->nm_group",
 			'id'     => $val_group,
 			'query'  => $query
 		);
-		
-
 		$this->load->view('header', $data);
 		$this->load->view('Master/v_user_level_add', $data);
+		$this->load->view('footer');
+	}
+
+	function UserBagian()
+	{
+		$val_group = $_GET['val_group'];
+		$nama = $this->db->query("SELECT*FROM m_modul_group WHERE id_group='$val_group' LIMIT 1 ")->row();
+		$query = $this->db->query("SELECT*FROM m_departemen ORDER BY kode")->result();
+		$data = array(
+			'judul' => "Edit Departemen Bagian",
+			'judul2' => "$nama->nm_group",
+			'id' => $val_group,
+			'query' => $query
+		);
+		$this->load->view('header', $data);
+		$this->load->view('Master/v_user_bagian', $data);
 		$this->load->view('footer');
 	}
 
@@ -901,8 +948,13 @@ class Master extends CI_Controller
 	{
 		$jenis = $this->input->post('jenis');
 		$status = $this->input->post('status');
-		
 		$result = $this->m_master->$jenis($jenis, $status);
+		echo json_encode($result);
+	}
+
+	function simpanBagian()
+	{
+		$result = $this->m_master->simpanBagian();
 		echo json_encode($result);
 	}
 
@@ -1013,32 +1065,23 @@ class Master extends CI_Controller
 				$i++;
 			}
 		} else if ($jenis == "user_level") {
-			
 			$query = $this->m_master->query("SELECT * FROM m_modul_group ORDER BY id_group")->result();
 			$i = 1;
 			foreach ($query as $r) {
 				$row = array();
-
 				$row[] = '<div class="text-center">'.$r->id_group.'</div>';
 				$row[] = $r->nm_group;
-
 				$row[] = '<div class="text-center">
-				<a href="javascript:void(0)" onclick="tampil_edit(' . "'" . $r->val_group . "'" . ',' . "'edit'" . ')" class="btn btn-warning btn-sm">
-				<i class="fas fa-edit"></i>
-				</a>
-
-				<a class="btn btn-sm btn-primary" href="'. base_url("Master/User_level_add?val_group=" . $r->id_group . "") .'" title="EDIT MENU" ><b>
-				<i class="fas fa-search"></i> MENU</b></a>
-
-				</div>
-				';
-
+					<a href="javascript:void(0)" onclick="tampil_edit(' . "'" . $r->val_group . "'" . ',' . "'edit'" . ')" class="btn btn-warning btn-sm">
+						<i class="fas fa-edit"></i>
+					</a>
+					<a class="btn btn-sm btn-primary" href="'.base_url("Master/User_level_add?val_group=".$r->id_group."").'" title="EDIT MENU" ><b><i class="fas fa-search"></i> MENU</b></a>
+					<a class="btn btn-sm btn-danger" href="'.base_url("Master/UserBagian?val_group=".$r->id_group."").'" title="EDIT BAGIAN" ><b><i class="fas fa-search"></i> BAGIAN</b></a>
+				</div>';
 				$data[] = $row;
 				$i++;
 			}
 		}
-
-
 
 		$output = array(
 			"data" => $data,

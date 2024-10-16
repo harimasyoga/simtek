@@ -92,7 +92,7 @@
 	rowNum = 0;
 	$(document).ready(function() {
 		load_data();
-		load_group();
+		// load_group();
 		$('.select2').select2({
 			dropdownAutoWidth: true
 		})

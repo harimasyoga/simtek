@@ -156,12 +156,16 @@
 								<input type="number" id="satuan_terbesar" class="form-control" style="font-weight:bold;text-align:right" onkeyup="keyupSatuan('satuan_terbesar')" placeholder="0">
 							</div>
 							<div class="col-md-2" style="padding-bottom:3px">
-								<select id="p_satuan_terbesar" class="form-control select2" onchange="keyupSatuan('satuan_terbesar')">
-									<option value="">PILIH</option>
-									<option value="BOX">BOX</option>
-									<option value="PCS">PCS</option>
-									<option value="ROLL">ROLL</option>
-									<option value="KG">KG</option>
+								<select id="p_satuan_terbesar" class="form-control select2">
+									<?php
+										$query2 = $this->db->query("SELECT*FROM m_satuan ORDER BY kode_satuan");
+										$html2 ='';
+										$html2 .='<option value="">PILIH</option>';
+										foreach($query2->result() as $r2){
+											$html2 .='<option value="'.$r2->kode_satuan.'">'.$r2->kode_satuan.'</option>';
+										}
+										echo $html2
+									?>
 								</select>
 							</div>
 							<div class="col-md-6"></div>
@@ -172,12 +176,16 @@
 								<input type="number" id="satuan_tengah" class="form-control" style="font-weight:bold;text-align:right" onkeyup="keyupSatuan('satuan_tengah')" placeholder="0">
 							</div>
 							<div class="col-md-2" style="padding-bottom:3px">
-								<select id="p_satuan_tengah" class="form-control select2" onchange="keyupSatuan('satuan_tengah')">
-									<option value="">PILIH</option>
-									<option value="BOX">BOX</option>
-									<option value="PCS">PCS</option>
-									<option value="ROLL">ROLL</option>
-									<option value="LT">LT</option>
+								<select id="p_satuan_tengah" class="form-control select2">
+									<?php
+										$query3 = $this->db->query("SELECT*FROM m_satuan ORDER BY kode_satuan");
+										$html3 ='';
+										$html3 .='<option value="">PILIH</option>';
+										foreach($query3->result() as $r3){
+											$html3 .='<option value="'.$r3->kode_satuan.'">'.$r3->kode_satuan.'</option>';
+										}
+										echo $html3
+									?>
 								</select>
 							</div>
 							<div class="col-md-6"></div>
@@ -188,12 +196,16 @@
 								<input type="number" id="satuan_terkecil" class="form-control" style="font-weight:bold;text-align:right" onkeyup="keyupSatuan('satuan_terkecil')" placeholder="0">
 							</div>
 							<div class="col-md-2" style="padding-bottom:3px">
-								<select id="p_satuan_terkecil" class="form-control select2" onchange="keyupSatuan('satuan_terkecil')">
-									<option value="">PILIH</option>
-									<option value="BOX">BOX</option>
-									<option value="PCS">PCS</option>
-									<option value="ROLL">ROLL</option>
-									<option value="KALENG">KALENG</option>
+								<select id="p_satuan_terkecil" class="form-control select2">
+									<?php
+										$query1 = $this->db->query("SELECT*FROM m_satuan ORDER BY kode_satuan");
+										$html1 ='';
+										$html1 .='<option value="">PILIH</option>';
+										foreach($query1->result() as $r1){
+											$html1 .='<option value="'.$r1->kode_satuan.'">'.$r1->kode_satuan.'</option>';
+										}
+										echo $html1
+									?>
 								</select>
 							</div>
 							<div class="col-md-6"></div>
@@ -922,6 +934,16 @@
 			$.ajax({
 				url: '<?php echo base_url('Master/hapusBarang')?>',
 				type: "POST",
+				beforeSend: function() {
+					swal({
+						title: 'Loading',
+						allowEscapeKey: false,
+						allowOutsideClick: false,
+						onOpen: () => {
+							swal.showLoading();
+						}
+					});
+				},
 				data : ({ id_mbh, id_mbd }),
 				success: function(res){
 					data = JSON.parse(res)

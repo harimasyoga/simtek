@@ -316,6 +316,28 @@ class M_master extends CI_Model{
 
         return $result;
     }
+
+	function simpanBagian()
+	{        
+        $id_group = $this->input->post('id_group');
+        $query = $this->db->query("SELECT*FROM m_departemen")->result();
+		$delete = $this->db->query("DELETE from m_departemen_bagian where id_group='$id_group' ");
+		if($delete){
+			foreach ( $query as $row ) {
+				$cek = $this->input->post('status'.$row->kode);
+				if($cek == 1) {
+					$data = [
+						'id_group' => $id_group,
+						'kode_departemen' => $row->kode,
+					];
+					$result = $this->db->insert("m_departemen_bagian", $data);
+				}else{
+					$result = false;
+				}
+			}
+		}
+        return $result;
+    }
     
     function simpanBarang()
 	{
@@ -438,6 +460,48 @@ class M_master extends CI_Model{
 		return [
 			'delete' => $detail,
 			'header' => $header,
+		];
+	}
+
+	function simpanSatuan()
+	{
+		$id = $_POST["id"];
+		$status = $_POST["status"];
+		$kode_satuan = $_POST["kode_satuan"];
+		$ket_satuan = $_POST["ket_satuan"];
+		$cek = $this->db->query("SELECT*FROM m_satuan WHERE kode_satuan='$kode_satuan'")->num_rows();
+		$this->db->set('kode_satuan', $kode_satuan);
+		$this->db->set('ket_satuan', trim($ket_satuan));
+		if($status == 'insert'){
+			if($cek == 0){
+				$this->db->set('creat_by', $this->username);
+				$this->db->set('creat_at', date('Y-m-d H:i:s'));
+				$data = $this->db->insert('m_satuan');
+				$msg = 'OK!';
+			}else{
+				$data = false;
+				$msg = 'DATA SATUAN SUDAH ADA!';
+			}
+		}
+		if($status == 'update'){
+			$s = $this->db->query("SELECT*FROM m_satuan WHERE id='$id'")->row();
+			if($s->kode_satuan == $kode_satuan && $s->ket_satuan == $ket_satuan){
+				$data = false;
+				$msg = 'DATA SATUAN SUDAH ADA!';
+			}else if($cek != 0 && $s->kode_satuan != $kode_satuan){
+				$data = false;
+				$msg = 'DATA SATUAN SUDAH ADA!';
+			}else{
+				$this->db->set('edit_by', $this->username);
+				$this->db->set('edit_at', date('Y-m-d H:i:s'));
+				$this->db->where('id', $id);
+				$data = $this->db->update('m_satuan');
+				$msg = 'OK!';
+			}
+		}
+		return [
+			'data' => $data,
+			'msg' => $msg,
 		];
 	}
 
