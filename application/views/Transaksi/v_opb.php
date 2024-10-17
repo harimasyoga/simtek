@@ -49,7 +49,7 @@
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
 							<div class="col-md-2">DEPARTEMEN <span style="color:#f00">*</span></div>
 							<div class="col-md-5" style="padding-bottom:3px">
-								<select id="plh_departemen" class="form-control select2" onchange="departemen()">
+								<select id="plh_departemen" class="form-control select2" onchange="pilihBarang()">
 									<?php
 										$level = $this->session->userdata('level');
 										$bagian = $this->db->query("SELECT b.id_group,b.kode_departemen,d.main_menu,d.nama FROM m_modul_group m 
@@ -142,7 +142,7 @@
 	const urlAuth = '<?= $this->session->userdata('level')?>';
 	status = 'insert';
 	$(document).ready(function() {
-		// $("#destroy").load("<?php echo base_url('Master/destroy') ?>")
+		$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
 		$(".select2").select2()
 		// load_data()
 	});
@@ -154,6 +154,7 @@
 
 	function tambah()
 	{
+		$("#id_cart").val(0)
 		$("#plh_departemen").val('').trigger('change').prop('disabled', false)
 		loadBarang()
 	}
@@ -177,11 +178,6 @@
 	// 		}
 	// 	});
 	// }
-
-	function departemen()
-	{
-		$("#plh_departemen").prop('disabled', true)
-	}
 
 	function loadBarang()
 	{
@@ -222,8 +218,10 @@
 				plh_departemen, id_mbh, id_mbh_lama, jenistipe, material, ukuran, merk
 			}),
 			success: function(res){
-				data = JSON.parse(res)
-				console.log(data)
+				data = JSON.parse(res);
+				console.log(data);
+				(plh_departemen != '') ? prop = true : prop = false;
+				$("#plh_departemen").prop('disabled', prop)
 				$("#id_mbh").val(id_mbh)
 				$(".list-detail").html(data.html)
 				$("#jenistipe").html(data.htmlJT).val((id_mbh == id_mbh_lama) ? jenistipe : '')
@@ -235,56 +233,113 @@
 		})
 	}
 
+	function pilihSatuan(i)
+	{
+		$("#qty"+i).val('')
+		$(".txtsatuan"+i).html('')
+		$(".hitungqty"+i).html('')
+		$(".ketsatuan"+i).html('')
+		$("#i_qty1_"+i).val('')
+		$("#i_qty2_"+i).val('')
+	}
+
 	function pengadaaan(i)
 	{
-		
+		const rupiah = new Intl.NumberFormat('id-ID', {styles: 'currency', currency: 'IDR'})
 		let h_satuan = parseInt($("#h_satuan"+i).val())
 		let plh_satuan = $("#plh_satuan"+i).val()
+		let i_qty = parseInt($("#qty"+i).val().split('.').join(''));
+		(isNaN(i_qty) || i_qty < 0 || i_qty.toString().length >= 7) ? i_qty = 0 : i_qty = i_qty;
+		$("#qty"+i).val(rupiah.format(i_qty));
 		let qty1 = parseInt($("#h_qty1_"+i).val())
 		let qty2 = parseInt($("#h_qty2_"+i).val())
 		let qty3 = parseInt($("#h_qty3_"+i).val())
-		let i_qty = parseInt($("#qty"+i).val())
-
+		let satuan1 = $("#h_satuan1_"+i).val()
+		let satuan2 = $("#h_satuan2_"+i).val()
+		let satuan3 = $("#h_satuan3_"+i).val()
+		// PERHITUNGAN
+		let besar = 0; let tengah = 0; let kecil = 0; let x_besar = 0; let x_tengah = 0; let x_kecil = 0;
 		if(h_satuan == 1){
-			$(".txtsatuan"+i).html(h_satuan)
-			$(".hitungqty"+i).html(h_satuan)
-			$(".ketsatuan"+i).html(h_satuan)
+			$(".txtsatuan"+i).html(`TERKECIL`)
+			$(".hitungqty"+i).html(`${rupiah.format(i_qty)}`)
+			$(".ketsatuan"+i).html(`${satuan3}`)
 		}
 		if(h_satuan == 2){
-			$(".txtsatuan"+i).html(h_satuan)
-			$(".hitungqty"+i).html(h_satuan)
-			$(".ketsatuan"+i).html(h_satuan)
-		}
-		if(h_satuan == 3){
-			let besar = 0
-			let tengah = 0
-			let kecil = 0
+			if(plh_satuan == 'TERBESAR'){
+				besar = i_qty * qty1; kecil = i_qty * qty3;
+				x_besar = besar; x_kecil = kecil;
+			}
 			if(plh_satuan == 'TERKECIL'){
 				if(i_qty >= qty3){
-					kecil = i_qty / qty3
+					kecil = parseFloat(i_qty / qty3).toFixed(2).split('.00').join('');
+					(kecil >= qty1) ? besar = parseFloat(kecil / qty1).toFixed(2).split('.00').join('') : besar = 0;
+				}else{
+					kecil = 0
+				}
+				x_besar = parseFloat(kecil * qty1).toFixed(2).split('.00').join('')
+				x_kecil = i_qty
+			}
+			$(".txtsatuan"+i).html(`TERBESAR<br>TERKECIL`)
+			$(".hitungqty"+i).html(`${rupiah.format(x_besar)}<br>${rupiah.format(x_kecil)}`)
+			$(".ketsatuan"+i).html(`${satuan1}<br>${satuan3}`)
+		}
+		if(h_satuan == 3){
+			if(plh_satuan == 'TERBESAR'){
+				besar = i_qty * qty1; tengah = besar * qty2; kecil = tengah * qty3;
+				x_besar = besar; x_tengah = tengah; x_kecil = kecil;
+			}
+			if(plh_satuan == 'TENGAH'){
+				kecil = i_qty * qty3;
+				(i_qty >= qty2) ? besar = parseFloat(i_qty / qty2) : besar = 0;
+				x_besar = parseFloat(besar * qty1).toFixed(2).split('.00').join('')
+				x_tengah = i_qty
+				x_kecil = kecil
+			}
+			if(plh_satuan == 'TERKECIL'){
+				if(i_qty >= qty3){
+					kecil = parseFloat(i_qty / qty3).toFixed(2).split('.00').join('')
 					if(kecil >= qty2){
-						tengah = kecil / qty2
-						if(tengah >= qty1){
-							besar = tengah / qty1
-						}else{
-							besar = kecil / qty2
-						}
+						tengah = parseFloat(kecil / qty2).toFixed(2).split('.00').join('');
+						(tengah >= qty1) ? besar = parseFloat(tengah / qty1).toFixed(2).split('.00').join('') : besar = 0;
 					}else{
-						tengah = i_qty / qty3
+						tengah = 0
 					}
 				}else{
-					kecil = i_qty
+					kecil = 0
 				}
+				x_besar = parseFloat(tengah * qty1).toFixed(2).split('.00').join('')
+				x_tengah = kecil
+				x_kecil = i_qty
 			}
-			let x_besar = besar * qty1
-			let x_tengah = tengah * qty2
-			let x_kecil = i_qty
-			console.log("besar : ", besar.toFixed(2))
-			console.log("tengah : ", tengah.toFixed(2))
-			console.log("kecil : ", kecil)
-			$(".txtsatuan"+i).html(h_satuan)
-			$(".hitungqty"+i).html(h_satuan)
-			$(".ketsatuan"+i).html(h_satuan)
+			$(".txtsatuan"+i).html(`TERBESAR<br>TENGAH<br>TERKECIL`)
+			$(".hitungqty"+i).html(`${rupiah.format(x_besar)}<br>${rupiah.format(x_tengah)}<br>${rupiah.format(x_kecil)}`)
+			$(".ketsatuan"+i).html(`${satuan1}<br>${satuan2}<br>${satuan3}`)
 		}
+		$("#i_qty1_"+i).val(x_besar)
+		$("#i_qty2_"+i).val(x_tengah)
+	}
+
+	function addCartOPB(i)
+	{
+		let id_cart = parseInt($("#id_cart").val()) + 1;
+		$("#id_cart").val(id_cart)
+		let id_mbh = $("#h_id_mbh"+i).val()
+		let id_mbd = $("#h_id_mbd"+i).val()
+		let plh_bagian = $("#plh_bagian"+i).val()
+		let plh_satuan = $("#plh_satuan"+i).val()
+		let i_qty1 = $("#i_qty1_"+i).val()
+		let i_qty2 = $("#i_qty2_"+i).val()
+		let i_qty3 = $("#qty"+i).val().split('.').join('')
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/addCartOPB')?>',
+			type: "POST",
+			data : ({
+				id_cart, id_mbh, id_mbd, plh_bagian, plh_satuan, i_qty1, i_qty2, i_qty3, status
+			}),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+			}
+		})
 	}
 </script>
