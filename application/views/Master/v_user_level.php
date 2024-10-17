@@ -83,6 +83,8 @@
 							<select id="approve" class="form-control select2">
 								<option value="">PILIH</option>
 								<option value="ALL">ALL</option>
+								<option value="OWNER">OWNER</option>
+								<option value="FINANCE">FINANCE</option>
 								<option value="ADMIN">ADMIN</option>
 								<option value="ACC">ACC</option>
 							</select>

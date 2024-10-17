@@ -235,6 +235,8 @@
 
 <script type="text/javascript">
 	status = "insert";
+	const urlAuth = '<?= $this->session->userdata('level')?>';
+
 	$(document).ready(function() {
 		$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
 		$(".select2").select2()
@@ -579,18 +581,18 @@
 		}
 	}
 
-	$("#n_size").on({
-		keydown: function(e) {
-			if (e.which === 32)
-				return false;
-		},
-		keyup: function(){
-			this.value = this.value.toUpperCase();
-		},
-		change: function() {
-			this.value = this.value.replace(/\s/g, "");
-		}
-	});
+	// $("#n_size").on({
+	// 	keydown: function(e) {
+	// 		if (e.which === 32)
+	// 			return false;
+	// 	},
+	// 	keyup: function(){
+	// 		this.value = this.value.toUpperCase();
+	// 	},
+	// 	change: function() {
+	// 		this.value = this.value.replace(/\s/g, "");
+	// 	}
+	// });
 
 	function loadMerk(opsi)
 	{
@@ -888,6 +890,10 @@
 					$("#i_barang").html(data.header).prop('disabled', false)
 					status = 'insert'
 				}
+				$("#p_jenis_tipe").hide()
+				$("#p_material").hide()
+				$("#p_size").hide()
+				$("#p_merk").hide()
 				viewBarang(id_mbh)
 			}
 		})

@@ -289,7 +289,7 @@ class Master extends CI_Controller
 		}else{
 			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$cleanTxt'");
 		}
-		if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
+		if(!preg_match("/^[A-Z0-9 .-]*$/", $cleanTxt)){
 			$data = false; $msg = 'JENIS / TIPE BARU HANYA BOLEH HURUF ATAU ANGKA!';
 		}else if($cekBarang->num_rows() != 0 || $cleanTxt == '+'){
 			$data = false; $msg = 'JENIS / TIPE SUDAH ADA!';
@@ -395,13 +395,13 @@ class Master extends CI_Controller
 		$i_jenis_tipe = $_POST["i_jenis_tipe"];
 		$i_material = $_POST["i_material"];
 		$n_size = $_POST["n_size"];
-		$cleanTxt = trim(preg_replace('/\s\s+/', '', str_replace("\n", "", $n_size)));
+		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_size)));
 		if($id_mbh == '+' || $i_jenis_tipe == '+' || $i_material == '+'){
 			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE s.size='$cleanTxt'");
 		}else{
 			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$i_material' AND s.size='$cleanTxt'");
 		}
-		if(!preg_match("/^[A-Z0-9]*$/", $cleanTxt)){
+		if(!preg_match("/^[A-Z0-9 .-]*$/", $cleanTxt)){
 			$data = false; $msg = 'SIZE BARU HANYA BOLEH HURUF ATAU ANGKA!';
 		}else if($cekBarang->num_rows() != 0 || $cleanTxt == '+'){
 			$data = false; $msg = 'SIZE SUDAH ADA!';

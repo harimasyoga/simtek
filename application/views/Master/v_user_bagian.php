@@ -40,15 +40,13 @@
 										<?php } ?>
 									</td>
 									<td align="center" >
-										<?php if($row->lev!='0'){
-											$query_cek = $this->db->query("SELECT*FROM m_departemen_bagian a left join m_modul_group b ON a.id_group=b.id_group where a.id_group='$id' and kode_departemen='$row->kode' ")->num_rows();
-										?>
+										<?php $query_cek = $this->db->query("SELECT*FROM m_departemen_bagian a left join m_modul_group b ON a.id_group=b.id_group where a.id_group='$id' and kode_departemen='$row->kode' ")->num_rows(); ?>
 											<input id="<?= "status".$row->kode;?>" name="<?= "status".$row->kode;?>" type="checkbox" class="form-control" onchange="cek(<?= $row->kode ?>,this.value)"
 										<?php if($query_cek > 0) {  ?>
 											checked value="1">
 										<?php }else{ ?> 
 											value="0">
-										<?php }} ?>
+										<?php } ?>
 									</td>
 								</tr>
 							<?php $no++;} ?>

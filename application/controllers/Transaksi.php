@@ -594,6 +594,7 @@ class Transaksi extends CI_Controller
 	function detailBarang()
 	{
 		$html = '';
+		$departemen = $_POST["plh_departemen"];
 		$id_mbh = $_POST["id_mbh"];
 		$id_mbh_lama = $_POST["id_mbh_lama"];
 		$jenistipe = $_POST["jenistipe"];
@@ -610,14 +611,27 @@ class Transaksi extends CI_Controller
 			$where = "";
 		}
 
-		if($id_mbh == ''){
+		if($departemen == ''){
+			$html = 'PILIH DEPARTEMEN!';
+		}else if($id_mbh == ''){
 			$html = 'DATA KOSONG!';
 		}else{
 			$detail = $this->db->query("SELECT*FROM m_barang_detail d WHERE d.id_mbh='$id_mbh' $where ORDER BY kode_barang,jenis_tipe,material,d.size,merk,p_satuan");
 			if($detail->num_rows() == ""){
 				$html = 'DATA KOSONG!';
 			}else{
-				$html .='<table class="table table-bordered table-striped" style="margin:0">
+				// BAGIAN
+				$level = $this->session->userdata('level');
+				$bagian = $this->db->query("SELECT b.id_group,b.kode_departemen,d.nama FROM m_modul_group m 
+				INNER JOIN m_departemen_bagian b ON m.id_group=b.id_group
+				INNER JOIN m_departemen d ON b.kode_departemen=d.kode
+				WHERE m.val_group='$level' AND d.main_menu='$departemen'
+				GROUP BY b.id_group,b.kode_departemen");
+				$htmlBagian = '';
+				foreach($bagian->result() as $b){
+					$htmlBagian .= '<option value="'.$b->kode_departemen.'">'.$b->nama.'</option>';
+				}
+				$html .='<table style="margin:12px 0 0;border:1px solid #dee2e6">
 					<tr>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KODE BARANG</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">JENIS/TIPE</th>
@@ -625,48 +639,79 @@ class Transaksi extends CI_Controller
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SIZE</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MERK</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">SATUAN</th>
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 12px;text-align:center">PILIH SATUAN</th>
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">QTY</th>
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">PENGADAAN</th>
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">BAGIAN</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">AKSI</th>
-					</tr>
-					<tr>
-						<td style="padding:0;border:0" colspan="9"></td>
 					</tr>';
 					$i = 0;
 					foreach($detail->result() as $r){
-						$i++;
 						($r->id_mbd == '') ? $style = ';font-weight:bold;background:#ffc107;border:1px solid #e5ad06' : $style = '';
 						// SATUAN
 						if($r->p_satuan == 1){
-							$htmlSat = '<td style="padding:6px'.$style.'">TERKECIL</td>
-							<td style="padding:6px;text-align:right'.$style.'">'.number_format($r->qty3,0,',','.').'</td>
-							<td style="padding:6px'.$style.'">'.$r->satuan3.'</td>';
+							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">TERKECIL</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:right'.$style.'">'.number_format($r->qty3,0,',','.').'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">'.$r->satuan3.'</td>';
+							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option>';
 						}
 						if($r->p_satuan == 2){
-							$htmlSat = '<td style="padding:6px'.$style.'">TERBESAR<br>TERKECIL</td>
-							<td style="padding:6px;text-align:right'.$style.'">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
-							<td style="padding:6px'.$style.'">'.$r->satuan1.'<br>'.$r->satuan3.'</td>';
+							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">TERBESAR<br>TERKECIL</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:right'.$style.'">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">'.$r->satuan1.'<br>'.$r->satuan3.'</td>';
+							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option><option value="TERBESAR">TERBESAR</option>';
 						}
 						if($r->p_satuan == 3){
-							$htmlSat = '<td style="padding:6px'.$style.'">TERBESAR<br>TENGAH<br>TERKECIL</td>
-							<td style="padding:6px;text-align:right'.$style.'">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty2,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
-							<td style="padding:6px'.$style.'">'.$r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'</td>';
+							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">TERBESAR<br>TENGAH<br>TERKECIL</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:right'.$style.'">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty2,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">'.$r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'</td>';
+							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option><option value="TERBESAR">TERBESAR</option><option value="TENGAH">TENGAH</option>';
 						}
-						// AKSI
+						// PENGADAAN
 						$html .= '<tr>
-							<td style="padding:6px'.$style.'">'.$r->kode_barang.'</td>
-							<td style="padding:6px'.$style.'">'.$r->jenis_tipe.'</td>
-							<td style="padding:6px'.$style.'">'.$r->material.'</td>
-							<td style="padding:6px'.$style.'">'.$r->size.'</td>
-							<td style="padding:6px'.$style.'">'.$r->merk.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">'.$r->kode_barang.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">'.$r->jenis_tipe.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">'.$r->material.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">'.$r->size.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px'.$style.'">'.$r->merk.'</td>
 							'.$htmlSat.'
-							<td style="padding:6px;text-align:center'.$style.'">
-								
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center'.$style.'">
+								<select id="plh_satuan'.$i.'" class="form-control" style="padding:3px;width:100%" onchange="pengadaaan('."'".$i."'".')">
+									'.$htmlPlhSatuan.'
+								</select>
+							</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center'.$style.'">
+								<input type="number" id="qty'.$i.'" class="form-control" style="width:60px;padding:3px 4px;text-align:right" onchange="pengadaaan('."'".$i."'".')">
+							</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center'.$style.'">
+								<div class="txtsatuan'.$i.'">-</div>
+							</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center'.$style.'">
+								<input type="hidden" id="h_satuan'.$i.'" value="'.$r->p_satuan.'">
+								<input type="hidden" id="h_qty1_'.$i.'" value="'.round($r->qty1,2).'">
+								<input type="hidden" id="h_qty2_'.$i.'" value="'.round($r->qty2,2).'">
+								<input type="hidden" id="h_qty3_'.$i.'" value="'.round($r->qty3,2).'">
+								<div class="hitungqty'.$i.'">-</div>
+							</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center'.$style.'">
+								<div class="ketsatuan'.$i.'">-</div>
+							</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center'.$style.'">
+								<select id="plh_bagian'.$i.'" class="form-control" style="padding:3px;width:100%">
+									<option value="">PILIH</option>
+									'.$htmlBagian.'
+								</select>
+							</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center'.$style.'">
+								<button type="button" class="btn btn-xs btn-success">tambah</button>
 							</td>
 						</tr>';
 						if($detail->num_rows() != $i){
 							$html .= '<tr>
-								<td style="padding:2px;border:0" colspan="9"></td>
+								<td style="padding:2px;border:1px solid #dee2e6;" colspan="13"></td>
 							</tr>';
 						}
+						$i++;
 					}
 				$html .= '</table>';
 			}

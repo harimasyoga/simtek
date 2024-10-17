@@ -47,6 +47,28 @@
 					</div>
 					<div class="card-body" style="padding:6px">
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">DEPARTEMEN <span style="color:#f00">*</span></div>
+							<div class="col-md-5" style="padding-bottom:3px">
+								<select id="plh_departemen" class="form-control select2" onchange="departemen()">
+									<?php
+										$level = $this->session->userdata('level');
+										$bagian = $this->db->query("SELECT b.id_group,b.kode_departemen,d.main_menu,d.nama FROM m_modul_group m 
+										INNER JOIN m_departemen_bagian b ON m.id_group=b.id_group
+										INNER JOIN m_departemen d ON b.kode_departemen=d.kode
+										WHERE m.val_group='$level' AND d.main_menu='0'
+										GROUP BY b.id_group,b.kode_departemen");
+										$html1 ='';
+										$html1 .='<option value="">PILIH</option>';
+										foreach($bagian->result() as $r){
+											$html1 .='<option value="'.$r->kode_departemen.'">'.$r->nama.'</option>';
+										}
+										echo $html1
+									?>
+								</select>
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
 							<div class="col-md-2">PILIH BARANG <span style="color:#f00">*</span></div>
 							<div class="col-md-5">
 								<select id="plh_barang" class="form-control select2" onchange="pilihBarang()">
@@ -132,6 +154,7 @@
 
 	function tambah()
 	{
+		$("#plh_departemen").val('').trigger('change').prop('disabled', false)
 		loadBarang()
 	}
 
@@ -155,6 +178,11 @@
 	// 	});
 	// }
 
+	function departemen()
+	{
+		$("#plh_departemen").prop('disabled', true)
+	}
+
 	function loadBarang()
 	{
 		$.ajax({
@@ -176,6 +204,7 @@
 
 	function pilihBarang()
 	{
+		let plh_departemen = $("#plh_departemen").val()
 		let id_mbh = $("#plh_barang").val()
 		let id_mbh_lama = $("#id_mbh").val()
 		let jenistipe = $("#jenistipe").val()
@@ -190,7 +219,7 @@
 			url: '<?php echo base_url('Transaksi/detailBarang')?>',
 			type: "POST",
 			data: ({
-				id_mbh, id_mbh_lama, jenistipe, material, ukuran, merk
+				plh_departemen, id_mbh, id_mbh_lama, jenistipe, material, ukuran, merk
 			}),
 			success: function(res){
 				data = JSON.parse(res)
@@ -201,7 +230,61 @@
 				$("#material").html(data.htmlM).val((id_mbh == id_mbh_lama) ? material : '')
 				$("#ukuran").html(data.htmlS).val((id_mbh == id_mbh_lama) ? ukuran : '')
 				$("#merk").html(data.htmlMr).val((id_mbh == id_mbh_lama) ? merk : '')
+				$(".select2").select2()
 			}
 		})
+	}
+
+	function pengadaaan(i)
+	{
+		
+		let h_satuan = parseInt($("#h_satuan"+i).val())
+		let plh_satuan = $("#plh_satuan"+i).val()
+		let qty1 = parseInt($("#h_qty1_"+i).val())
+		let qty2 = parseInt($("#h_qty2_"+i).val())
+		let qty3 = parseInt($("#h_qty3_"+i).val())
+		let i_qty = parseInt($("#qty"+i).val())
+
+		if(h_satuan == 1){
+			$(".txtsatuan"+i).html(h_satuan)
+			$(".hitungqty"+i).html(h_satuan)
+			$(".ketsatuan"+i).html(h_satuan)
+		}
+		if(h_satuan == 2){
+			$(".txtsatuan"+i).html(h_satuan)
+			$(".hitungqty"+i).html(h_satuan)
+			$(".ketsatuan"+i).html(h_satuan)
+		}
+		if(h_satuan == 3){
+			let besar = 0
+			let tengah = 0
+			let kecil = 0
+			if(plh_satuan == 'TERKECIL'){
+				if(i_qty >= qty3){
+					kecil = i_qty / qty3
+					if(kecil >= qty2){
+						tengah = kecil / qty2
+						if(tengah >= qty1){
+							besar = tengah / qty1
+						}else{
+							besar = kecil / qty2
+						}
+					}else{
+						tengah = i_qty / qty3
+					}
+				}else{
+					kecil = i_qty
+				}
+			}
+			let x_besar = besar * qty1
+			let x_tengah = tengah * qty2
+			let x_kecil = i_qty
+			console.log("besar : ", besar.toFixed(2))
+			console.log("tengah : ", tengah.toFixed(2))
+			console.log("kecil : ", kecil)
+			$(".txtsatuan"+i).html(h_satuan)
+			$(".hitungqty"+i).html(h_satuan)
+			$(".ketsatuan"+i).html(h_satuan)
+		}
 	}
 </script>
