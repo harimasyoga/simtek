@@ -37,7 +37,7 @@ $setting = $this->db->query("SELECT * FROM m_setting")->row();
 	<link rel="stylesheet" href="<?= base_url('assets/') ?>dist/css/adminlte.min.css?v=1.0">
 
 	<!-- overlayScrollbars -->
-	<link rel="stylesheet" href="<?= base_url('assets/') ?>dist/css/new.css?v=2.4">
+	<link rel="stylesheet" href="<?= base_url('assets/') ?>dist/css/new.css?v=3">
 	<!-- Google Font: Source Sans Pro -->
 	<link href="<?= base_url('assets/') ?>plugins/fontawesome-free/css/customFont.css" rel="stylesheet">
 

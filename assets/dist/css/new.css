@@ -135,6 +135,41 @@
 	background-color: rgba(225, 225, 225, 0.6);
 }
 
+.btn-opbh-all {
+	background: #fff;
+	padding: 10px 30px 10px 10px;
+	border: none;
+	color: #888
+}
+
+.btn-opbh-klik {
+	background: #fff;
+	padding: 10px 30px 10px 10px;
+	border: 1px solid #0b57d0;
+	border-width: 0 0 3px;
+	color: #000
+}
+
+.btn-opbh-all:focus, .btn-opbh-klik:focus {
+	outline: none;
+}
+
+.ff-all {
+	font-weight: normal;
+}
+
+.ff-klik {
+	font-weight: bold;
+}
+
+.tr-opbh-all:hover {
+	background: #eceeef;
+}
+
+.td-opbh-all {
+	padding: 30px 20px;
+}
+
 /* preview img zoom */
 
 #modal-img-content {

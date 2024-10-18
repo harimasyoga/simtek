@@ -20,7 +20,7 @@
 	</style>
 
 	<section class="content">
-		<div class="row row-list">
+		<div class="row">
 			<div class="col-md-12">
 				<div class="card card-primary card-outline">
 					<div class="card-header" style="padding:12px">
@@ -32,6 +32,17 @@
 							<button type="button" class="btn btn-default btn-sm"><i class="fas fa-sync-alt"></i></button>
 							<div class="float-right">
 								<button type="button" class="btn btn-default btn-sm"><i class="fas fa-sync-alt"></i></button>
+							</div>
+						</div>
+						<div style="overflow:auto;white-space:nowrap">
+							<div class="list-header" style="padding:0;border-bottom:3px solid #dee2e6"></div>
+						</div>
+						<div class="card-body row" style="padding:0">
+							<div class="col-md-3">
+								<div class="list-opb" style="padding:0"></div>
+							</div>
+							<div class="col-md-9">
+							<div class="list-opb-detail" style="padding:0"></div>
 							</div>
 						</div>
 					</div>
@@ -159,6 +170,9 @@
 	$(document).ready(function() {
 		$(".select2").select2()
 		// load_data()
+		loadHeader()
+		btnHeader(0)
+		// loadData()
 	});
 
 	function reloadTable() {
@@ -211,6 +225,41 @@
 	// 	});
 	// }
 
+	function loadHeader()
+	{
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/loadHeader')?>',
+			type: "POST",
+			success: function(res){
+				data = JSON.parse(res)
+				$(".list-header").html(data.html)
+			}
+		})
+	}
+
+	function btnHeader(kode_dpt)
+	{
+		console.log("kode_dpt : ", kode_dpt)
+		$(".ff").removeClass('ff-klik').addClass('ff-all')
+		$(".boh").removeClass('btn-opbh-klik').addClass('btn-opbh-all')
+		$("#h_"+kode_dpt).removeClass('btn-opb-header').addClass('btn-opbh-klik')
+		$("#ff_"+kode_dpt).removeClass('ff-all').addClass('ff-klik')
+		loadList(kode_dpt)
+	}
+
+	function loadList(kode_dpt)
+	{
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/loadList')?>',
+			type: "POST",
+			data: ({ kode_dpt }),
+			success: function(res){
+				data = JSON.parse(res)
+				$(".list-opb").html(data.html)
+			}
+		})
+	}
+
 	function loadBarang()
 	{
 		$.ajax({
@@ -218,7 +267,6 @@
 			type: "POST",
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				$("#id_mbh").val('')
 				$("#plh_barang").html(data.html)
 				$("#jenistipe").html('<option value="">PILIH</option>')
@@ -252,7 +300,6 @@
 			}),
 			success: function(res){
 				data = JSON.parse(res);
-				console.log(data);
 				(plh_departemen != '') ? prop = true : prop = false;
 				$("#plh_departemen").prop('disabled', prop)
 				$("#id_mbh").val(id_mbh)
@@ -374,7 +421,6 @@
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				cartOPB()
 			}
 		})

@@ -950,4 +950,94 @@ class Transaksi extends CI_Controller
 			'html' => $html,
 		]);
 	}
+
+	function loadHeader()
+	{
+		$html = '';
+		$level = $this->session->userdata('level');
+		$q_all = $this->db->query("SELECT COUNT(h.status_opb) AS aal FROM trs_opb_header h
+		INNER JOIN m_departemen_bagian b ON h.kode_dpt=b.kode_departemen
+		INNER JOIN m_modul_group g ON b.id_group=g.id_group
+		WHERE h.status_opb='Open' AND g.val_group='$level'
+		GROUP BY h.status_opb");
+		($q_all->num_rows() == 0) ? $all = '' : $all = $q_all->row()->aal;
+		
+		$header = $this->db->query("SELECT h.kode_dpt,t.nama,t.icon,COUNT(h.kode_dpt) AS con FROM trs_opb_header h
+		INNER JOIN m_departemen t ON h.kode_dpt=t.kode
+		INNER JOIN m_departemen_bagian b ON t.kode=b.kode_departemen
+		INNER JOIN m_modul_group g ON b.id_group=g.id_group
+		WHERE h.status_opb='Open' AND g.val_group='$level'
+		GROUP BY h.kode_dpt");
+
+		if($header->num_rows() != ''){
+			$html .= '<div style="display:flex">
+				<div>
+					<button type="button" id="h_0" class="boh btn-opbh-klik" onclick="btnHeader('."'0'".')">
+						<span id="ff_0" class="ff ff-klik"><i class="fas fa-inbox"></i>&nbsp;&nbsp;ALL</span>
+						<span style="vertical-align:top;padding:1px 4px;font-weight:bold;font-size:12px">'.$all.'</span>
+					</button>
+				</div>';
+				foreach($header->result() as $h){
+					$html .= '<div>
+						<button type="button" id="h_'.$h->kode_dpt.'" class="boh btn-opbh-all" onclick="btnHeader('."'".$h->kode_dpt."'".')">
+							<span id="ff_'.$h->kode_dpt.'" class="ff ff-all"><i class="fas '.$h->icon.'"></i>&nbsp;&nbsp;'.$h->nama.'</span>
+							<span style="vertical-align:top;padding:1px 4px;font-weight:bold;font-size:12px">'.$h->con.'</span>
+						</button>
+					</div>';
+				}
+			$html .= '</div>';
+		}
+
+		echo json_encode([
+			'html' => $html,
+		]);
+	}
+
+	function loadList()
+	{
+		$html = '';
+		$level = $this->session->userdata('level');
+		$kode_dpt = $_POST["kode_dpt"];
+		($kode_dpt == 0) ? $wKodeDpt = "" : $wKodeDpt = "AND h.kode_dpt='$kode_dpt'";
+		$header = $this->db->query("SELECT t.nama,t.bg,h.* FROM trs_opb_header h
+		INNER JOIN m_departemen t ON h.kode_dpt=t.kode
+		INNER JOIN m_departemen_bagian b ON t.kode=b.kode_departemen
+		INNER JOIN m_modul_group g ON b.id_group=g.id_group
+		WHERE h.status_opb='Open' AND g.val_group='$level' $wKodeDpt
+		ORDER BY t.nama");
+
+		if($header->num_rows() != 0){
+			$html .= '<table class="table" style="margin:0">';
+			foreach($header->result() as $r){
+				// GET NAMA BAGIAN
+				$qBagian = $this->db->query("SELECT t.nama FROM trs_opb_detail d
+				INNER JOIN m_departemen t ON d.kode_bagian=t.kode
+				WHERE d.id_opbh='$r->id_opbh' AND d.no_opb='$r->no_opb'
+				GROUP BY d.kode_bagian ORDER BY t.nama");
+				$nmBagian = '';
+				$ii = 0;
+				foreach($qBagian->result() as $b){
+					$ii++;
+					$nmBagian .= $b->nama;
+					if($qBagian->num_rows() != $ii){
+						$nmBagian .= ', ';
+					}
+				}
+				// CEK BELUM BACA APA BELUM
+				($r->read1 == 'N') ? $read1 = ';border-left:3px solid #212529;font-weight:bold' : $read1 = ';background:#eceeef;border-left:3px solid #eceeef';
+				$html .='<tr class="tr-opbh-all" style="vertical-align:top'.$read1.'">
+					<td style="padding:16px 12px">
+						'.$r->no_opb.'&nbsp;&nbsp;<span style="background:#'.$r->bg.';padding:1px 10px;color:#fff;font-weight:normal;border-radius:20px">'.$r->nama.'</span>
+						<span style="float:right;font-weight:normal">'.$r->tgl_opb.'</span>
+						<div><span style="font-style:italic;font-weight:normal">'.$nmBagian.'</span></div>
+					</td>
+				</tr>';
+			}
+			$html .= '</table>';
+		}
+
+		echo json_encode([
+			'html' => $html,
+		]);
+	}
 }
