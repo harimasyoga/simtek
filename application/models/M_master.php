@@ -1,7 +1,7 @@
 <?php
 class M_master extends CI_Model{
- 	
- 	function __construct(){
+
+	function __construct(){
         parent::__construct();
         
         date_default_timezone_set('Asia/Jakarta');
@@ -50,7 +50,7 @@ class M_master extends CI_Model{
             return $return;
         }
     }
-   
+
     function get_data($table){
         $query = "SELECT * FROM $table";
         return $this->db->query($query);
@@ -61,14 +61,11 @@ class M_master extends CI_Model{
         return $this->db->query($query);
     }
 
-
-
     function get_data_one($table,$kolom,$id){
         
         $query = "SELECT * FROM $table WHERE $kolom='$id'";
         return $this->db->query($query);
     }
-
 
     function query($query1){
         
@@ -76,16 +73,13 @@ class M_master extends CI_Model{
         return $this->db->query($query);
     }
 
-
     function get_data_max($table,$kolom){
         $query = "SELECT IFNULL(LPAD(MAX(RIGHT($kolom,4))+1,4,0),'0001')AS nomor FROM $table";
         return $this->db->query($query)->row("nomor");
     }
 
-    function delete($tabel,$kolom,$id){
-        
-        $query = "DELETE FROM $tabel WHERE $kolom = '$id' ";
-        $result =  $this->db->query($query);
+    function delete($tabel, $kolom, $id){
+        $result = $this->db->query("DELETE FROM $tabel WHERE $kolom='$id'");
         return $result;
     }
 	
@@ -136,7 +130,7 @@ class M_master extends CI_Model{
 			);
 		}
     }
-   
+
 	function m_supplier($table,$status)
 	{
 		$id_supp        = $_POST["id_supp"];
@@ -241,7 +235,6 @@ class M_master extends CI_Model{
         
         $id = $this->input->post('username');
 
-   
         $data = array(
                 'username'  => $id,
                 'nm_user'  	=> $this->input->post('nm_user'),
@@ -265,34 +258,36 @@ class M_master extends CI_Model{
 
         return $result;
     }
-   
+
 	function m_modul_group($table,$status)
 	{
 		
         $id         = $this->input->post('id_group');
         $nm_group   = $this->input->post('nm_group');
         $val_group  = $this->input->post('val_group');
-   
+        $approve  = $this->input->post('approve');
         $data = array(
-			'nm_group'  	=> $nm_group,
-			'val_group'  	=> $val_group,
+			'nm_group' => $nm_group,
+			'val_group' => $val_group,
+			'approve' => $approve,
 		);
-
-        if ($status == 'insert') {
-				$cek = $this->db->query("SELECT * FROM m_modul_group WHERE nm_group = '$nm_group' and val_group='$val_group' ")->num_rows();
-
-				if ($cek > 0) {
-					return false;
-				}else{
-
-					$result= $this->db->insert($table,$data);
-				}
-
-        }else{
-            $result= $this->db->update($table,$data,array('id_group' => $id));
+		$cek = $this->db->query("SELECT*FROM m_modul_group WHERE val_group='$val_group' ")->num_rows();
+        if($status == 'insert') {
+			if($cek > 0) {
+				return false;
+			}else{
+				$result= $this->db->insert($table,$data);
+			}
         }
-        
-
+		// else{
+		// 	$s = $this->db->query("SELECT*FROM m_modul_group WHERE id_group='$id'")->row();
+		// 	if($cek > 0 != 0 && $s->val_group != $val_group){
+		// 		$result = false;
+		// 	}else{
+		// 		$this->db->where('id_group', $id);
+		// 		$result= $this->db->update($table, $data);
+		// 	}
+        // }
         return $result;
     }
 
@@ -324,113 +319,196 @@ class M_master extends CI_Model{
 
         return $result;
     }
-    
-    function m_produk($table,$status){
-        $data = array(
-			'kode_mc'  => $this->input->post('kode_mc'),
-			'nm_produk'  => $this->input->post('nm_produk'),
-			'no_customer' => $this->input->post('no_customer'),
-			'ukuran' => $this->input->post('ukuran'),
-			'ukuran_sheet' => $this->input->post('ukuran_sheet'),
-			'ukuran_sheet_p' => $this->input->post('ukuran_sheet_p'),
-			'ukuran_sheet_l' => $this->input->post('ukuran_sheet_l'),
-			'sambungan' => $this->input->post('sambungan'),
-			'material' => $this->input->post('material'),
-			'wall' => $this->input->post('wall'),
-			'l_panjang' => $this->input->post('l_panjang'),
-			'l_lebar' => $this->input->post('l_lebar'),
-			'l_tinggi' => $this->input->post('l_tinggi'),
-			'creasing' => $this->input->post('creasing'),
-			'creasing2' => $this->input->post('creasing2'),
-			'creasing3' => $this->input->post('creasing3'),
-			'flute' => $this->input->post('flute'),
-			'berat_bersih' => $this->input->post('berat_bersih'),
-			'luas_bersih' => $this->input->post('luas_bersih'),
-			'kualitas' => $this->input->post('kualitas'),
-			'kualitas_isi' => $this->input->post('kualitas_isi'),
-			'warna' => $this->input->post('warna'),
-			'no_design' => $this->input->post('no_design'),
-			'design' => $this->input->post('design'),
-			'tipe_box' => $this->input->post('tipe_box'),
-			'jenis_produk' => $this->input->post('jenis_produk'),
-			'kategori' => $this->input->post('kategori'),
-			'COA' => $this->input->post('COA'),
-			'jml_ikat' => $this->input->post('jml_ikat'),
-			'jml_palet' => $this->input->post('jml_palet'),
-			'jml_paku' => $this->input->post('jml_paku'),
-			'no_pisau' => $this->input->post('no_pisau'),
-			'no_karet' => $this->input->post('no_karet'),
-			'toleransi_kirim' => $this->input->post('toleransi_kirim'),
-			'spesial_req' => $this->input->post('spesial_req')
-		);
 
-		// CEK PRODUK JIKA ADA UKURAN FLUTE SUBSTANCE YANG SAMA
-		$h_id_pelanggan = $this->input->post('h_id_pelanggan');
-		$noCust = $this->input->post('no_customer');
-		$nm_produk = $this->input->post('nm_produk');
-		$flute = $this->input->post('flute');
-		$l_panjang = $this->input->post('l_panjang');
-		$l_lebar = $this->input->post('l_lebar');
-		$l_tinggi = $this->input->post('l_tinggi');
-		$ukSheetP = $this->input->post('ukuran_sheet_p');
-		$ukSheetL = $this->input->post('ukuran_sheet_l');
-		$kualitas = $this->input->post('kualitas');
-		$tipe_box = $this->input->post('tipe_box');
-		$sambungan = $this->input->post('sambungan');
-		$cekProduk = $this->db->query("SELECT*FROM m_produk WHERE no_customer='$noCust' AND nm_produk='$nm_produk' AND l_panjang='$l_panjang' AND l_lebar='$l_lebar' AND l_tinggi='$l_tinggi' AND ukuran_sheet_p='$ukSheetP' AND ukuran_sheet_l='$ukSheetL' AND tipe_box='$tipe_box' AND sambungan='$sambungan' AND flute='$flute' AND kualitas='$kualitas'");
-		
-		if ($status == 'insert') {
-			if($cekProduk->num_rows() > 0){
-				$result= array('result' => false);
-			}else{
-				$this->db->set("add_user", $this->username);
-				$result= array('result' => $this->db->insert($table,$data));
-			}
-		}else{
-			if($status == 'update' && $noCust != $h_id_pelanggan && $cekProduk->num_rows() > 0){
-				$result= array('result' => false);
-			}else{
-				$this->db->set("edit_user", $this->username);
-				$this->db->set("edit_time", date('Y-m-d H:i:s'));
-				$this->db->where("id_produk", $this->input->post('id'));
-				$result= array('result' => $this->db->update($table, $data));
+	function simpanBagian()
+	{        
+        $id_group = $this->input->post('id_group');
+        $query = $this->db->query("SELECT*FROM m_departemen")->result();
+		$delete = $this->db->query("DELETE from m_departemen_bagian where id_group='$id_group' ");
+		if($delete){
+			foreach ( $query as $row ) {
+				$cek = $this->input->post('status'.$row->kode);
+				if($cek == 1) {
+					$data = [
+						'id_group' => $id_group,
+						'kode_departemen' => $row->kode,
+					];
+					$result = $this->db->insert("m_departemen_bagian", $data);
+				}else{
+					$result = false;
+				}
 			}
 		}
-
         return $result;
     }
-
-	function buatKodeMC(){
-		$mcNoCust = $_POST["mcNoCust"];
-		$mcKodeUnik = $_POST["mcKodeUnik"];
-		$mcKategori = $_POST["mcKategori"];
-		$mcPanjang = $_POST["mcPanjang"];
-		$mcLebar = $_POST["mcLebar"];
-		$mcTinggi = $_POST["mcTinggi"];
-		$mcFlute = $_POST["mcFlute"];
-		$mcTipeBox = $_POST["mcTipeBox"];
-		$mcSambungan = $_POST["mcSambungan"];
-		$mcKualitas = $_POST["mcKualitas"];
-
-		if($mcKategori == 'K_BOX'){
-			$opsiWhere = "AND p.tipe_box='$mcTipeBox' AND p.sambungan='$mcSambungan'";
+    
+    function simpanBarang()
+	{
+		// HEADER
+		if($this->cart->total_items() != 0){
+			foreach($this->cart->contents() as $r){
+				$id_mbh = $r['options']['id_mbh'];
+				$nm_barang = $r['options']['nm_barang'];
+				if($id_mbh == '+'){
+					$cekBarang = $this->db->query("SELECT*FROM m_barang_header WHERE nm_barang='$nm_barang'");
+				}else{
+					$cekBarang = $this->db->query("SELECT*FROM m_barang_header WHERE id_mbh='$id_mbh'");
+				}
+				if($cekBarang->num_rows() == 0){
+					$header = [
+						'kode_header' => $r['options']['kode_header'],
+						'nm_barang' => $r['options']['nm_barang'],
+						'creat_by' => $this->username,
+						'creat_at' => date('Y-m-d H:i:s'),
+					];
+					$i_header = $this->db->insert("m_barang_header", $header);
+				}else{
+					$i_header = true;
+				}
+			}
 		}else{
-			$opsiWhere = "AND p.l_panjang='$mcPanjang' AND p.l_lebar='$mcLebar'";
+			$i_header = false;
 		}
-		$cekProduk = $this->db->query("SELECT p.* FROM m_produk p
-		INNER JOIN m_pelanggan c ON p.no_customer=c.id_pelanggan
-		WHERE c.kode_unik='$mcKodeUnik' AND p.flute='$mcFlute' $opsiWhere");
-		$cnt = str_pad($cekProduk->num_rows()+1, 4, "0", STR_PAD_LEFT);
+		// DETAIL
+		if($i_header){
+			if($this->cart->total_items() != 0){
+				foreach($this->cart->contents() as $r){
+					$id_mbh2 = $r['options']['id_mbh'];
+					$nm_barang2 = $r['options']['nm_barang'];
+					if($id_mbh2 == '+'){
+						$cekHeader = $this->db->query("SELECT*FROM m_barang_header WHERE nm_barang='$nm_barang2'");
+					}else{
+						$cekHeader = $this->db->query("SELECT*FROM m_barang_header WHERE id_mbh='$id_mbh2'");
+					}
+					if($cekHeader->num_rows() != 0){
+						$detail = [
+							'id_mbh' => $cekHeader->row()->id_mbh,
+							'kode_barang' => $r['options']['kode_barang'].'-'.$r['options']['kode_urut'],
+							'jenis_tipe' => ($r['options']['jenis_tipe'] == '') ? '-' : $r['options']['jenis_tipe'],
+							'material' => ($r['options']['material'] == '') ? '-' : $r['options']['material'],
+							'size' => ($r['options']['size'] == '') ? '-' : $r['options']['size'],
+							'merk' => ($r['options']['merk'] == '') ? '-' : $r['options']['merk'],
+							'p_satuan' => $r['options']['pilih_satuan'],
+							'qty1' => ($r['options']['satuan_terbesar'] == 0) ? null : $r['options']['satuan_terbesar'],
+							'satuan1' => ($r['options']['p_satuan_terbesar'] == "") ? null : $r['options']['p_satuan_terbesar'],
+							'qty2' => ($r['options']['satuan_tengah'] == 0) ? null : $r['options']['satuan_tengah'],
+							'satuan2' => ($r['options']['p_satuan_tengah'] == "") ? null : $r['options']['p_satuan_tengah'],
+							'qty3' => $r['options']['satuan_terkecil'],
+							'satuan3' => $r['options']['p_satuan_terkecil'],
+							'creat_by' => $this->username,
+							'creat_at' => date('Y-m-d H:i:s'),
+						];
+						$i_detail = $this->db->insert("m_barang_detail", $detail);
+					}
+				}
+			}else{
+				$i_detail = false;
+			}
+		}else{
+			$i_detail = false;
+		}
+		return [
+			'i_header' => $i_header,
+			'i_detail' => $i_detail,
+		];
+	}
 
-		return array(
-			'mcNoUrut' => $cnt,
-		);
+	function editBarang($data = '')
+	{
+		$kode_lama = $data['options']['detail'];
+		$kode_barang = $data['options']['kode_barang'];
+		$kode_baru = $kode_barang.'-'.$data['options']['kode_urut'];
+		if($kode_lama != $kode_barang){
+			$this->db->set('kode_barang', $kode_baru);
+		}
+		$this->db->set('jenis_tipe', $data['options']['jenis_tipe']);
+		$this->db->set('material', $data['options']['material']);
+		$this->db->set('size', $data['options']['size']);
+		$this->db->set('merk', $data['options']['merk']);
+		$this->db->set('p_satuan', $_POST['pilih_satuan']);
+		$this->db->set('qty1', ($_POST['satuan_terbesar'] == 0) ? null : $_POST['satuan_terbesar']);
+		$this->db->set('satuan1', ($_POST['p_satuan_terbesar'] == "") ? null : $_POST['p_satuan_terbesar']);
+		$this->db->set('qty2', ($_POST['satuan_tengah'] == 0) ? null : $_POST['satuan_tengah']);
+		$this->db->set('satuan2', ($_POST['p_satuan_tengah'] == "") ? null : $_POST['p_satuan_tengah']);
+		$this->db->set('qty3', $_POST['satuan_terkecil']);
+		$this->db->set('satuan3', $_POST['p_satuan_terkecil']);
+		$this->db->set('edit_by', $this->username);
+		$this->db->set('edit_at', date('Y-m-d H:i:s'));
+		$this->db->where('id_mbh', $_POST['id_mbh']);
+		$this->db->where('id_mbd', $_POST['id_mbd']);
+		$update = $this->db->update('m_barang_detail');
+		return [
+			'data' => $data,
+			'update' => $update,
+		];
+	}
+
+	function hapusBarang()
+	{
+		$id_mbh = $_POST["id_mbh"];
+		$id_mbd = $_POST["id_mbd"];
+		$this->db->where('id_mbd', $id_mbd);
+		$detail = $this->db->delete('m_barang_detail');
+		if($detail){
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' GROUP BY id_mbh")->num_rows();
+			if($cekBarang == 0){
+				$this->db->where('id_mbh', $id_mbh);
+				$header = $this->db->delete('m_barang_header');
+			}else{
+				$header = false;
+			}
+		}else{
+			$header = false;
+		}
+		return [
+			'delete' => $detail,
+			'header' => $header,
+		];
+	}
+
+	function simpanSatuan()
+	{
+		$id = $_POST["id"];
+		$status = $_POST["status"];
+		$kode_satuan = $_POST["kode_satuan"];
+		$ket_satuan = $_POST["ket_satuan"];
+		$cek = $this->db->query("SELECT*FROM m_satuan WHERE kode_satuan='$kode_satuan'")->num_rows();
+		$this->db->set('kode_satuan', $kode_satuan);
+		$this->db->set('ket_satuan', trim($ket_satuan));
+		if($status == 'insert'){
+			if($cek == 0){
+				$this->db->set('creat_by', $this->username);
+				$this->db->set('creat_at', date('Y-m-d H:i:s'));
+				$data = $this->db->insert('m_satuan');
+				$msg = 'OK!';
+			}else{
+				$data = false;
+				$msg = 'DATA SATUAN SUDAH ADA!';
+			}
+		}
+		if($status == 'update'){
+			$s = $this->db->query("SELECT*FROM m_satuan WHERE id='$id'")->row();
+			if($s->kode_satuan == $kode_satuan && $s->ket_satuan == $ket_satuan){
+				$data = false;
+				$msg = 'DATA SATUAN SUDAH ADA!';
+			}else if($cek != 0 && $s->kode_satuan != $kode_satuan){
+				$data = false;
+				$msg = 'DATA SATUAN SUDAH ADA!';
+			}else{
+				$this->db->set('edit_by', $this->username);
+				$this->db->set('edit_at', date('Y-m-d H:i:s'));
+				$this->db->where('id', $id);
+				$data = $this->db->update('m_satuan');
+				$msg = 'OK!';
+			}
+		}
+		return [
+			'data' => $data,
+			'msg' => $msg,
+		];
 	}
 
     function m_setting($table,$status){
-        
-       
-
         $data = array(
             'nm_aplikasi'  => $this->input->post('nm_aplikasi'),
             'singkatan'  => $this->input->post('singkatan'),
@@ -439,8 +517,6 @@ class M_master extends CI_Model{
             'no_telp'  => $this->input->post('no_telp'),
             'diskon_member'  => $this->input->post('diskon_member')
         );
-
-   
         $upload = $this->m_master->upload2('logo','logo');
 
         if ($upload['result'] == 'success') {
@@ -504,7 +580,6 @@ class M_master extends CI_Model{
 			break;
 		}
     }
-  
 
 }
 

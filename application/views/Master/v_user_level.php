@@ -28,7 +28,7 @@
 				</div>
 			</div>
 			<div class="card-body">
-				<?php if(in_array($this->session->userdata('level'), ['Admin','PPIC'])) { ?>
+				<?php if(in_array($this->session->userdata('level'), ['Developer'])) { ?>
 					<button type="button" style="font-family:Cambria;" class="tambah_data btn  btn-info pull-right"><i class="fa fa-plus"></i>&nbsp;&nbsp;<b>Tambah Data</button>
 				<?php } ?>
 				
@@ -37,7 +37,8 @@
 					<thead>
 						<tr>
 							<th style="text-align: center;width:10%">Id</th>
-							<th style="text-align: center;width:50%">Level</th>
+							<th style="text-align: center;width:25%">Level</th>
+							<th style="text-align: center;width:25%">Approve</th>
 							<th style="text-align: center;width:40%">Aksi</th>
 						</tr>
 					</thead>
@@ -66,20 +67,33 @@
 					<div class="form-group row">
 						<label class="col-sm-2 col-form-label">Nama Level</label>
 						<div class="col-sm-10">
-							<input type="text" class="form-control" id="nm_group" name="nm_group" placeholder="Nama">
-							<input autocomplete="off" type="hidden" class="form-control" id="id_group">
+							<input type="text" class="form-control" id="nm_group" name="nm_group" placeholder="Nama" autocomplete="off">
+							<input type="hidden" class="form-control" id="id_group">
 						</div>
 					</div>
 					<div class="form-group row">
 						<label class="col-sm-2 col-form-label">Value</label>
 						<div class="col-sm-10">
-							<input autocomplete="off" type="text" class="form-control" id="val_group" name="val_group" placeholder="Value">
+							<input type="text" class="form-control" id="val_group" name="val_group" placeholder="Value" autocomplete="off">
 						</div>
 					</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-primary" id="btn-simpan" onclick="simpan()"><i class="fas fa-save"></i> Simpan</button>
-			</div>
+					<div class="form-group row">
+						<label class="col-sm-2 col-form-label">Approve</label>
+						<div class="col-sm-10">
+							<select id="approve" class="form-control select2">
+								<option value="">PILIH</option>
+								<option value="ALL">ALL</option>
+								<option value="OWNER">OWNER</option>
+								<option value="FINANCE">FINANCE</option>
+								<option value="ADMIN">ADMIN</option>
+								<option value="ACC">ACC</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" id="btn-simpan" onclick="simpan()"><i class="fas fa-save"></i> Simpan</button>
+				</div>
 			</form>
 		</div>
 		<!-- /.modal-content -->
@@ -89,21 +103,33 @@
 <!-- /.modal -->
 
 <script type="text/javascript">
-	rowNum = 0;
+	status = "insert";
 	$(document).ready(function() {
 		load_data();
-		load_group();
+		// load_group();
 		$('.select2').select2({
 			dropdownAutoWidth: true
 		})
 	});
 
-	status = "insert";
+	function reloadTable() {
+		table = $('#datatable').DataTable();
+		tabel.ajax.reload(null, false);
+	}
+
+	function kosong() {
+		$("#nm_group").val('').prop('disabled', false)
+		$("#id_group").val('').prop('disabled', false)
+		$("#val_group").val('').prop('disabled', false)
+		$("#approve").val('').trigger('change').prop('disabled', false)
+		$("#btn-simpan").show()
+		status = 'insert'
+	}
+
 	$(".tambah_data").click(function(event) {
-		kosong();
 		$("#modalForm").modal("show");
 		$("#judul").html('<h3> Form Tambah Data</h3>');
-		status = "insert";
+		kosong();
 	});
 
 	function load_data() {
@@ -129,20 +155,14 @@
 		});
 	}
 
-	function reloadTable() {
-		table = $('#datatable').DataTable();
-		tabel.ajax.reload(null, false);
-	}
-
 	function simpan() {
 		nm_group    = $("#nm_group").val();
 		val_group   = $("#val_group").val();
-
-		if (nm_group == '' || val_group == '') {
+		approve   = $("#approve").val();
+		if (nm_group == '' || val_group == '' || approve == '') {
 			toastr.info('Harap Lengkapi Form');
 			return;
 		}
-
 		$.ajax({
 			url: '<?php echo base_url(); ?>/master/insert/' + status,
 			type: "POST",
@@ -157,10 +177,7 @@
 				});
 			},
 			data: ({
-				nm_group,
-				val_group,
-				jenis: 'm_modul_group',
-				status: status
+				nm_group, val_group, approve, jenis: 'm_modul_group', status: status
 			}),
 			dataType: "JSON",
 			success: function(data) {
@@ -192,60 +209,24 @@
 				});
 			}
 		});
-
 	}
 
-	function kosong() {
-		$("#id_group").val('');
-		$("#val_group").val('');
-		status = 'insert';
-		$("#btn-simpan").show();
-	}
-
-
-	function tampil_edit(id, act) {
-		kosong();
-		status = 'update';
+	function editUserLevel(id, val) {
 		$("#modalForm").modal("show");
-		if (act == 'detail') {
-			$("#judul").html('<h3> Detail Data</h3>');
-			$("#btn-simpan").hide();
-		} else {
-			$("#judul").html('<h3> Form Edit Data</h3>');
-			$("#btn-simpan").show();
-		}
-		$("#jenis").val('Update');
-
-		status = "update";
-
+		$("#judul").html('<h3> Form Edit Data</h3>');
 		$.ajax({
-				url: '<?php echo base_url('Master/get_edit'); ?>',
-				type: 'POST',
-				beforeSend: function() {
-					swal({
-						title: 'Loading',
-						allowEscapeKey: false,
-						allowOutsideClick: false,
-						onOpen: () => {
-							swal.showLoading();
-						}
-					});
-				},
-				data: {
-					id: id,
-					jenis: "tb_user",
-					field: 'username'
-				},
-				dataType: "JSON",
-			})
-			.done(function(data) {
-				$("#username").prop("readonly", true);
-				$("#username,#username_lama").val(data.username);
-				$("#nm_user").val(data.nm_user);
-				$("#password").val(atob(data.password));
-				$('#level').val(data.level).trigger('change');
-				swal.close()
-			})
+			url: '<?php echo base_url('Master/editUserLevel')?>',
+			type: "POST",
+			data : ({ id, val }),
+			success: function(res){
+				data = JSON.parse(res)
+				$("#nm_group").val(data.level.nm_group).prop('disabled', (data.num == 0) ? false : true)
+				$("#id_group").val(data.level.id_group).prop('disabled', (data.num == 0) ? false : true)
+				$("#val_group").val(data.level.val_group).prop('disabled', (data.num == 0) ? false : true)
+				$("#approve").val(data.level.approve).prop('disabled', (data.num == 0) ? false : true)
+				status = 'update'
+			}
+		})
 	}
 
 

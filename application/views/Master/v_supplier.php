@@ -32,21 +32,22 @@
 
 				<button type="button" style="font-family:Cambria;" class="tambah_data btn  btn-info pull-right"><i class="fa fa-plus"></i>&nbsp;&nbsp;<b>Tambah Data</b></button>
 				<br><br>
-
-				<table id="datatable" class="table table-bordered table-striped" width="100%">
-					<thead class="color-tabel">
-						<tr>
-							<th style="text-align: center; width:5%">NO</th>
-							<th style="text-align: center; width:24%">NAMA</th>
-							<th style="text-align: center; width:24%">ALAMAT</th>
-							<th style="text-align: center; width:24%">NO HP</th>
-							<th style="text-align: center; width:24%">JT</th>
-							<th style="text-align: center; width:10%">AKSI</th>
-						</tr>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
+				<div style="overflow:auto;white-space:nowrap">
+					<table id="datatable" class="table table-bordered table-striped" width="100%">
+						<thead class="color-tabel">
+							<tr>
+								<th style="text-align:center;width:5%">NO</th>
+								<th style="text-align:center;width:24%">NAMA</th>
+								<th style="text-align:center;width:24%">ALAMAT</th>
+								<th style="text-align:center;width:24%">NO HP</th>
+								<th style="text-align:center;width:24%">TOP</th>
+								<th style="text-align:center;width:10%">AKSI</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 		<!-- /.card -->
@@ -89,15 +90,14 @@
 						</div>
 					</div>
 					<div class="form-group row">
-						<label class="col-sm-2 col-form-label">JATUH TEMPO</label>
+						<label class="col-sm-2 col-form-label">TOP</label>
 						<div class="col-sm-10">
-							<input type="text" class="angka form-control" id="jt" placeholder="JATUH TEMPO" autocomplete="off" >
+							<input type="text" class="angka form-control" id="jt" placeholder="TOP" autocomplete="off" >
 						</div>
 					</div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-primary" id="btn-simpan" onclick="simpan()"><i class="fas fa-save"></i> Simpan</button>
-
 				<button type="button" class="btn btn-danger" data-dismiss="modalForm" onclick="close_modal();" ><i class="fa fa-times-circle"></i> <b> Batal</b></button>
 			</div>
 			</form>
@@ -139,7 +139,7 @@
 				"url": '<?php echo base_url(); ?>Master/load_data/supplier',
 				"type": "POST",
 			},
-			responsive: true,
+			responsive: false,
 			"pageLength": 10,
 			"language": {
 				"emptyTable": "Tidak ada data.."
@@ -182,7 +182,7 @@
 				});
 			},
 			data: ({
-				 id_supp ,nm_supp,alamat,no_hp,jt,nm_supp_old,jenis: 'm_supplier',status: status
+				id_supp ,nm_supp,alamat,no_hp,jt,nm_supp_old,jenis: 'm_supplier',status: status
 			}),
 			success: function(res) {
 				data = JSON.parse(res)
