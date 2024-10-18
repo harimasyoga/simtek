@@ -589,6 +589,12 @@ class Transaksi extends CI_Controller
 		$this->cart->update($data);
 	}
 
+	function simpanOPB()
+	{
+		$result = $this->m_transaksi->simpanOPB();
+		echo json_encode($result);
+	}
+
 	function loadBarang()
 	{
 		$html = '';
@@ -628,7 +634,9 @@ class Transaksi extends CI_Controller
 		if($departemen == '' || $id_mbh == ''){
 			$html = '';
 		}else{
-			$detail = $this->db->query("SELECT*FROM m_barang_detail d WHERE d.id_mbh='$id_mbh' $where ORDER BY kode_barang,jenis_tipe,material,d.size,merk,p_satuan");
+			$detail = $this->db->query("SELECT h.nm_barang,d.* FROM m_barang_detail d
+			INNER JOIN m_barang_header h ON d.id_mbh=h.id_mbh
+			WHERE d.id_mbh='$id_mbh' $where GROUP BY d.kode_barang,h.nm_barang,d.jenis_tipe,d.material,d.size,d.merk,d.p_satuan");
 			if($detail->num_rows() == ""){
 				$html = 'DATA KOSONG!';
 			}else{
@@ -643,9 +651,10 @@ class Transaksi extends CI_Controller
 				foreach($bagian->result() as $b){
 					$htmlBagian .= '<option value="'.$b->kode_departemen.'">'.$b->nama.'</option>';
 				}
-				$html .='<table style="margin:12px 0 0;border:1px solid #dee2e6">
+				$html .='<table style="margin:0;border:1px solid #dee2e6">
 					<tr>
-						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KODE BARANG</th>
+						<th style="position:sticky;left:0;background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KODE BARANG</th>
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">NAMA BARANG</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">JENIS/TIPE</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MATERIAL</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SIZE</th>
@@ -654,33 +663,34 @@ class Transaksi extends CI_Controller
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 12px;text-align:center">PILIH SATUAN</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">QTY</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">PENGADAAN</th>
-						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 25px;text-align:center">BAGIAN</th>
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 50px;text-align:center">KETERANGAN</th>
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 30px;text-align:center">BAGIAN</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">AKSI</th>
 					</tr>';
 					$i = 0;
 					foreach($detail->result() as $r){
 						// SATUAN
 						if($r->p_satuan == 1){
-							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">TERKECIL</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:right">'.number_format($r->qty3,0,',','.').'</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">'.$r->satuan3.'</td>';
+							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERKECIL</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.number_format($r->qty3,0,',','.').'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan3.'</td>';
 							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option>';
 						}
 						if($r->p_satuan == 2){
-							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">TERBESAR<br>TERKECIL</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">'.$r->satuan1.'<br>'.$r->satuan3.'</td>';
+							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERBESAR<br>TERKECIL</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan1.'<br>'.$r->satuan3.'</td>';
 							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option><option value="TERBESAR">TERBESAR</option>';
 						}
 						if($r->p_satuan == 3){
-							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">TERBESAR<br>TENGAH<br>TERKECIL</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty2,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">'.$r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'</td>';
-							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option><option value="TERBESAR">TERBESAR</option><option value="TENGAH">TENGAH</option>';
+							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERBESAR<br>TENGAH<br>TERKECIL</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty2,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'</td>';
+							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option><option value="TENGAH">TENGAH</option><option value="TERBESAR">TERBESAR</option>';
 						}
 						// PENGADAAN
-						$html .= '<tr>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">
+						$html .= '<tr style="vertical-align:top">
+							<td style="position:sticky;left:0;background:#f2f2f2;border:1px solid #dee2e6;padding:6px">
 								<input type="hidden" id="h_id_mbh'.$i.'" value="'.$r->id_mbh.'">
 								<input type="hidden" id="h_id_mbd'.$i.'" value="'.$r->id_mbd.'">
 								<input type="hidden" id="h_satuan'.$i.'" value="'.$r->p_satuan.'">
@@ -689,34 +699,39 @@ class Transaksi extends CI_Controller
 								<input type="hidden" id="h_qty3_'.$i.'" value="'.round($r->qty3,2).'">
 								<input type="hidden" id="i_qty1_'.$i.'" value="">
 								<input type="hidden" id="i_qty2_'.$i.'" value="">
+								<input type="hidden" id="i_qty3_'.$i.'" value="">
 								<input type="hidden" id="h_satuan1_'.$i.'" value="'.$r->satuan1.'">
 								<input type="hidden" id="h_satuan2_'.$i.'" value="'.$r->satuan2.'">
 								<input type="hidden" id="h_satuan3_'.$i.'" value="'.$r->satuan3.'">
 								'.$r->kode_barang.'
 							</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">'.$r->jenis_tipe.'</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">'.$r->material.'</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">'.$r->size.'</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px">'.$r->merk.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->nm_barang.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->jenis_tipe.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->material.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->size.'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->merk.'</td>
 							'.$htmlSat.'
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center">
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:center">
 								<select id="plh_satuan'.$i.'" class="form-control" style="padding:3px;width:100%" onchange="pilihSatuan('."'".$i."'".')">
 									'.$htmlPlhSatuan.'
 								</select>
 							</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center">
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:center">
 								<input type="number" id="qty'.$i.'" class="form-control" style="width:60px;padding:3px 4px;text-align:right" onkeyup="pengadaaan('."'".$i."'".')">
 							</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"></div></td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;font-weight:950;font-style:italic;text-align:right"><div class="hitungqty'.$i.'"></div></td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"></div></td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center">
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"></div></td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold;text-align:right"><div class="hitungqty'.$i.'"></div></td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"></div></td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold">
+								<textarea id="ket_pengadaan'.$i.'" class="form-control" style="padding:3px 4px;resize:none" rows="2" placeholder="-" oninput="this.value=this.value.toUpperCase()"></textarea>
+							</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">
 								<select id="plh_bagian'.$i.'" class="form-control" style="padding:3px;width:100%">
 									<option value="">PILIH</option>
 									'.$htmlBagian.'
 								</select>
 							</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top;padding:6px;text-align:center">
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:center">
 								<button type="button" class="btn btn-xs btn-success" onclick="addCartOPB('."'".$i."'".')">tambah</button>
 							</td>
 						</tr>';
@@ -766,16 +781,27 @@ class Transaksi extends CI_Controller
 
 	function addCartOPB()
 	{
+		$tgl_opb = $_POST["tgl_opb"];
+		$no_opb = $_POST["no_opb"];
+		$kode_departemen = $_POST["plh_departemen"];
 		$id_mbh = $_POST["id_mbh"];
 		$id_mbd = $_POST["id_mbd"];
 		$plh_bagian = $_POST["plh_bagian"];
 		$plh_satuan = $_POST["plh_satuan"];
+		$qty = $_POST["qty"];
 		$i_qty1 = $_POST["i_qty1"];
 		$i_qty2 = $_POST["i_qty2"];
 		$i_qty3 = $_POST["i_qty3"];
+		$ket_pengadaan = $_POST["ket_pengadaan"];
 		$status = $_POST["status"];
 
-		if($i_qty3 == 0 || $i_qty3 == '' || $i_qty3 < 0){
+		if($tgl_opb == ''){
+			echo json_encode(['data' => false, 'msg' => 'HARAP PILIH TANGGAL!']); return;
+		}
+		if($no_opb == '' || $no_opb < 0 || !preg_match("/^[0-9]*$/", $no_opb)){
+			echo json_encode(['data' => false, 'msg' => 'HARAP ISI NO. OPB!']); return;
+		}
+		if($qty == 0 || $qty == '' || $qty < 0){
 			echo json_encode(['data' => false, 'isi' => 'HARAP ISI QTY!']); return;
 		}
 		if($plh_bagian == ''){
@@ -790,9 +816,13 @@ class Transaksi extends CI_Controller
 			'options' => array(
 				'id_mbh' => $id_mbh,
 				'id_mbd' => $id_mbd,
+				'kode_departemen' => $kode_departemen,
 				'plh_bagian' => $plh_bagian,
 				'plh_satuan' => $plh_satuan,
-				'i_qty' => $i_qty,
+				'i_qty1' => $i_qty1,
+				'i_qty2' => $i_qty2,
+				'i_qty3' => $i_qty3,
+				'ket_pengadaan' => $ket_pengadaan,
 			)
 		);
 
@@ -814,5 +844,110 @@ class Transaksi extends CI_Controller
 		// 	$result = $this->m_master->editBarang($data);
 		// 	echo json_encode($result);
 		// }
+	}
+
+	function cartOPB()
+	{
+		$html = '';
+		if($this->cart->total_items() == 0){
+			$html .= '';
+		}
+		if($this->cart->total_items() != 0){
+			$html .='<table class="table table-bordered table-striped" style="margin:0">';
+				$html .='<tr>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KODE BARANG</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">NAMA BARANG</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">JENIS/TIPE</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MATERIAL</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SIZE</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MERK</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">PENGADAAN</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KETERANGAN</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">BAGIAN</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">AKSI</th>
+				</tr>
+				<tr>
+					<td style="padding:0;border:0" colspan="12"></td>
+				</tr>';
+				$i = 0;
+				foreach($this->cart->contents() as $r){
+					$i++;
+					$id_mbh = $r['options']['id_mbh'];
+					$id_mbd = $r['options']['id_mbd'];
+					$plh_bagian = $r['options']['plh_bagian'];
+					$plh_satuan = $r['options']['plh_satuan'];
+					$i_qty1 = $r['options']['i_qty1'];
+					$i_qty2 = $r['options']['i_qty2'];
+					$i_qty3 = $r['options']['i_qty3'];
+					$ket_pengadaan = $r['options']['ket_pengadaan'];
+					$b = $this->db->query("SELECT h.nm_barang,d.* FROM m_barang_detail d
+					INNER JOIN m_barang_header h ON d.id_mbh=h.id_mbh
+					WHERE d.id_mbh='$id_mbh' AND d.id_mbd='$id_mbd'")->row();
+					// SATUAN
+					if($b->p_satuan == 1){
+						$htmlPgd = '<td style="padding:6px;font-weight:bold;color:#f00">TERKECIL</td>
+						<td style="padding:6px;text-align:right;font-weight:bold;color:#f00">'.$i_qty3.'</td>
+						<td style="padding:6px;font-weight:bold;color:#f00">'.$b->satuan3.'</td>';
+					}
+					if($b->p_satuan == 2){
+						if($plh_satuan == 'TERBESAR'){
+							$s1 = 'style="color:#f00"'; $s3 = '';
+						}
+						if($plh_satuan == 'TERKECIL'){
+							$s1 = ''; $s3 = 'style="color:#f00"';
+						}
+						$htmlPgd = '<td style="padding:6px;font-weight:bold"><div '.$s1.'>TERBESAR</div><div '.$s3.'>TERKECIL</div></td>
+						<td style="padding:6px;text-align:right;font-weight:bold"><div '.$s1.'>'.round($i_qty1,2).'</div><div '.$s3.'>'.round($i_qty3,2).'</div></td>
+						<td style="padding:6px;font-weight:bold"><div '.$s1.'>'.$b->satuan1.'</div><div '.$s3.'>'.$b->satuan3.'</div></td>';
+					}
+					if($b->p_satuan == 3){
+						if($plh_satuan == 'TERBESAR'){
+							$s1 = 'style="color:#f00"'; $s2 = ''; $s3 = '';
+						}
+						if($plh_satuan == 'TENGAH'){
+							$s1 = ''; $s2 = 'style="color:#f00"'; $s3 = '';
+						}
+						if($plh_satuan == 'TERKECIL'){
+							$s1 = ''; $s2 = ''; $s3 = 'style="color:#f00"';
+						}
+						$htmlPgd = '<td style="padding:6px;font-weight:bold"><div '.$s1.'>TERBESAR</div><div '.$s2.'>TENGAH</div><div '.$s3.'>TERKECIL</div></td>
+						<td style="padding:6px;text-align:right;font-weight:bold"><div '.$s1.'>'.round($i_qty1,2).'</div><div '.$s2.'>'.round($i_qty2,2).'</div><div '.$s3.'>'.$i_qty3.'</div></td>
+						<td style="padding:6px;font-weight:bold"><div '.$s1.'>'.$b->satuan1.'</div><div '.$s2.'>'.$b->satuan2.'</div><div '.$s3.'>'.$b->satuan3.'</div></td>';
+					}
+					// KETERANGAN
+					($ket_pengadaan == '') ? $keterangan = '-' : $keterangan = $ket_pengadaan;
+					// BAGIAN
+					$bagian = $this->db->query("SELECT*FROM m_departemen WHERE kode='$plh_bagian'")->row();
+					$html .= '<tr>
+						<td style="padding:6px">'.$b->kode_barang.'</td>
+						<td style="padding:6px">'.$b->nm_barang.'</td>
+						<td style="padding:6px">'.$b->jenis_tipe.'</td>
+						<td style="padding:6px">'.$b->material.'</td>
+						<td style="padding:6px">'.$b->size.'</td>
+						<td style="padding:6px">'.$b->merk.'</td>
+						'.$htmlPgd.'
+						<td style="padding:6px">'.$keterangan.'</td>
+						<td style="padding:6px">'.$bagian->nama.'</td>
+						<td style="padding:6px;text-align:center">
+							<button type="button" class="btn btn-sm" onclick="hapusCart('."'".$r['rowid']."'".')"><i class="fas fa-times-circle" style="color:#f00"></i></button>
+						</td>
+					</tr>';
+					if($this->cart->total_items() != $i){
+						$html .= '<tr>
+							<td style="padding:2px;border:0" colspan="12"></td>
+						</tr>';
+					}
+				}
+				$html .= '<tr>
+					<td style="padding:6px;text-align:right" colspan="12">
+						<button type="button" class="btn btn-sm btn-primary" style="font-weight:bold" onclick="simpanOPB()"><i class="fas fa-save"></i> SIMPAN</button>
+					</td>
+				</tr>';
+			$html .='</table>';
+		}
+
+		echo json_encode([
+			'html' => $html,
+		]);
 	}
 }

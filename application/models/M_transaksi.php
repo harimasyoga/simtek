@@ -986,4 +986,84 @@ class M_transaksi extends CI_Model
 			);
 		}
 	}
+
+	function simpanOPB()
+	{
+		$tgl_opb = $_POST["tgl_opb"];
+		$no_opb = $_POST["no_opb"];
+		$departemen = $_POST["plh_departemen"];
+		// CEK NOMER OPB
+		$cekNoOpb = $this->db->query("SELECT*FROM trs_opb_header WHERE no_opb='$no_opb'");
+		if($tgl_opb == ''){
+			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH TANGGAL!';
+		}else if($no_opb == ''){
+			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP ISI NO. OPB!';
+		}else if($departemen == ''){
+			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH DEPARTEMEN!';
+		}else if($cekNoOpb->num_rows() != 0){
+			$data = false; $i_header = false; $i_detail = false; $msg = 'NO. OPB SUDAH TERPAKAI!';
+		}else{
+			$dHeader = [
+				'tgl_opb' => $tgl_opb,
+				'no_opb' => $no_opb,
+				'kode_dpt' => $departemen,
+				'status_opb' => 'Open',
+				'creat_by' => $this->username,
+				'creat_at' => date('Y-m-d H:i:s'),
+			];
+			$i_header = $this->db->insert('trs_opb_header', $dHeader);
+			if($i_header){
+				// GET OPB HEADER
+				$opbH = $this->db->query("SELECT*FROM trs_opb_header WHERE tgl_opb='$tgl_opb' AND no_opb='$no_opb' AND kode_dpt='$departemen' AND status_opb='Open'")->row();
+				if($this->cart->total_items() != 0){
+					foreach($this->cart->contents() as $r){
+						// GET BARANG DETAIL
+						$id_mbh = $r['options']['id_mbh'];
+						$id_mbd = $r['options']['id_mbd'];
+						$barang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
+						// SATUAN
+						if($barang->p_satuan == 1){
+							$qty1 = null; $qty2 = null; $qty3 = $r['options']['i_qty3'];
+							$satuan1 = null; $satuan2 = null; $satuan3 = $barang->satuan3;
+						}
+						if($barang->p_satuan == 2){
+							$qty1 = $r['options']['i_qty1']; $qty2 = null; $qty3 = $r['options']['i_qty3'];
+							$satuan1 = $barang->satuan1; $satuan2 = null; $satuan3 = $barang->satuan3;
+						}
+						if($barang->p_satuan == 3){
+							$qty1 = $r['options']['i_qty1']; $qty2 = $r['options']['i_qty2']; $qty3 = $r['options']['i_qty3'];
+							$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
+						}
+						$dDetail = [
+							'id_opbh' => $opbH->id_opbh,
+							'no_opb' => $opbH->no_opb,
+							'id_mbh' => $id_mbh,
+							'id_mbd' => $id_mbd,
+							'kode_dpt' => $r['options']['kode_departemen'],
+							'kode_bagian' => $r['options']['plh_bagian'],
+							'p_satuan' => $barang->p_satuan,
+							'dsatuan' => $r['options']['plh_satuan'],
+							'dqty1' => $qty1,
+							'dsatuan1' => $satuan1,
+							'dqty2' => $qty2,
+							'dsatuan2' => $satuan2,
+							'dqty3' => $qty3,
+							'dsatuan3' => $satuan3,
+							'ket_pengadaan' => $r['options']['ket_pengadaan'],
+							'creat_by' => $this->username,
+							'creat_at' => date('Y-m-d H:i:s'),
+						];
+						$i_detail = $this->db->insert('trs_opb_detail', $dDetail);
+					}
+				}
+			}
+			$data = true; $msg = 'OK!';
+		}
+		return ([
+			'data' => $data,
+			'i_header' => $i_header,
+			'i_detail' => $i_detail,
+			'msg' => $msg,
+		]);
+	}
 }
