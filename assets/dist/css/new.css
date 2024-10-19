@@ -1,58 +1,58 @@
-
 .color-tabel {
-    background-image: linear-gradient(180deg,#1ea5ff  10%,#0081d7 100%);
-    text-align: center;
-    justify-content:center;
-    color: #000;
+	background-image: linear-gradient(180deg, #1ea5ff 10%, #0081d7 100%);
+	text-align: center;
+	justify-content: center;
+	color: #000;
 }
 
 .input-border-none {
-    border          : none;
-    border-width    : 0;
-    box-shadow      : none;
-    background      : transparent !important;
+	border: none;
+	border-width: 0;
+	box-shadow: none;
+	background: transparent !important;
 
 }
 
 .input-border-none:focus {
-    outline:none;
+	outline: none;
 
 }
 
 .posisi-tengah {
-    vertical-align: middle !important;
+	vertical-align: middle !important;
 }
 
 .trapesium {
-    /* position:relative; */
-    /* background: url(../../img/search-icon-blue.png); */
-    background: url(../../gambar/kupingan1.png) right center no-repeat;
-    background-size: 30% 100%;
+	/* position:relative; */
+	/* background: url(../../img/search-icon-blue.png); */
+	background: url(../../gambar/kupingan1.png) right center no-repeat;
+	background-size: 30% 100%;
 }
 
-.sidebar-footer{
-    bottom:0;
-    right:0;
-    left:0;
-    clear:both;
-    display:block;
-    padding:5px 5px 5px 10px;
-    position:absolute;
-    width:250px;
-    /* background:#2A3F54; */
-    background-image: linear-gradient(180deg,#0a5789 10%,#06304b 100%);
-    z-index:999
+.sidebar-footer {
+	bottom: 0;
+	right: 0;
+	left: 0;
+	clear: both;
+	display: block;
+	padding: 5px 5px 5px 10px;
+	position: absolute;
+	width: 250px;
+	/* background:#2A3F54; */
+	background-image: linear-gradient(180deg, #0a5789 10%, #06304b 100%);
+	z-index: 999
 }
 
-.sidebar-footer a{
-    /* padding:7px 0 3px; */
-    text-align:center;
-    width:25%;
-    font-size:17px;
-    display:block;
-    float:left;
-    cursor:pointer;
+.sidebar-footer a {
+	/* padding:7px 0 3px; */
+	text-align: center;
+	width: 25%;
+	font-size: 17px;
+	display: block;
+	float: left;
+	cursor: pointer;
 }
+
 /* .sidebar-footer a:hover{background:#425567} */
 
 
@@ -87,6 +87,7 @@
 .h-tlpf-td {
 	background: #fff;
 }
+
 .h-tmpl-list-plan:hover .h-tlpf-td {
 	background: #e5e5e5;
 }
@@ -106,7 +107,7 @@
 	border: 0;
 	padding: 0;
 	height: 100%;
-	width:50px;
+	width: 50px;
 }
 
 .inp-kosong2 {
@@ -117,22 +118,44 @@
 	height: 100%;
 }
 
-.link-h-wo{
-	color:#fff;
+.link-h-wo {
+	color: #fff;
 }
 
-.link-h-wo:hover{
-	color:#fff;
+.link-h-wo:hover {
+	color: #fff;
 	background-color: rgba(225, 225, 225, 0.3);
 }
 
-.link-i-wo{
-	color: #333;	
+.link-i-wo {
+	color: #333;
 }
 
-.link-i-wo:hover{
-	color:#333;
+.link-i-wo:hover {
+	color: #333;
 	background-color: rgba(225, 225, 225, 0.6);
+}
+
+/* OPB */
+
+.opb-menu-header,.ldopb {
+	scrollbar-width: none
+}
+
+.opb-menu-header::-webkit-scrollbar,.ldopb::-webkit-scrollbar {
+	display: none
+}
+
+.btn-opb-header {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	z-index: 1;
 }
 
 .btn-opbh-all {
@@ -150,7 +173,9 @@
 	color: #000
 }
 
-.btn-opbh-all:focus, .btn-opbh-klik:focus {
+.btn-opbh-all:focus,
+.btn-opbh-klik:focus,
+.btn-opb-header:focus {
 	outline: none;
 }
 
@@ -162,100 +187,142 @@
 	font-weight: bold;
 }
 
+.tr-opbh-all {
+	background: #fff;
+	border-left: 3px solid #212529;
+	border-right: 3px solid #fff;
+	font-weight: bold
+}
+
+.tr-opbh-klik {
+	background: #eceeef;
+	border-left: 3px solid #eceeef;
+	font-weight: bold
+}
+
 .tr-opbh-all:hover {
+	vertical-align: top;
 	background: #eceeef;
 }
 
-.td-opbh-all {
-	padding: 30px 20px;
+.td-opbh {
+	position: relative !important;
+	padding: 16px 12px !important;
 }
 
 /* preview img zoom */
 
 #modal-img-content {
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-    display: block;
-    margin-left: auto;
-    margin-right: auto
+	border-radius: 5px;
+	cursor: pointer;
+	transition: 0.3s;
+	display: block;
+	margin-left: auto;
+	margin-right: auto
 }
 
-#modal-img-content:hover {opacity: 0.7;}
+#modal-img-content:hover {
+	opacity: 0.7;
+}
 
 /* The Modal (background) */
 .modal-img {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 9999; /* Sit on top */
-    padding-top: 100px; /* Location of the box */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+	display: none;
+	/* Hidden by default */
+	position: fixed;
+	/* Stay in place */
+	z-index: 9999;
+	/* Sit on top */
+	padding-top: 100px;
+	/* Location of the box */
+	left: 0;
+	top: 0;
+	width: 100%;
+	/* Full width */
+	height: 100%;
+	/* Full height */
+	overflow: auto;
+	/* Enable scroll if needed */
+	background-color: rgb(0, 0, 0);
+	/* Fallback color */
+	background-color: rgba(0, 0, 0, 0.9);
+	/* Black w/ opacity */
 }
 
 /* Modal Content (image) */
 .modal-img-content {
-    margin: auto;
-    display: block;
-    width: 75%;
-    max-width: 75%;
+	margin: auto;
+	display: block;
+	width: 75%;
+	max-width: 75%;
 }
 
 
 /* Add Animation */
-.modal-img-content, #caption {
-    -webkit-animation-name: zoom;
-    -webkit-animation-duration: 0.6s;
-    animation-name: zoom;
-    animation-duration: 0.6s;
+.modal-img-content,
+#caption {
+	-webkit-animation-name: zoom;
+	-webkit-animation-duration: 0.6s;
+	animation-name: zoom;
+	animation-duration: 0.6s;
 }
 
 .out {
-  animation-name: zoom-out;
-  animation-duration: 0.6s;
+	animation-name: zoom-out;
+	animation-duration: 0.6s;
 }
 
 @-webkit-keyframes zoom {
-    from {-webkit-transform:scale(1)}
-    to {-webkit-transform:scale(2)}
+	from {
+		-webkit-transform: scale(1)
+	}
+
+	to {
+		-webkit-transform: scale(2)
+	}
 }
 
 @keyframes zoom {
-    from {transform:scale(0.4)}
-    to {transform:scale(1)}
+	from {
+		transform: scale(0.4)
+	}
+
+	to {
+		transform: scale(1)
+	}
 }
 
 @keyframes zoom-out {
-    from {transform:scale(1)}
-    to {transform:scale(0)}
+	from {
+		transform: scale(1)
+	}
+
+	to {
+		transform: scale(0)
+	}
 }
 
 /* The Close Button */
 .close {
-    position: absolute;
-    top: 15px;
-    right: 35px;
-    color: #f1f1f1;
-    font-size: 40px;
-    font-weight: bold;
-    transition: 0.3s;
+	position: absolute;
+	top: 15px;
+	right: 35px;
+	color: #f1f1f1;
+	font-size: 40px;
+	font-weight: bold;
+	transition: 0.3s;
 }
 
 .close:hover,
 .close:focus {
-    color: #bbb;
-    text-decoration: none;
-    cursor: pointer;
+	color: #bbb;
+	text-decoration: none;
+	cursor: pointer;
 }
 
 /* 100% Image Width on Smaller Screens */
-@media only screen and (max-width: 700px){
-    .modal-img-content {
-        width: 100%;
-    }
+@media only screen and (max-width: 700px) {
+	.modal-img-content {
+		width: 100%;
+	}
 }

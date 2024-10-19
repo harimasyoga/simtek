@@ -989,9 +989,11 @@ class M_transaksi extends CI_Model
 
 	function simpanOPB()
 	{
+		$id_opbh = $_POST["id_opbh"];
 		$tgl_opb = $_POST["tgl_opb"];
 		$no_opb = $_POST["no_opb"];
 		$departemen = $_POST["plh_departemen"];
+		$status = $_POST["status"];
 		// CEK NOMER OPB
 		$cekNoOpb = $this->db->query("SELECT*FROM trs_opb_header WHERE no_opb='$no_opb'");
 		if($tgl_opb == ''){
@@ -1000,7 +1002,7 @@ class M_transaksi extends CI_Model
 			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP ISI NO. OPB!';
 		}else if($departemen == ''){
 			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH DEPARTEMEN!';
-		}else if($cekNoOpb->num_rows() != 0){
+		}else if($cekNoOpb->num_rows() != 0 && $status == 'insert'){
 			$data = false; $i_header = false; $i_detail = false; $msg = 'NO. OPB SUDAH TERPAKAI!';
 		}else{
 			$dHeader = [
@@ -1008,13 +1010,25 @@ class M_transaksi extends CI_Model
 				'no_opb' => $no_opb,
 				'kode_dpt' => $departemen,
 				'status_opb' => 'Open',
-				'creat_by' => $this->username,
-				'creat_at' => date('Y-m-d H:i:s'),
 			];
-			$i_header = $this->db->insert('trs_opb_header', $dHeader);
+			if($status == 'insert'){
+				$this->db->set('creat_by', $this->username);
+				$this->db->set('creat_at', date('Y-m-d H:i:s'));
+				$i_header = $this->db->insert('trs_opb_header', $dHeader);
+			}else{
+				$this->db->set('tgl_opb', $tgl_opb);
+				$this->db->set('edit_by', $this->username);
+				$this->db->set('edit_at', date('Y-m-d H:i:s'));
+				$this->db->where('id_opbh', $id_opbh);
+				$i_header = $this->db->update('trs_opb_header', $dHeader);
+			}
 			if($i_header){
 				// GET OPB HEADER
-				$opbH = $this->db->query("SELECT*FROM trs_opb_header WHERE tgl_opb='$tgl_opb' AND no_opb='$no_opb' AND kode_dpt='$departemen' AND status_opb='Open'")->row();
+				if($status == 'insert'){
+					$opbH = $this->db->query("SELECT*FROM trs_opb_header WHERE tgl_opb='$tgl_opb' AND no_opb='$no_opb' AND kode_dpt='$departemen' AND status_opb='Open'")->row()->id_opbh;
+				}else{
+					$opbH = $id_opbh;
+				}
 				if($this->cart->total_items() != 0){
 					foreach($this->cart->contents() as $r){
 						// GET BARANG DETAIL
@@ -1035,8 +1049,8 @@ class M_transaksi extends CI_Model
 							$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
 						}
 						$dDetail = [
-							'id_opbh' => $opbH->id_opbh,
-							'no_opb' => $opbH->no_opb,
+							'id_opbh' => $opbH,
+							'no_opb' => $no_opb,
 							'id_mbh' => $id_mbh,
 							'id_mbd' => $id_mbd,
 							'kode_dpt' => $r['options']['kode_departemen'],

@@ -2,10 +2,10 @@
 	<section class="content-header">
 		<div class="container-fluid">
 			<div class="row mb-2">
-			<div class="col-sm-6"></div>
-			<div class="col-sm-6">
-				<ol class="breadcrumb float-sm-right"></ol>
-			</div>
+				<div class="col-sm-6"></div>
+				<div class="col-sm-6">
+					<ol class="breadcrumb float-sm-right"></ol>
+				</div>
 			</div>
 		</div>
 	</section>
@@ -20,9 +20,9 @@
 	</style>
 
 	<section class="content">
-		<div class="row">
+		<div class="row row-list">
 			<div class="col-md-12">
-				<div class="card card-primary card-outline">
+				<div class="card card-secondary card-outline">
 					<div class="card-header" style="padding:12px">
 						<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST OPB</h3>
 					</div>
@@ -34,29 +34,37 @@
 								<button type="button" class="btn btn-default btn-sm"><i class="fas fa-sync-alt"></i></button>
 							</div>
 						</div>
-						<div style="overflow:auto;white-space:nowrap">
-							<div class="list-header" style="padding:0;border-bottom:3px solid #dee2e6"></div>
+						<div class="opb-menu-header" style="border-bottom:3px solid #dee2e6;overflow:auto;white-space:nowrap">
+							<div class="list-header" style="padding:0"></div>
 						</div>
 						<div class="card-body row" style="padding:0">
 							<div class="col-md-3">
 								<div class="list-opb" style="padding:0"></div>
 							</div>
-							<div class="col-md-9">
-							<div class="list-opb-detail" style="padding:0"></div>
+							<div class="col-md-9" style="padding:0 14px">
+								<div style="position:sticky;top:12px">
+									<div class="list-opb-detail"></div>
+									<div class="list-opb-verif"></div>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
+			<input type="hidden" id="id_opbh" value="">
+			<input type="hidden" id="h_ii" value="">
 		</div>
 
-		<div class="row row-input">
+		<div class="row row-input" style="display:none">
 			<div class="col-md-12">
 				<div class="card card-primary card-outline">
 					<div class="card-header" style="padding:12px">
 						<h3 class="card-title" style="font-weight:bold;font-size:18px">INPUT OPB</h3>
 					</div>
 					<div class="card-body" style="padding:6px">
+						<div style="padding:0 0 20px">
+							<div class="btn-kembali"></div>
+						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
 							<div class="col-md-2">TANGGAL <span style="color:#f00">*</span></div>
 							<div class="col-md-5">
@@ -154,6 +162,9 @@
 						<div style="overflow:auto;white-space:nowrap">
 							<div class="list-cart"></div>
 						</div>
+						<div style="overflow:auto;white-space:nowrap">
+							<div class="list-edit-cart"></div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -169,10 +180,8 @@
 	status = 'insert';
 	$(document).ready(function() {
 		$(".select2").select2()
-		// load_data()
 		loadHeader()
 		btnHeader(0)
-		// loadData()
 	});
 
 	function reloadTable() {
@@ -182,14 +191,25 @@
 
 	function tambah(opsi)
 	{
+		$(".row-list").show()
+		$(".row-input").hide()
 		$("#id_cart").val(0)
 		$("#tgl_opb").val('<?php echo date('Y-m-d')?>');
-		$("#no_opb").val('')
+		$("#no_opb").val('').prop('disabled', false)
+		$("#id_opbh").val('')
+		$("#h_ii").val('')
 		$("#plh_departemen").val('').trigger('change').prop('disabled', false)
 		if(opsi == 'tambah'){
+			$(".btn-kembali").html(`<button type="button" class="btn btn-primary btn-sm" onclick="tambah('kembali')">Kembali</button>`)
+			$(".row-list").hide()
+			$(".row-input").show()
 			$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
 			loadBarang()
 		}
+		if(opsi == 'kembali'){
+			btnHeader(0)
+		}
+		status = 'insert'
 	}
 
 	$("#no_opb").on({
@@ -227,6 +247,8 @@
 
 	function loadHeader()
 	{
+		$(".list-opb-detail").html('')
+		$(".list-opb-verif").html('')
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadHeader')?>',
 			type: "POST",
@@ -244,6 +266,8 @@
 		$(".boh").removeClass('btn-opbh-klik').addClass('btn-opbh-all')
 		$("#h_"+kode_dpt).removeClass('btn-opb-header').addClass('btn-opbh-klik')
 		$("#ff_"+kode_dpt).removeClass('ff-all').addClass('ff-klik')
+		$(".list-opb-detail").html('')
+		$(".list-opb-verif").html('')
 		loadList(kode_dpt)
 	}
 
@@ -256,6 +280,36 @@
 			success: function(res){
 				data = JSON.parse(res)
 				$(".list-opb").html(data.html)
+			}
+		})
+	}
+
+	function btnDetail(id_opbh, i, opsi)
+	{
+		$(".btn-opb-header").prop('disabled', false)
+		$(".toh").removeClass('tr-opbh-klik').addClass('tr-opbh-all')
+		// $("#id_opbh").val('')
+		// $("#h_ii").val('')
+		$(".list-opb-detail").html('')
+		$(".list-opb-verif").html('')
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/loadDetail')?>',
+			type: "POST",
+			data: ({ id_opbh, i, opsi }),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				if(opsi == 'view'){
+					$("#toh_"+i).removeClass('tr-opbh-all').addClass('tr-opbh-klik')
+					$("#bth_"+i).prop('disabled', true)
+					$("#id_opbh").val(data.opbh.id_opbh)
+					$("#h_ii").val(i)
+					$(".list-opb-detail").html(data.htmlDetail)
+					$(".list-opb-verif").html('verif')
+				}
+				if(opsi == 'edit'){
+					$(".list-edit-cart").html(data.htmlDetail)
+				}
 			}
 		})
 	}
@@ -401,6 +455,7 @@
 	{
 		let id_cart = parseInt($("#id_cart").val()) + 1;
 		$("#id_cart").val(id_cart)
+		let id_opbh = $("#id_opbh").val()
 		let tgl_opb = $("#tgl_opb").val()
 		let no_opb = $("#no_opb").val()
 		let id_mbh = $("#h_id_mbh"+i).val()
@@ -417,11 +472,16 @@
 			url: '<?php echo base_url('Transaksi/addCartOPB')?>',
 			type: "POST",
 			data : ({
-				id_cart, tgl_opb, no_opb, plh_departemen, id_mbh, id_mbd, plh_bagian, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, status
+				id_cart, id_opbh, tgl_opb, no_opb, plh_departemen, id_mbh, id_mbd, plh_bagian, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				cartOPB()
+				console.log(data)
+				if(data.data){
+					cartOPB()
+				}else{
+					toastr.error(`<b>${data.msg}</b>`)
+				}
 			}
 		})
 	}
@@ -453,6 +513,8 @@
 
 	function simpanOPB()
 	{
+		let id_opbh = $("#id_opbh").val()
+		let h_ii = $("#h_ii").val()
 		let tgl_opb = $("#tgl_opb").val()
 		let no_opb = $("#no_opb").val()
 		let plh_departemen = $("#plh_departemen").val()
@@ -460,12 +522,54 @@
 			url: '<?php echo base_url('Transaksi/simpanOPB')?>',
 			type: "POST",
 			data: ({
-				tgl_opb, no_opb, plh_departemen
+				id_opbh, tgl_opb, no_opb, plh_departemen, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
 				console.log(data)
+				if(data.data && status == 'insert'){
+					tambah('kembali')
+				}else if(data.data && status == 'update'){
+					kembali()
+				}else{
+					toastr.error(`<b>${data.msg}</b>`)
+				}
 			}
 		})
+	}
+
+	function editOPB()
+	{
+		let id_opbh = $("#id_opbh").val()
+		let h_ii = $("#h_ii").val()
+		$(".row-list").hide()
+		$(".row-input").show()
+		$(".list-edit-cart").html('')
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/editOPB')?>',
+			type: "POST",
+			data: ({ id_opbh }),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
+				$("#tgl_opb").val(data.opbh.tgl_opb)
+				$("#no_opb").val(data.opbh.no_opb).prop('disabled', true)
+				$("#plh_departemen").val(data.opbh.kode_dpt).trigger('change')
+				$(".btn-kembali").html(`<button type="button" class="btn btn-primary btn-sm" onclick="kembali()">Kembali</button>`)
+				btnDetail(id_opbh, h_ii, 'edit')
+				loadBarang()
+				status = 'update'
+			}
+		})
+	}
+
+	function kembali()
+	{
+		$(".row-list").show()
+		$(".row-input").hide()
+		let id_opbh = $("#id_opbh").val()
+		let h_ii = $("#h_ii").val()
+		btnDetail(id_opbh, h_ii, 'view')
 	}
 </script>

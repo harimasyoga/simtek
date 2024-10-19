@@ -277,7 +277,7 @@ class M_fungsi extends CI_Model {
 	function tglIndSkt($tgl){
         $tanggal = explode('-',$tgl); 
         $bulan  = $this->getBlnSkt($tanggal[1]);
-        $tahun  =  $tanggal[0];
+        $tahun  =  substr($tanggal[0],2,2);
         return  $tanggal[2].'-'.$bulan.'-'.$tahun;
     }
     
@@ -754,7 +754,7 @@ class M_fungsi extends CI_Model {
         $this->mpdf->Output($ctk, 'I');
 	}
 
-	function getHariIni($tgl){
+	function haru($tgl){
 		$namaHari = date('l', strtotime($tgl));
 		switch($namaHari){
 			case 'Sunday':
