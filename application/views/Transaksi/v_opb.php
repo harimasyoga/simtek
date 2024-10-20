@@ -27,16 +27,12 @@
 						<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST OPB</h3>
 					</div>
 					<div class="card-body" style="padding:0">
-						<div style="padding:5px">
-							<button type="button" class="btn btn-primary btn-sm" onclick="tambah('tambah')">Tambah Data</button>
-							<button type="button" class="btn btn-default btn-sm"><i class="fas fa-sync-alt"></i></button>
-							<div class="float-right">
-								<button type="button" class="btn btn-default btn-sm"><i class="fas fa-sync-alt"></i></button>
+						<?php if(in_array($this->session->userdata('approve'), ['ALL','ADMIN', 'OFFICE', 'GUDANG'])) { ?>
+							<div style="padding:5px">
+								<button type="button" class="btn btn-primary btn-sm" onclick="tambah('tambah')">Tambah Data</button>
 							</div>
-						</div>
-						<div class="opb-menu-header" style="border-bottom:3px solid #dee2e6;overflow:auto;white-space:nowrap">
-							<div class="list-header" style="padding:0"></div>
-						</div>
+						<?php } ?>
+						<div class="list-header" style="padding:0"></div>
 						<div class="card-body row" style="padding:0">
 							<div class="col-md-3">
 								<div class="list-opb" style="padding:0"></div>
@@ -44,7 +40,39 @@
 							<div class="col-md-9" style="padding:0 14px">
 								<div style="position:sticky;top:12px">
 									<div class="list-opb-detail"></div>
-									<div class="list-opb-verif"></div>
+									<div class="list-opb-verif" style="display:none;">
+										<div class="row">
+											<div class="col-md-7"></div>
+											<div class="col-md-5">
+												<div class="card card-success card-outline">
+													<div class="card-header" style="padding:12px">
+														<h3 class="card-title" style="font-weight:bold;font-size:18px">VERIFIKASI</h3>
+													</div>
+													<div class="card-body row" style="padding:12px 6px 0;font-weight:bold">
+														<div class="col-md-3">KEPALA</div>
+														<div class="col-md-9">
+															<div class="vvff verif-acc"></div>
+															<div class="vvff input-acc"></div>
+														</div>
+													</div>
+													<div class="card-body row" style="padding:6px 6px 0;font-weight:bold">
+														<div class="col-md-3">FINANCE</div>
+														<div class="col-md-9">
+															<div class="vvff verif-finance"></div>
+															<div class="vvff input-finance"></div>
+														</div>
+													</div>
+													<div class="card-body row" style="padding:6px 6px 12px;font-weight:bold">
+														<div class="col-md-3">OWNER</div>
+														<div class="col-md-9">
+															<div class="vvff verif-owner"></div>
+															<div class="vvff input-owner"></div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -52,6 +80,7 @@
 				</div>
 			</div>
 			<input type="hidden" id="id_opbh" value="">
+			<input type="hidden" id="h_kode_dpt" value="">
 			<input type="hidden" id="h_ii" value="">
 		</div>
 
@@ -154,17 +183,9 @@
 							</div>
 							<div class="col-md-5"></div>
 						</div>
-						<div style="margin:20px 0 0;font-weight:bold">DETAIL BARANG :</div>
-						<div style="overflow:auto;white-space:nowrap">
-							<div class="list-detail"></div>
-						</div>
-						<div style="margin:20px 0 0;font-weight:bold">LIST OPB :</div>
-						<div style="overflow:auto;white-space:nowrap">
-							<div class="list-cart"></div>
-						</div>
-						<div style="overflow:auto;white-space:nowrap">
-							<div class="list-edit-cart"></div>
-						</div>
+						<div class="list-detail"></div>
+						<div class="list-cart"></div>
+						<div class="list-edit-cart"></div>
 					</div>
 				</div>
 			</div>
@@ -177,11 +198,12 @@
 
 <script type="text/javascript">
 	const urlAuth = '<?= $this->session->userdata('level')?>';
+	const urlUser = '<?= $this->session->userdata('username')?>';
+	const urlAppv = '<?= $this->session->userdata('approve')?>';
 	status = 'insert';
 	$(document).ready(function() {
 		$(".select2").select2()
 		loadHeader()
-		btnHeader(0)
 	});
 
 	function reloadTable() {
@@ -207,7 +229,7 @@
 			loadBarang()
 		}
 		if(opsi == 'kembali'){
-			btnHeader(0)
+			loadHeader()
 		}
 		status = 'insert'
 	}
@@ -225,30 +247,11 @@
 		}
 	});
 
-	// function load_data() 
-	// {
-	// 	var table = $('#datatable').DataTable();
-	// 	table.destroy();
-	// 	tabel = $('#datatable').DataTable({
-	// 		"processing": true,
-	// 		"pageLength": true,
-	// 		"paging": true,
-	// 		"ajax": {
-	// 			"url": '<?php echo base_url(); ?>Master/loadDataBarang',
-	// 			"type": "POST",
-	// 		},
-	// 		responsive: false,
-	// 		"pageLength": 10,
-	// 		"language": {
-	// 			"emptyTable": "Tidak ada data.."
-	// 		}
-	// 	});
-	// }
-
 	function loadHeader()
 	{
 		$(".list-opb-detail").html('')
-		$(".list-opb-verif").html('')
+		$(".vvff").html('')
+		$(".list-opb-verif").hide()
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadHeader')?>',
 			type: "POST",
@@ -257,17 +260,19 @@
 				$(".list-header").html(data.html)
 			}
 		})
+		btnHeader(0)
 	}
 
 	function btnHeader(kode_dpt)
 	{
-		console.log("kode_dpt : ", kode_dpt)
+		$("#h_kode_dpt").val(kode_dpt)
 		$(".ff").removeClass('ff-klik').addClass('ff-all')
 		$(".boh").removeClass('btn-opbh-klik').addClass('btn-opbh-all')
 		$("#h_"+kode_dpt).removeClass('btn-opb-header').addClass('btn-opbh-klik')
 		$("#ff_"+kode_dpt).removeClass('ff-all').addClass('ff-klik')
 		$(".list-opb-detail").html('')
-		$(".list-opb-verif").html('')
+		$(".vvff").html('')
+		$(".list-opb-verif").hide()
 		loadList(kode_dpt)
 	}
 
@@ -286,29 +291,244 @@
 
 	function btnDetail(id_opbh, i, opsi)
 	{
+		let plh_departemen = $("#plh_departemen").val()
 		$(".btn-opb-header").prop('disabled', false)
 		$(".toh").removeClass('tr-opbh-klik').addClass('tr-opbh-all')
-		// $("#id_opbh").val('')
-		// $("#h_ii").val('')
+		$("#bth_"+i).prop('disabled', true)
 		$(".list-opb-detail").html('')
-		$(".list-opb-verif").html('')
+		$(".vvff").html('')
+		$(".list-opb-verif").hide()
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadDetail')?>',
 			type: "POST",
-			data: ({ id_opbh, i, opsi }),
+			data: ({ id_opbh, plh_departemen, opsi }),
 			success: function(res){
 				data = JSON.parse(res)
 				console.log(data)
 				if(opsi == 'view'){
 					$("#toh_"+i).removeClass('tr-opbh-all').addClass('tr-opbh-klik')
-					$("#bth_"+i).prop('disabled', true)
 					$("#id_opbh").val(data.opbh.id_opbh)
 					$("#h_ii").val(i)
 					$(".list-opb-detail").html(data.htmlDetail)
-					$(".list-opb-verif").html('verif')
+					$(".list-opb-verif").show()
+					// VERIFIKASI DATA
+					// VERIF ACC
+						if((urlAppv == 'ACC' || urlAppv == 'ALL') && data.opbh.acc2 == 'N' && (data.opbh.acc1 == 'N' || data.opbh.acc1 == 'H' || data.opbh.acc1 == 'R')){
+							// BUTTON ACC
+							$(".verif-acc").html(`<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-success" onclick="verifOpb('verifikasi','acc')"><i class="fas fa-check"></i> Verifikasi</button>
+							<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-warning" onclick="verifOpb('hold','acc')"><i class="far fa-hand-paper"></i> Hold</button>
+							<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-danger" onclick="verifOpb('reject','acc')"><i class="fas fa-times"></i> Reject</button>`)
+							// KETERANGAN ACC
+							if(data.opbh.acc1 != 'N'){
+								if(data.opbh.acc1 == 'H'){
+									callout = 'callout-warning'
+									colorbtn = 'btn-warning'
+									txtsave = 'HOLD!'
+								}else{
+									callout = 'callout-danger'
+									colorbtn = 'btn-danger'
+									txtsave = 'REJECT!'
+								}
+								$(".input-acc").html(`<div class="callout ${callout}" style="padding:0;margin:2px 0 5px">
+									<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()">${data.opbh.acc1}</textarea>
+								</div>
+								<div>
+									<button type="button" style="text-align:center;font-weight:bold" class="btn btn-xs ${colorbtn}" onclick="btnVerifOpb('${data.opbh.acc1}', 'marketing')"><i class="fas fa-save" style="color:#000">
+										</i> <span style="color:#000">${txtsave}</span>
+									</button>
+								</div>`)
+							}
+						}else{
+							// BUTTON ACC
+							if(data.opbh.acc1 == 'N'){
+								$(".verif-acc").html(`<button style="text-align:center;font-weight:bold;cursor:default" class="btn btn-sm btn-warning"><i class="fas fa-lock"></i></button>`)
+							}else if(data.opbh.acc1 == 'H'){
+								$(".verif-acc").html(`<button style="text-align:center;font-weight:bold;cursor:default" class="btn btn-sm btn-warning"><i class="fas fa-hand-paper"></i></button> ${data.opbh.acc1}`)
+							}else if(data.opbh.acc1 == 'R'){
+								$(".verif-acc").html(`<button style="text-align:center;font-weight:bold;padding:4px 10px;cursor:default" class="btn btn-sm btn-danger"><i class="fas fa-times" style="color:#000"></i></button> ${data.opbh.acc1}`)
+							}else{
+								$(".verif-acc").html(`<button title="OKE" style="text-align:center;cursor:default" class="btn btn-sm btn-success "><i class="fas fa-check-circle"></i></button> ${data.time1}`)
+							}
+							// KETERANGAN ACC
+							if(data.opbh.acc1 != 'N'){
+								if(data.opbh.acc1 == 'H'){
+									callout = 'callout-warning'
+								}else if(data.opbh.acc1 == 'R'){
+									callout = 'callout-danger'
+								}else{
+									callout = 'callout-success'
+								}
+								$(".input-acc").html(`<div>
+									<div class="callout ${callout}" style="padding:6px;margin:5px 0">${data.opbh.ket1}</div>
+								</div>`)
+							}
+						}
+					// END VERIF ACC
+					// VERIF FINANCE
+						if((urlAppv == 'FINANCE' || urlAppv == 'ALL') && data.opbh.acc3 == 'N' && (data.opbh.acc2 == 'N' || data.opbh.acc2 == 'H' || data.opbh.acc2 == 'R')){
+							// BUTTON FINANCE
+							$(".verif-finance").html(`<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-success" onclick="verifOpb('verifikasi','finance')"><i class="fas fa-check"></i> Verifikasi</button>
+							<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-warning" onclick="verifOpb('hold','finance')"><i class="far fa-hand-paper"></i> Hold</button>
+							<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-danger" onclick="verifOpb('reject','finance')"><i class="fas fa-times"></i> Reject</button>`)
+							// KETERANGAN FINANCE
+							if(data.opbh.acc2 != 'N'){
+								if(data.opbh.acc2 == 'H'){
+									callout = 'callout-warning'
+									colorbtn = 'btn-warning'
+									txtsave = 'HOLD!'
+								}else{
+									callout = 'callout-danger'
+									colorbtn = 'btn-danger'
+									txtsave = 'REJECT!'
+								}
+								$(".input-finance").html(`<div class="callout ${callout}" style="padding:0;margin:2px 0 5px">
+									<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()">${data.opbh.acc2}</textarea>
+								</div>
+								<div>
+									<button type="button" style="text-align:center;font-weight:bold" class="btn btn-xs ${colorbtn}" onclick="btnVerifOpb('${data.opbh.acc2}', 'marketing')"><i class="fas fa-save" style="color:#000">
+										</i> <span style="color:#000">${txtsave}</span>
+									</button>
+								</div>`)
+							}
+						}else{
+							// BUTTON FINANCE
+							if(data.opbh.acc2 == 'N'){
+								$(".verif-finance").html(`<button style="text-align:center;font-weight:bold;cursor:default" class="btn btn-sm btn-warning"><i class="fas fa-lock"></i></button>`)
+							}else if(data.opbh.acc2 == 'H'){
+								$(".verif-finance").html(`<button style="text-align:center;font-weight:bold;cursor:default" class="btn btn-sm btn-warning"><i class="fas fa-hand-paper"></i></button> ${data.opbh.acc2}`)
+							}else if(data.opbh.acc2 == 'R'){
+								$(".verif-finance").html(`<button style="text-align:center;font-weight:bold;padding:4px 10px;cursor:default" class="btn btn-sm btn-danger"><i class="fas fa-times" style="color:#000"></i></button> ${data.opbh.acc2}`)
+							}else{
+								$(".verif-finance").html(`<button title="OKE" style="text-align:center;cursor:default" class="btn btn-sm btn-success "><i class="fas fa-check-circle"></i></button> ${data.time2}`)
+							}
+							// KETERANGAN ACC
+							if(data.opbh.acc2 != 'N'){
+								if(data.opbh.acc2 == 'H'){
+									callout = 'callout-warning'
+								}else if(data.opbh.acc2 == 'R'){
+									callout = 'callout-danger'
+								}else{
+									callout = 'callout-success'
+								}
+								$(".input-finance").html(`<div>
+									<div class="callout ${callout}" style="padding:6px;margin:5px 0">${data.opbh.ket2}</div>
+								</div>`)
+							}
+						}
+					// END VERIF FINANCE
+					// VERIF OWNER
+						if((urlAppv == 'OWNER' || urlAppv == 'ALL') && data.opbh.acc2 == 'Y' && (data.opbh.acc3 == 'N' || data.opbh.acc3 == 'H' || data.opbh.acc3 == 'R')){
+							// BUTTON OWNER
+							$(".verif-owner").html(`<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-success" onclick="verifOpb('verifikasi','owner')"><i class="fas fa-check"></i> Verifikasi</button>
+							<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-warning" onclick="verifOpb('hold','owner')"><i class="far fa-hand-paper"></i> Hold</button>
+							<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-danger" onclick="verifOpb('reject','owner')"><i class="fas fa-times"></i> Reject</button>`)
+							// KETERANGAN OWNER
+							if(data.opbh.acc3 != 'N'){
+								if(data.opbh.acc3 == 'H'){
+									callout = 'callout-warning'
+									colorbtn = 'btn-warning'
+									txtsave = 'HOLD!'
+								}else{
+									callout = 'callout-danger'
+									colorbtn = 'btn-danger'
+									txtsave = 'REJECT!'
+								}
+								$(".input-owner").html(`<div class="callout ${callout}" style="padding:0;margin:2px 0 5px">
+									<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()">${data.opbh.acc3}</textarea>
+								</div>
+								<div>
+									<button type="button" style="text-align:center;font-weight:bold" class="btn btn-xs ${colorbtn}" onclick="btnVerifOpb('${data.opbh.acc3}', 'marketing')"><i class="fas fa-save" style="color:#000">
+										</i> <span style="color:#000">${txtsave}</span>
+									</button>
+								</div>`)
+							}
+						}else{
+							// BUTTON OWNER
+							if(data.opbh.acc3 == 'N'){
+								$(".verif-owner").html(`<button style="text-align:center;font-weight:bold;cursor:default" class="btn btn-sm btn-warning"><i class="fas fa-lock"></i></button>`)
+							}else if(data.opbh.acc3 == 'H'){
+								$(".verif-owner").html(`<button style="text-align:center;font-weight:bold;cursor:default" class="btn btn-sm btn-warning"><i class="fas fa-hand-paper"></i></button> ${data.opbh.acc3}`)
+							}else if(data.opbh.acc3 == 'R'){
+								$(".verif-owner").html(`<button style="text-align:center;font-weight:bold;padding:4px 10px;cursor:default" class="btn btn-sm btn-danger"><i class="fas fa-times" style="color:#000"></i></button> ${data.opbh.acc3}`)
+							}else{
+								$(".verif-owner").html(`<button title="OKE" style="text-align:center;cursor:default" class="btn btn-sm btn-success "><i class="fas fa-check-circle"></i></button> ${data.time3}`)
+							}
+							// KETERANGAN ACC
+							if(data.opbh.acc3 != 'N'){
+								if(data.opbh.acc3 == 'H'){
+									callout = 'callout-warning'
+								}else if(data.opbh.acc3 == 'R'){
+									callout = 'callout-danger'
+								}else{
+									callout = 'callout-success'
+								}
+								$(".input-owner").html(`<div>
+									<div class="callout ${callout}" style="padding:6px;margin:5px 0">${data.opbh.ket3}</div>
+								</div>`)
+							}
+						}
+					// END VERIF OWNER
 				}
 				if(opsi == 'edit'){
 					$(".list-edit-cart").html(data.htmlDetail)
+				}
+			}
+		})
+	}
+
+	function verifOpb(aksi, status_verif)
+	{
+		if(aksi == 'verifikasi'){
+			vrf = 'Y'
+			callout = 'callout-success'
+			colorbtn = 'btn-success'
+			txtsave = 'VERIFIKASI!'
+		}else if(aksi == 'hold'){
+			vrf = 'H'
+			callout = 'callout-warning'
+			colorbtn = 'btn-warning'
+			txtsave = 'HOLD!'
+		}else if(aksi == 'reject'){
+			vrf = 'R'
+			callout = 'callout-danger'
+			colorbtn = 'btn-danger'
+			txtsave = 'REJECT!'
+		}
+		if(status_verif == 'acc'){
+			input_verif = 'input-acc';
+		}else if(status_verif == 'finance'){
+			input_verif = 'input-finance';
+		}else if(status_verif == 'owner'){
+			input_verif = 'input-owner';
+		}
+		$("."+input_verif).html(`<div class="callout ${callout}" style="padding:0;margin:2px 0 5px">
+			<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()"></textarea>
+		</div>
+		<div>
+			<button type="button" style="text-align:center;font-weight:bold" class="btn btn-xs ${colorbtn}" onclick="btnVerifOpb('${vrf}', '${status_verif}')"><i class="fas fa-save" style="color:#000">
+				</i> <span style="color:#000">${txtsave}</span>
+			</button>
+		</div>`)
+	}
+
+	function btnVerifOpb(aksi, status_verif)
+	{
+		let id_opbh = $("#id_opbh").val()
+		let ket_laminasi = $("#ket_laminasi").val()
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/btnVerifOpb')?>',
+			type: "POST",
+			data: ({
+				id_opbh, ket_laminasi, aksi, status_verif
+			}),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				if(data.result){
+					btnHeader(0)
+				}else{
+					toastr.error(`<b>KETERANGAN TIDAK BOLEH KOSONG!</b>`)
+					swal.close()
 				}
 			}
 		})
@@ -322,6 +542,7 @@
 			success: function(res){
 				data = JSON.parse(res)
 				$("#id_mbh").val('')
+				$("#id_cart").val(0)
 				$("#plh_barang").html(data.html)
 				$("#jenistipe").html('<option value="">PILIH</option>')
 				$("#material").html('<option value="">PILIH</option>')
@@ -544,6 +765,10 @@
 		let h_ii = $("#h_ii").val()
 		$(".row-list").hide()
 		$(".row-input").show()
+		$("#id_mbh").val('')
+		$("#id_cart").val(0)
+		$(".list-detail").html('')
+		$(".list-cart").html('')
 		$(".list-edit-cart").html('')
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/editOPB')?>',
@@ -557,9 +782,42 @@
 				$("#no_opb").val(data.opbh.no_opb).prop('disabled', true)
 				$("#plh_departemen").val(data.opbh.kode_dpt).trigger('change')
 				$(".btn-kembali").html(`<button type="button" class="btn btn-primary btn-sm" onclick="kembali()">Kembali</button>`)
-				btnDetail(id_opbh, h_ii, 'edit')
 				loadBarang()
+				btnDetail(id_opbh, h_ii, 'edit')
 				status = 'update'
+			}
+		})
+	}
+
+	function editListOPB(i)
+	{
+		let kode_dpt = $("#h_kode_dpt").val()
+		let id_opbh = $("#id_opbh").val()
+		let h_ii = $("#h_ii").val()
+		let id_opbd = $("#h_id_opbd_"+i).val()
+		let id_mbh = $("#h_id_mbh"+i).val()
+		let id_mbd = $("#h_id_mbd"+i).val()
+		let plh_satuan = $("#plh_satuan"+i).val()
+		let qty = $("#qty"+i).val()
+		let i_qty1 = $("#i_qty1_"+i).val()
+		let i_qty2 = $("#i_qty2_"+i).val()
+		let i_qty3 = $("#i_qty3_"+i).val()
+		let ket_pengadaan = $("#ket_pengadaan"+i).val()
+		let plh_bagian = $("#plh_bagian"+i).val()
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/editListOPB')?>',
+			type: "POST",
+			async: false,
+			data: ({ id_opbh, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, plh_bagian }),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				if(data.data){
+					editOPB()
+					loadList(kode_dpt)
+				}else{
+					toastr.error(`<b>${data.msg}</b>`)
+				}
 			}
 		})
 	}
@@ -568,8 +826,42 @@
 	{
 		$(".row-list").show()
 		$(".row-input").hide()
+		$(".list-detail").html('')
+		$(".list-cart").html('')
+		$(".list-edit-cart").html('')
 		let id_opbh = $("#id_opbh").val()
 		let h_ii = $("#h_ii").val()
 		btnDetail(id_opbh, h_ii, 'view')
+	}
+
+	function hapusOPB(opsi, i)
+	{
+		let id_opbh = $("#id_opbh").val()
+		let h_ii = $("#h_ii").val()
+		let id_opbd = $("#h_id_opbd_"+i).val()
+		swal({
+			title: "Apakah Kamu Yakin?",
+			text: "",
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#C00",
+			confirmButtonText: "Delete"
+		}).then(function(result) {
+			$.ajax({
+				url: '<?php echo base_url('Transaksi/hapusOPB')?>',
+				type: "POST",
+				data : ({ id_opbh, id_opbd, opsi }),
+				success: function(res){
+					data = JSON.parse(res)
+					console.log(data)
+					if(opsi == 'header' && data.opbh && data.opbd){
+						loadHeader()
+					}
+					if(opsi == 'detail' && data.opbd){
+						btnDetail(id_opbh, h_ii, 'edit')
+					}
+				}
+			})
+		});
 	}
 </script>
