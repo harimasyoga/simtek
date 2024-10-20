@@ -183,9 +183,9 @@
 							</div>
 							<div class="col-md-5"></div>
 						</div>
-						<div class="list-detail"></div>
-						<div class="list-cart"></div>
-						<div class="list-edit-cart"></div>
+						<div class="lil list-detail"></div>
+						<div class="lil list-cart"></div>
+						<div class="lil list-edit-cart"></div>
 					</div>
 				</div>
 			</div>
@@ -219,8 +219,10 @@
 		$("#tgl_opb").val('<?php echo date('Y-m-d')?>');
 		$("#no_opb").val('').prop('disabled', false)
 		$("#id_opbh").val('')
+		$("#id_mbh").val('')
 		$("#h_ii").val('')
 		$("#plh_departemen").val('').trigger('change').prop('disabled', false)
+		$(".lil").html('')
 		if(opsi == 'tambah'){
 			$(".btn-kembali").html(`<button type="button" class="btn btn-primary btn-sm" onclick="tambah('kembali')">Kembali</button>`)
 			$(".row-list").hide()
@@ -472,6 +474,7 @@
 				if(opsi == 'edit'){
 					$(".list-edit-cart").html(data.htmlDetail)
 				}
+				$(".select2").select2()
 			}
 		})
 	}
@@ -672,6 +675,12 @@
 		$("#i_qty3_"+i).val(x_kecil)
 	}
 
+	function hargaOPB(i)
+	{
+		let harga = $("#harga_opb"+i).val().split('.').join('')
+		$("#harga_opb"+i).val(format_angka(harga))
+	}
+
 	function addCartOPB(i)
 	{
 		let id_cart = parseInt($("#id_cart").val()) + 1;
@@ -802,13 +811,15 @@
 		let i_qty1 = $("#i_qty1_"+i).val()
 		let i_qty2 = $("#i_qty2_"+i).val()
 		let i_qty3 = $("#i_qty3_"+i).val()
+		let harga = $("#harga_opb"+i).val().split('.').join('')
+		let plh_supplier = $("#plh_supplier"+i).val()
 		let ket_pengadaan = $("#ket_pengadaan"+i).val()
 		let plh_bagian = $("#plh_bagian"+i).val()
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/editListOPB')?>',
 			type: "POST",
 			async: false,
-			data: ({ id_opbh, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, plh_bagian }),
+			data: ({ id_opbh, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, harga, plh_supplier, ket_pengadaan, plh_bagian }),
 			success: function(res){
 				data = JSON.parse(res)
 				console.log(data)
@@ -826,9 +837,7 @@
 	{
 		$(".row-list").show()
 		$(".row-input").hide()
-		$(".list-detail").html('')
-		$(".list-cart").html('')
-		$(".list-edit-cart").html('')
+		$(".lil").html('')
 		let id_opbh = $("#id_opbh").val()
 		let h_ii = $("#h_ii").val()
 		btnDetail(id_opbh, h_ii, 'view')

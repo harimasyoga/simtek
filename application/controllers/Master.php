@@ -1010,29 +1010,18 @@ class Master extends CI_Controller
 			foreach ($query as $r) {
 				$row = array();
 				$row[] = '<div class="text-center"><a href="javascript:void(0)" onclick="tampil_edit('."'".$r->id_supp."'".','."'detail'".')">'.$i."<a></div>";
-
 				$row[] = $r->nm_supp;
 				$row[] = $r->alamat;
 				$row[] = $r->no_hp;
 				$row[] = $r->jt;
-
-				$idPelanggan = $r->id_supp;
-				// $cekProduk = $this->db->query("SELECT * FROM m_produk WHERE no_customer='$idPelanggan'")->num_rows();
-
-				if (in_array($this->session->userdata('level'), ['Admin','User']))
+				if (in_array($this->session->userdata('approve'), ['ALL','OFFICE', 'FINANCE']))
 				{
 					$btnEdit = '<button type="button" class="btn btn-warning btn-sm" onclick="tampil_edit('."'".$r->id_supp."'".','."'edit'".')"><i class="fas fa-pen"></i></button>';
-
 					$btnHapus = '<button type="button" class="btn btn-danger btn-sm" onclick="deleteData('."'".$r->id_supp."'".')"><i class="fa fa-trash-alt"></i></i></button>';
-
 				}else{
-
 					$btnEdit = '';
 					$btnHapus = '';
 				}
-				
-
-				// $row[] = ($cekProduk == 0) ? $btnEdit.' '.$btnHapus : $btnEdit ;
 				$row[] = $btnEdit.' '.$btnHapus ;
 				$data[] = $row;
 				$i++;

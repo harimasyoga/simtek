@@ -1085,6 +1085,7 @@ class M_transaksi extends CI_Model
 
 	function editListOPB()
 	{
+		$approve = $this->session->userdata('approve');
 		$id_opbd = $_POST["id_opbd"];
 		$id_mbh = $_POST["id_mbh"];
 		$id_mbd = $_POST["id_mbd"];
@@ -1093,10 +1094,16 @@ class M_transaksi extends CI_Model
 		$i_qty1 = $_POST["i_qty1"];
 		$i_qty2 = $_POST["i_qty2"];
 		$i_qty3 = $_POST["i_qty3"];
+		$harga = $_POST["harga"];
+		$plh_supplier = $_POST["plh_supplier"];
 		$ket_pengadaan = $_POST["ket_pengadaan"];
 		$plh_bagian = $_POST["plh_bagian"];
 		if($qty == 0 || $qty == '' || $qty < 0){
 			$data = false; $detail = ''; $msg = 'HARAP ISI QTY!';
+		}else if($plh_supplier == '' && ($approve == 'OFFICE' || $approve == 'FINANCE')){
+			$data = false; $detail = ''; $msg = 'HARAP PILIH SUPPLIER!';
+		}else if(($harga == 0 || $harga == '' || !preg_match("/^[0-9]*$/", $harga)) && ($approve == 'OFFICE' || $approve == 'FINANCE')){
+			$data = false; $detail = ''; $msg = 'HARAP ISI HARGA!';
 		}else if($plh_bagian == ''){
 			$data = false; $detail = ''; $msg = 'HARAP PILIH BAGIAN!';
 		}else{
@@ -1115,7 +1122,6 @@ class M_transaksi extends CI_Model
 				$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
 			}
 			$detail = [
-				'kode_bagian' => $plh_bagian,
 				'p_satuan' => $barang->p_satuan,
 				'dsatuan' => $plh_satuan,
 				'dqty1' => $qty1,
@@ -1124,7 +1130,10 @@ class M_transaksi extends CI_Model
 				'dsatuan2' => $satuan2,
 				'dqty3' => $qty3,
 				'dsatuan3' => $satuan3,
-				'ket_pengadaan' => $ket_pengadaan,
+				'dharga' => ($harga == '' || $harga == 0) ? null : $harga,
+				'id_supplier' => ($plh_supplier == '') ? null : $plh_supplier,
+				'ket_pengadaan' => ($ket_pengadaan == '') ? null : $ket_pengadaan,
+				'kode_bagian' => $plh_bagian,
 				'edit_by' => $this->username,
 				'edit_at' => date('Y-m-d H:i:s'),
 			];

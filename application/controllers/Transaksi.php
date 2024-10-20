@@ -1056,14 +1056,30 @@ class Transaksi extends CI_Controller
 					}
 				}
 				// CEK BELUM BACA APA BELUM
-				if(($r->acc1 == 'N' && $approve == 'ACC') || ($r->acc2 == 'N' && $approve == 'FINANCE') || ($r->acc3 == 'N' && $approve == 'OWNER') || $approve == 'OFFICE' || $approve == 'GUDANG' || $approve == 'ADMIN'){
+				if(
+					($r->acc1 == 'N' && $approve == 'ACC') ||
+					($r->acc2 == 'N' && $approve == 'FINANCE') ||
+					($r->acc3 == 'N' && $approve == 'OWNER') ||
+					($r->acc1 == 'N' && $r->ajukan == 'N' && ($approve == 'OFFICE' || $approve == 'GUDANG' || $approve == 'ADMIN'))
+				){
 					$read1 = '<span class="rr_'.$i.'" style="position:absolute;top:6px;right:6px"><i class="fas fa-exclamation-circle" style="color:#1ed760"></i></span>';
 				}else{
 					$read1 = '';
 				}
 				// STATUS OPB
-				if($r->status_opb == 'Inproses'){
-					$status = '<span class="i-opbh" style="color:#28a745">proses</span>';
+				if($r->status_opb == 'Open' && $r->ajukan == 'Y'){
+					$status = '<span class="i-opbh" style="color:#28a745">pengajuan</span>';
+				}else if($r->status_opb == 'Inproses'){
+					if($r->acc1 == 'N'){
+						$ki = ' acc k. bag';
+					}else if($r->acc2 == 'N'){
+						$ki = ' acc finance';
+					}else if($r->acc3 == 'N'){
+						$ki = ' acc owner';
+					}else{
+						$ki = '';
+					}
+					$status = '<span class="i-opbh" style="color:#28a745">proses'.$ki.'</span>';
 				}else if($r->status_opb == 'Hold'){
 					$status = '<span class="i-opbh" style="color:#ffc107">hold</span>';
 				}else if($r->status_opb == 'Batal'){
@@ -1110,28 +1126,37 @@ class Transaksi extends CI_Controller
 		if($opsi == 'view'){
 			$bgCard = 'card-primary';
 			if($approve == 'ACC' || $approve == 'FINANCE' || $approve == 'OWNER'){
-				$btnEdit = '';
-				$btnHapus = '';
+				$btnAjukan = ''; $btnEdit = ''; $btnHapus = '';
 			}else{
+				if($opbh->acc1 == 'Y' && ($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE')){
+					$btnAjukan = '<button type="button" class="btn btn-xs bg-gradient-success" onclick="ajukanOPB()">Ajukan</button> ';
+				}else{
+					$btnAjukan = '';
+				}
 				$btnEdit = '<button type="button" class="btn btn-xs bg-gradient-dark" onclick="editOPB()">Edit</button> - ';
 				$btnHapus = ' - <button type="button" class="btn btn-xs bg-gradient-danger" onclick="hapusOPB('."'header'".','."'0'".')">Hapus</button>';
 			}
 			$thKode = '';
 			$thSatuan = '';
+			// SUPPLIER
+			($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE' || $approve == 'OWNER') ? $thSup = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">HARGA (Rp.)</th>
+			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SUPPLIER</th>' : $thSup = '';
 			$thEdit = '';
 		}else{
 			$bgCard = 'card-secondary';
-			$btnEdit = '';
-			$btnHapus = '';
+			$btnEdit = ''; $btnHapus = ''; $btnAjukan = '';
 			$thKode = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KODE BARANG</th>';
 			$thSatuan = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">SATUAN</th>
 			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 12px;text-align:center">PILIH SATUAN</th>
 			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">QTY</th>';
+			// SUPPLIER
+			($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE' || $approve == 'OWNER') ? $thSup = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">HARGA (Rp.)</th>
+			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 260px 6px 6px">SUPPLIER</th>' : $thSup = '';
 			$thEdit = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 12px;text-align:center">AKSI</th>';
 		}
 		$htmlDetail .='<div class="card '.$bgCard.' card-outline" style="margin-top:12px">
 			<div class="card-header" style="padding:10px 6px">
-				<h3 class="card-title" style="font-weight:bold;font-size:18px">'.$btnEdit.'LIST DETAIL BARANG OPB'.$btnHapus.'</h3>
+				<h3 class="card-title" style="font-weight:bold;font-size:18px">'.$btnAjukan.$btnEdit.'LIST DETAIL BARANG OPB'.$btnHapus.'</h3>
 			</div>
 			<div class="ldopb" style="padding:0;overflow:auto;white-space:nowrap">
 				<table class="table table-bordered table-striped" style="margin:0">
@@ -1144,8 +1169,9 @@ class Transaksi extends CI_Controller
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MERK</th>
 						'.$thSatuan.'
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">PENGADAAN</th>
-						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KETERANGAN</th>
-						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">BAGIAN</th>
+						'.$thSup.'
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 32px;text-align:center">KETERANGAN</th>
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 32px;text-align:center">BAGIAN</th>
 						'.$thEdit.'
 					</tr>
 					<tr>
@@ -1203,6 +1229,14 @@ class Transaksi extends CI_Controller
 							$tdKode = '';
 							$htmlSat = '';
 							$tdSatuan = '';
+							if($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE'){
+								($r->dharga == null) ? $harga = '-' : $harga = number_format($r->dharga,0,',','.');
+								$sup = $this->db->query("SELECT*FROM m_supplier WHERE id_supp='$r->id_supplier'");
+								($sup->num_rows() == 0) ? $tdsp = '-' : $tdsp = $sup->row()->nm_supp;
+								$tdSup = '<td style="padding:6px;font-weight:bold;text-align:right">'.$harga.'</td><td style="padding:6px;font-weight:bold">'.$tdsp.'</td>';
+							}else{
+								$tdSup = '';
+							}
 							$tdKet = '<td style="padding:6px">'.$r->ket_pengadaan.'</td>';
 							$tdBagian = '<td style="padding:6px">'.$r->nama.'</td>';
 							$tdAksi = '';
@@ -1256,6 +1290,28 @@ class Transaksi extends CI_Controller
 							<td style="padding:6px;text-align:center">
 								<input type="number" id="qty'.$i.'" class="form-control" style="width:60px;padding:3px 4px;text-align:right" value="'.$dqty.'" onkeyup="pengadaaan('."'".$i."'".')">
 							</td>';
+							// SUPPLIER
+							if($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE'){
+								$sup = $this->db->query("SELECT*FROM m_supplier ORDER BY nm_supp");
+								$optSup = '';
+								foreach($sup->result() as $s){
+									($s->id_supp == $r->id_supplier) ? $slp = 'selected' : $slp = '';
+									$optSup .= '<option value="'.$s->id_supp.'" '.$slp.'>'.$s->nm_supp.'</option>';
+								}
+								($r->dharga == null) ? $harga = '' : $harga = number_format($r->dharga,0,',','.');
+								$tdSup = '<td style="padding:6px">
+									<input type="text" id="harga_opb'.$i.'" class="form-control" style="width:120px;padding:3px 4px;text-align:right" value="'.$harga.'" autocomplete="off" onkeyup="hargaOPB('."'".$i."'".')" placeholder="0">
+								</td>
+								<td style="padding:6px">
+									<select id="plh_supplier'.$i.'" class="form-control select2">
+										<option value="">PILIH</option>
+										'.$optSup.'
+									</select>
+								</td>';
+							}else{
+								$tdSup = '<input type="hidden" id="harga_opb'.$i.'" value="">
+								<input type="hidden" id="plh_supplier'.$i.'" value="">';
+							}
 							// KETERANGAN
 							$tdKet = '<td style="padding:6px;font-weight:bold">
 								<textarea id="ket_pengadaan'.$i.'" class="form-control" style="padding:3px 4px;resize:none" rows="2" placeholder="-" oninput="this.value=this.value.toUpperCase()">'.$r->ket_pengadaan.'</textarea>
@@ -1291,11 +1347,11 @@ class Transaksi extends CI_Controller
 							<td style="padding:6px">'.$r->material.'</td>
 							<td style="padding:6px">'.$r->size.'</td>
 							<td style="padding:6px">'.$r->merk.'</td>
-							'.$htmlSat.$tdSatuan.$htmlPgd.$tdKet.$tdBagian.$tdAksi.'
+							'.$htmlSat.$tdSatuan.$htmlPgd.$tdSup.$tdKet.$tdBagian.$tdAksi.'
 						</tr>';
 						if($detail->num_rows() != $i){
 							$htmlDetail .= '<tr>
-								<td style="padding:1px;border:0" colspan="11"></td>
+								<td style="padding:2px;border:0" colspan="11"></td>
 							</tr>';
 						}
 					}
