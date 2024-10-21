@@ -1086,6 +1086,8 @@ class M_transaksi extends CI_Model
 	function editListOPB()
 	{
 		$approve = $this->session->userdata('approve');
+		$id_opbh = $_POST["id_opbh"];
+		$opbh = $this->db->query("SELECT*FROM trs_opb_header WHERE id_opbh='$id_opbh'")->row();
 		$id_opbd = $_POST["id_opbd"];
 		$id_mbh = $_POST["id_mbh"];
 		$id_mbd = $_POST["id_mbd"];
@@ -1100,9 +1102,9 @@ class M_transaksi extends CI_Model
 		$plh_bagian = $_POST["plh_bagian"];
 		if($qty == 0 || $qty == '' || $qty < 0){
 			$data = false; $detail = ''; $msg = 'HARAP ISI QTY!';
-		}else if($plh_supplier == '' && ($approve == 'OFFICE' || $approve == 'FINANCE')){
+		}else if($plh_supplier == '' && $approve == 'OFFICE' && $opbh->acc1 == 'Y'){
 			$data = false; $detail = ''; $msg = 'HARAP PILIH SUPPLIER!';
-		}else if(($harga == 0 || $harga == '' || !preg_match("/^[0-9]*$/", $harga)) && ($approve == 'OFFICE' || $approve == 'FINANCE')){
+		}else if(($harga == 0 || $harga == '' || !preg_match("/^[0-9]*$/", $harga)) && $approve == 'OFFICE' && $opbh->acc1 == 'Y'){
 			$data = false; $detail = ''; $msg = 'HARAP ISI HARGA!';
 		}else if($plh_bagian == ''){
 			$data = false; $detail = ''; $msg = 'HARAP PILIH BAGIAN!';
@@ -1139,6 +1141,16 @@ class M_transaksi extends CI_Model
 			];
 			$this->db->where('id_opbd', $id_opbd);
 			$data = $this->db->update('trs_opb_detail', $detail);
+			// UPDATE HEADER BATAL ACC
+			if($data){
+				$this->db->set('status_opb', 'Inproses');
+				$this->db->set('acc2', 'N');
+				$this->db->set('by2', null);
+				$this->db->set('ket2', null);
+				$this->db->set('time2', null);
+				$this->db->where('id_opbh', $id_opbh);
+				$this->db->update('trs_opb_header');
+			}
 			$msg = 'OK!';
 		}
 		return ([
@@ -1165,6 +1177,15 @@ class M_transaksi extends CI_Model
 			$header = '';
 			$this->db->where('id_opbd', $id_opbd);
 			$detail = $this->db->delete('trs_opb_detail');
+			if($detail){
+				$this->db->set('status_opb', 'Inproses');
+				$this->db->set('acc2', 'N');
+				$this->db->set('by2', null);
+				$this->db->set('ket2', null);
+				$this->db->set('time2', null);
+				$this->db->where('id_opbh', $id_opbh);
+				$this->db->update('trs_opb_header');
+			}
 		}
 		return ([
 			'opbd' => $detail,

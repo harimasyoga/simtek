@@ -332,7 +332,7 @@
 									txtsave = 'REJECT!'
 								}
 								$(".input-acc").html(`<div class="callout ${callout}" style="padding:0;margin:2px 0 5px">
-									<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()">${data.opbh.acc1}</textarea>
+									<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()">${data.opbh.ket1}</textarea>
 								</div>
 								<div>
 									<button type="button" style="text-align:center;font-weight:bold" class="btn btn-xs ${colorbtn}" onclick="btnVerifOpb('${data.opbh.acc1}', 'marketing')"><i class="fas fa-save" style="color:#000">
@@ -367,7 +367,7 @@
 						}
 					// END VERIF ACC
 					// VERIF FINANCE
-						if((urlAppv == 'FINANCE' || urlAppv == 'ALL') && data.opbh.acc3 == 'N' && (data.opbh.acc2 == 'N' || data.opbh.acc2 == 'H' || data.opbh.acc2 == 'R')){
+						if((urlAppv == 'FINANCE' || urlAppv == 'ALL') && data.opbds == 0 && data.opbh.acc3 == 'N' && (data.opbh.acc2 == 'N' || data.opbh.acc2 == 'H' || data.opbh.acc2 == 'R')){
 							// BUTTON FINANCE
 							$(".verif-finance").html(`<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-success" onclick="verifOpb('verifikasi','finance')"><i class="fas fa-check"></i> Verifikasi</button>
 							<button type="button" style="margin-bottom:3px;text-align:center;font-weight:bold" class="btn btn-sm btn-warning" onclick="verifOpb('hold','finance')"><i class="far fa-hand-paper"></i> Hold</button>
@@ -384,7 +384,7 @@
 									txtsave = 'REJECT!'
 								}
 								$(".input-finance").html(`<div class="callout ${callout}" style="padding:0;margin:2px 0 5px">
-									<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()">${data.opbh.acc2}</textarea>
+									<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()">${data.opbh.ket2}</textarea>
 								</div>
 								<div>
 									<button type="button" style="text-align:center;font-weight:bold" class="btn btn-xs ${colorbtn}" onclick="btnVerifOpb('${data.opbh.acc2}', 'marketing')"><i class="fas fa-save" style="color:#000">
@@ -436,7 +436,7 @@
 									txtsave = 'REJECT!'
 								}
 								$(".input-owner").html(`<div class="callout ${callout}" style="padding:0;margin:2px 0 5px">
-									<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()">${data.opbh.acc3}</textarea>
+									<textarea class="form-control" id="ket_laminasi" style="padding:6px;border:0;resize:none" placeholder="ALASAN" oninput="this.value=this.value.toUpperCase()">${data.opbh.ket3}</textarea>
 								</div>
 								<div>
 									<button type="button" style="text-align:center;font-weight:bold" class="btn btn-xs ${colorbtn}" onclick="btnVerifOpb('${data.opbh.acc3}', 'marketing')"><i class="fas fa-save" style="color:#000">
