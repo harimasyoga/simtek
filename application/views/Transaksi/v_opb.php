@@ -673,12 +673,26 @@
 		$("#i_qty1_"+i).val(x_besar)
 		$("#i_qty2_"+i).val(x_tengah)
 		$("#i_qty3_"+i).val(x_kecil)
+
+		if(urlAppv == 'ALL' || urlAppv == 'OFFICE'){
+			hargaOPB(i)
+		}
 	}
 
 	function hargaOPB(i)
 	{
+		let h_qty = $("#h_qty_"+i).val().split('.').join('')
+		let h_harga = $("#h_harga_"+i).val().split('.').join('')
+		let h_total = $("#h_total").val().split('.').join('')
+		let qty = $("#qty"+i).val().split('.').join('')
 		let harga = $("#harga_opb"+i).val().split('.').join('')
 		$("#harga_opb"+i).val(format_angka(harga))
+		let jumlah = parseInt(qty) * parseInt(harga);
+		(isNaN(jumlah)) ? jumlah = 0 : jumlah = jumlah;
+		$("#jumlah_opb"+i).val(format_angka(jumlah))
+		let total_opb = $("#total_opb").val().split('.').join('')
+		let hitung_total = (parseInt(h_total) - (parseInt(h_qty) * parseInt(h_harga))) + jumlah
+		$("#total_opb").val(format_angka(hitung_total))
 	}
 
 	function addCartOPB(i)

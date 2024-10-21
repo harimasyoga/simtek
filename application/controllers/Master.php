@@ -1014,7 +1014,7 @@ class Master extends CI_Controller
 				$row[] = $r->alamat;
 				$row[] = $r->no_hp;
 				$row[] = $r->jt;
-				if (in_array($this->session->userdata('approve'), ['ALL','OFFICE', 'FINANCE']))
+				if (in_array($this->session->userdata('approve'), ['ALL','OFFICE']))
 				{
 					$btnEdit = '<button type="button" class="btn btn-warning btn-sm" onclick="tampil_edit('."'".$r->id_supp."'".','."'edit'".')"><i class="fas fa-pen"></i></button>';
 					$btnHapus = '<button type="button" class="btn btn-danger btn-sm" onclick="deleteData('."'".$r->id_supp."'".')"><i class="fa fa-trash-alt"></i></i></button>';
