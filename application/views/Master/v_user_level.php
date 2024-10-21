@@ -85,8 +85,10 @@
 								<option value="ALL">ALL</option>
 								<option value="OWNER">OWNER</option>
 								<option value="FINANCE">FINANCE</option>
-								<option value="ADMIN">ADMIN</option>
 								<option value="ACC">ACC</option>
+								<option value="OFFICE">OFFICE</option>
+								<option value="ADMIN">ADMIN</option>
+								<option value="GUDANG">GUDANG</option>
 							</select>
 						</div>
 					</div>
@@ -148,7 +150,7 @@
 				[5, 15, 20, 25, "Semua"] // change per page values here
 			],		
 			responsive: true,
-			"pageLength": 5,
+			"pageLength": 10,
 			"language": {
 				"emptyTable": "Tidak ada data.."
 			}

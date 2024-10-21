@@ -986,4 +986,246 @@ class M_transaksi extends CI_Model
 			);
 		}
 	}
+
+	function simpanOPB()
+	{
+		$id_opbh = $_POST["id_opbh"];
+		$tgl_opb = $_POST["tgl_opb"];
+		$no_opb = $_POST["no_opb"];
+		$departemen = $_POST["plh_departemen"];
+		$status = $_POST["status"];
+		// CEK NOMER OPB
+		$cekNoOpb = $this->db->query("SELECT*FROM trs_opb_header WHERE no_opb='$no_opb'");
+		if($tgl_opb == ''){
+			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH TANGGAL!';
+		}else if($no_opb == ''){
+			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP ISI NO. OPB!';
+		}else if($departemen == ''){
+			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH DEPARTEMEN!';
+		}else if($cekNoOpb->num_rows() != 0 && $status == 'insert'){
+			$data = false; $i_header = false; $i_detail = false; $msg = 'NO. OPB SUDAH TERPAKAI!';
+		}else{
+			$dHeader = [
+				'tgl_opb' => $tgl_opb,
+				'no_opb' => $no_opb,
+				'kode_dpt' => $departemen,
+				'status_opb' => 'Open',
+			];
+			if($status == 'insert'){
+				$this->db->set('creat_by', $this->username);
+				$this->db->set('creat_at', date('Y-m-d H:i:s'));
+				$i_header = $this->db->insert('trs_opb_header', $dHeader);
+			}else{
+				$this->db->set('tgl_opb', $tgl_opb);
+				$this->db->set('edit_by', $this->username);
+				$this->db->set('edit_at', date('Y-m-d H:i:s'));
+				$this->db->where('id_opbh', $id_opbh);
+				$i_header = $this->db->update('trs_opb_header', $dHeader);
+			}
+			if($i_header){
+				// GET OPB HEADER
+				if($status == 'insert'){
+					$opbH = $this->db->query("SELECT*FROM trs_opb_header WHERE tgl_opb='$tgl_opb' AND no_opb='$no_opb' AND kode_dpt='$departemen' AND status_opb='Open'")->row()->id_opbh;
+				}else{
+					$opbH = $id_opbh;
+				}
+				if($this->cart->total_items() != 0){
+					foreach($this->cart->contents() as $r){
+						// GET BARANG DETAIL
+						$id_mbh = $r['options']['id_mbh'];
+						$id_mbd = $r['options']['id_mbd'];
+						$barang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
+						// SATUAN
+						if($barang->p_satuan == 1){
+							$qty1 = null; $qty2 = null; $qty3 = $r['options']['i_qty3'];
+							$satuan1 = null; $satuan2 = null; $satuan3 = $barang->satuan3;
+						}
+						if($barang->p_satuan == 2){
+							$qty1 = $r['options']['i_qty1']; $qty2 = null; $qty3 = $r['options']['i_qty3'];
+							$satuan1 = $barang->satuan1; $satuan2 = null; $satuan3 = $barang->satuan3;
+						}
+						if($barang->p_satuan == 3){
+							$qty1 = $r['options']['i_qty1']; $qty2 = $r['options']['i_qty2']; $qty3 = $r['options']['i_qty3'];
+							$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
+						}
+						$dDetail = [
+							'id_opbh' => $opbH,
+							'no_opb' => $no_opb,
+							'id_mbh' => $id_mbh,
+							'id_mbd' => $id_mbd,
+							'kode_dpt' => $r['options']['kode_departemen'],
+							'kode_bagian' => $r['options']['plh_bagian'],
+							'p_satuan' => $barang->p_satuan,
+							'dsatuan' => $r['options']['plh_satuan'],
+							'dqty1' => $qty1,
+							'dsatuan1' => $satuan1,
+							'dqty2' => $qty2,
+							'dsatuan2' => $satuan2,
+							'dqty3' => $qty3,
+							'dsatuan3' => $satuan3,
+							'ket_pengadaan' => $r['options']['ket_pengadaan'],
+							'creat_by' => $this->username,
+							'creat_at' => date('Y-m-d H:i:s'),
+						];
+						$i_detail = $this->db->insert('trs_opb_detail', $dDetail);
+					}
+				}else{
+					$i_detail = false;
+				}
+			}
+			$data = true; $msg = 'OK!';
+		}
+		return ([
+			'data' => $data,
+			'i_header' => $i_header,
+			'i_detail' => $i_detail,
+			'msg' => $msg,
+		]);
+	}
+
+	function editListOPB()
+	{
+		$approve = $this->session->userdata('approve');
+		$id_opbh = $_POST["id_opbh"];
+		$opbh = $this->db->query("SELECT*FROM trs_opb_header WHERE id_opbh='$id_opbh'")->row();
+		$id_opbd = $_POST["id_opbd"];
+		$id_mbh = $_POST["id_mbh"];
+		$id_mbd = $_POST["id_mbd"];
+		$plh_satuan = $_POST["plh_satuan"];
+		$qty = $_POST["qty"];
+		$i_qty1 = $_POST["i_qty1"];
+		$i_qty2 = $_POST["i_qty2"];
+		$i_qty3 = $_POST["i_qty3"];
+		$harga = $_POST["harga"];
+		$plh_supplier = $_POST["plh_supplier"];
+		$ket_pengadaan = $_POST["ket_pengadaan"];
+		$plh_bagian = $_POST["plh_bagian"];
+		if($qty == 0 || $qty == '' || $qty < 0){
+			$data = false; $detail = ''; $msg = 'HARAP ISI QTY!';
+		}else if($plh_supplier == '' && $approve == 'OFFICE' && $opbh->acc1 == 'Y'){
+			$data = false; $detail = ''; $msg = 'HARAP PILIH SUPPLIER!';
+		}else if(($harga == 0 || $harga == '' || !preg_match("/^[0-9]*$/", $harga)) && $approve == 'OFFICE' && $opbh->acc1 == 'Y'){
+			$data = false; $detail = ''; $msg = 'HARAP ISI HARGA!';
+		}else if($plh_bagian == ''){
+			$data = false; $detail = ''; $msg = 'HARAP PILIH BAGIAN!';
+		}else{
+			$barang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
+			// SATUAN
+			if($barang->p_satuan == 1){
+				$qty1 = null; $qty2 = null; $qty3 = $i_qty3;
+				$satuan1 = null; $satuan2 = null; $satuan3 = $barang->satuan3;
+			}
+			if($barang->p_satuan == 2){
+				$qty1 = $i_qty1; $qty2 = null; $qty3 = $i_qty3;
+				$satuan1 = $barang->satuan1; $satuan2 = null; $satuan3 = $barang->satuan3;
+			}
+			if($barang->p_satuan == 3){
+				$qty1 = $i_qty1; $qty2 = $i_qty2; $qty3 = $i_qty3;
+				$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
+			}
+			$detail = [
+				'p_satuan' => $barang->p_satuan,
+				'dsatuan' => $plh_satuan,
+				'dqty1' => $qty1,
+				'dsatuan1' => $satuan1,
+				'dqty2' => $qty2,
+				'dsatuan2' => $satuan2,
+				'dqty3' => $qty3,
+				'dsatuan3' => $satuan3,
+				'dharga' => ($harga == '' || $harga == 0) ? null : $harga,
+				'id_supplier' => ($plh_supplier == '') ? null : $plh_supplier,
+				'ket_pengadaan' => ($ket_pengadaan == '') ? null : $ket_pengadaan,
+				'kode_bagian' => $plh_bagian,
+				'edit_by' => $this->username,
+				'edit_at' => date('Y-m-d H:i:s'),
+			];
+			$this->db->where('id_opbd', $id_opbd);
+			$data = $this->db->update('trs_opb_detail', $detail);
+			// UPDATE HEADER BATAL ACC
+			if($data){
+				$this->db->set('status_opb', 'Inproses');
+				$this->db->set('acc2', 'N');
+				$this->db->set('by2', null);
+				$this->db->set('ket2', null);
+				$this->db->set('time2', null);
+				$this->db->where('id_opbh', $id_opbh);
+				$this->db->update('trs_opb_header');
+			}
+			$msg = 'OK!';
+		}
+		return ([
+			'data' => $data,
+			'msg' => $msg,
+			'detail' => $detail,
+		]);
+	}
+
+	function hapusOPB()
+	{
+		$id_opbh = $_POST["id_opbh"];
+		$id_opbd = $_POST["id_opbd"];
+		$opsi = $_POST["opsi"];
+		if($opsi == 'header'){
+			$this->db->where('id_opbh', $id_opbh);
+			$detail = $this->db->delete('trs_opb_detail');
+			if($detail){
+				$this->db->where('id_opbh', $id_opbh);
+				$header = $this->db->delete('trs_opb_header');
+			}
+		}
+		if($opsi == 'detail'){
+			$header = '';
+			$this->db->where('id_opbd', $id_opbd);
+			$detail = $this->db->delete('trs_opb_detail');
+			if($detail){
+				$this->db->set('status_opb', 'Inproses');
+				$this->db->set('acc2', 'N');
+				$this->db->set('by2', null);
+				$this->db->set('ket2', null);
+				$this->db->set('time2', null);
+				$this->db->where('id_opbh', $id_opbh);
+				$this->db->update('trs_opb_header');
+			}
+		}
+		return ([
+			'opbd' => $detail,
+			'opbh' => $header,
+		]);
+	}
+
+	function btnVerifOpb()
+	{
+		if($_POST["ket_laminasi"] == '' && ($_POST["aksi"] == 'H' || $_POST["aksi"] == 'R')){
+			$result = false;
+		}else{
+			if($_POST["aksi"] == 'N'){
+				$status = 'Open';
+			}else if($_POST["aksi"] == 'H'){
+				$status = 'Hold';
+			}else if($_POST["aksi"] == 'R'){
+				$status = 'Batal';
+			}else if($_POST["aksi"] == 'Y' && $_POST["status_verif"] != 'owner'){
+				$status = 'Inproses';
+			}else{
+				$status = 'Approve';
+			}
+			if($_POST["status_verif"] == 'acc'){
+				$i = 1;
+			}else if($_POST["status_verif"] == 'finance'){
+				$i = 2;
+			}else if($_POST["status_verif"] == 'owner'){
+				$i = 3;
+			}
+			$this->db->set('status_opb', $status);
+			$this->db->set('acc'.$i, $_POST["aksi"]);
+			$this->db->set('by'.$i, $this->username);
+			$this->db->set('time'.$i, date('Y-m-d H:i:s'));
+			$this->db->set('ket'.$i, ($_POST["aksi"] == 'Y' && $_POST["ket_laminasi"] == '') ? 'OK' : $_POST["ket_laminasi"]);
+			$this->db->where('id_opbh', $_POST["id_opbh"]);
+			$result = $this->db->update('trs_opb_header');
+		}
+		return [
+			'result' => $result,
+		];
+	}
 }
