@@ -979,8 +979,7 @@ class Transaksi extends CI_Controller
 		$q_all = $this->db->query("SELECT COUNT(h.status_opb) AS aal FROM trs_opb_header h
 		INNER JOIN m_departemen_bagian b ON h.kode_dpt=b.kode_departemen
 		INNER JOIN m_modul_group g ON b.id_group=g.id_group
-		WHERE h.status_opb!='Close' AND g.val_group='$level' $wApp $wOwn
-		GROUP BY h.status_opb");
+		WHERE h.status_opb!='Close' AND g.val_group='$level' $wApp $wOwn");
 		($q_all->num_rows() == 0) ? $all = '' : $all = $q_all->row()->aal;
 		$header = $this->db->query("SELECT h.kode_dpt,t.nama,t.icon,COUNT(h.kode_dpt) AS con FROM trs_opb_header h
 		INNER JOIN m_departemen t ON h.kode_dpt=t.kode
@@ -1117,7 +1116,16 @@ class Transaksi extends CI_Controller
 		$level = $this->session->userdata('level');
 		$username = $this->session->userdata('username');
 		$approve = $this->session->userdata('approve');
+		// OPB HEADER
 		$opbh = $this->db->query("SELECT*FROM trs_opb_header WHERE id_opbh='$id_opbh'")->row();
+		// OPB DETAIL
+		$detail = $this->db->query("SELECT h.nm_barang,m.nama,d.*,l.* FROM trs_opb_detail l
+		INNER JOIN m_barang_detail d ON l.id_mbh=d.id_mbh AND l.id_mbd=d.id_mbd
+		INNER JOIN m_barang_header h ON l.id_mbh=h.id_mbh
+		INNER JOIN m_departemen m ON l.kode_bagian=m.kode
+		WHERE l.id_opbh='$id_opbh'
+		GROUP BY l.id_opbh,l.no_opb,l.id_mbh,l.id_mbd
+		ORDER BY h.nm_barang,d.kode_barang,d.jenis_tipe,d.material,d.size,d.merk,d.p_satuan");
 		// CEK INPUT HARGA DAN SUPPLIER
 		$opbd_sup = $this->db->query("SELECT*FROM trs_opb_detail d
 		INNER JOIN trs_opb_header h ON d.id_opbh=h.id_opbh
@@ -1128,11 +1136,17 @@ class Transaksi extends CI_Controller
 			if($approve == 'ACC' || $approve == 'FINANCE' || $approve == 'OWNER'){
 			$btnEdit = ''; $btnHapus = '';
 			}else{
-				if($opbh->acc1 == 'N' || $approve == 'ALL' || $approve == 'OFFICE'){
+				if(($approve == 'ALL' || $approve == 'OFFICE') && $opbh->acc3 != 'Y'){
 					$btnEdit = '<button type="button" class="btn btn-xs bg-gradient-dark" onclick="editOPB()">Edit</button> - ';
 					$btnHapus = ' - <button type="button" class="btn btn-xs bg-gradient-danger" onclick="hapusOPB('."'header'".','."'0'".')">Hapus</button>';
 				}else{
 					$btnEdit = ''; $btnHapus = '';
+				}
+				if(($approve == 'ALL' || $approve == 'OFFICE') && $opbh->acc3 == 'Y'){
+					$btnBAPB = '<button type="button" class="btn btn-xs bg-gradient-success" onclick="">BAPB</button> - ';
+					$btnClose = ' - <button type="button" class="btn btn-xs bg-gradient-danger" onclick="">Close</button>';
+				}else{
+					$btnBAPB = ''; $btnClose = '';
 				}
 			}
 			$thKode = ''; $thSatuan = '';
@@ -1144,7 +1158,7 @@ class Transaksi extends CI_Controller
 			$thEdit = '';
 		}else{
 			$bgCard = 'card-secondary';
-			$btnEdit = ''; $btnHapus = '';
+			$btnEdit = ''; $btnHapus = ''; $btnBAPB = ''; $btnClose = '';
 			$thKode = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KODE BARANG</th>';
 			$thSatuan = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">SATUAN</th>
 			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 12px;text-align:center">PILIH SATUAN</th>
@@ -1158,7 +1172,7 @@ class Transaksi extends CI_Controller
 		}
 		$htmlDetail .='<div class="card '.$bgCard.' card-outline" style="margin-top:12px">
 			<div class="card-header" style="padding:10px 6px">
-				<h3 class="card-title" style="font-weight:bold;font-size:18px">'.$btnEdit.'LIST DETAIL BARANG OPB'.$btnHapus.'</h3>
+				<h3 class="card-title" style="font-weight:bold;font-size:18px">'.$btnEdit.$btnBAPB.'LIST DETAIL BARANG OPB'.$btnHapus.$btnClose.'</h3>
 			</div>
 			<div class="ldopb" style="padding:0;overflow:auto;white-space:nowrap">
 				<table class="table table-bordered table-striped" style="margin:0">
@@ -1179,15 +1193,7 @@ class Transaksi extends CI_Controller
 					<tr>
 						<td style="padding:0;border:0" colspan="11"></td>
 					</tr>';
-					$detail = $this->db->query("SELECT h.nm_barang,m.nama,d.*,l.* FROM trs_opb_detail l
-					INNER JOIN m_barang_detail d ON l.id_mbh=d.id_mbh AND l.id_mbd=d.id_mbd
-					INNER JOIN m_barang_header h ON l.id_mbh=h.id_mbh
-					INNER JOIN m_departemen m ON l.kode_bagian=m.kode
-					WHERE l.id_opbh='$id_opbh'
-					GROUP BY l.id_opbh,l.no_opb,l.id_mbh,l.id_mbd
-					ORDER BY h.nm_barang,d.kode_barang,d.jenis_tipe,d.material,d.size,d.merk,d.p_satuan");
-					$i = 0;
-					$subTotal = 0;
+					$i = 0; $subTotal = 0;
 					foreach($detail->result() as $r){
 						$i++;
 						// SATUAN
@@ -1228,12 +1234,10 @@ class Transaksi extends CI_Controller
 							<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s2.'>'.$r->dsatuan2.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></div></td>';
 						}
 						// VIEW DAN EDIT
+						($r->dharga == null) ? $harga = 0 : $harga = number_format($r->dharga,0,',','.');
+						($r->dharga == null) ? $jumlah = 0 : $jumlah = $r->dharga * $dqty;
 						if($opsi == 'view'){
-							$tdKode = '';
-							$htmlSat = '';
-							$tdSatuan = '';
-							($r->dharga == null) ? $harga = '-' : $harga = number_format($r->dharga,0,',','.');
-							($r->dharga == null) ? $jumlah = 0 : $jumlah = $r->dharga * $dqty;
+							$tdKode = ''; $htmlSat = ''; $tdSatuan = '';
 							if($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE' || $approve == 'OWNER'){
 								$sup = $this->db->query("SELECT*FROM m_supplier WHERE id_supp='$r->id_supplier'");
 								($sup->num_rows() == 0) ? $tdsp = '-' : $tdsp = $sup->row()->nm_supp;
@@ -1304,8 +1308,6 @@ class Transaksi extends CI_Controller
 									($s->id_supp == $r->id_supplier) ? $slp = 'selected' : $slp = '';
 									$optSup .= '<option value="'.$s->id_supp.'" '.$slp.'>'.$s->nm_supp.'</option>';
 								}
-								($r->dharga == null) ? $harga = 0 : $harga = number_format($r->dharga,0,',','.');
-								($r->dharga == null) ? $jumlah = 0 : $jumlah = $r->dharga * $dqty;
 								$tdSup = '<td style="padding:6px">
 									<input type="text" id="harga_opb'.$i.'" class="form-control" style="width:120px;padding:3px 4px;text-align:right" value="'.$harga.'" autocomplete="off" onkeyup="hargaOPB('."'".$i."'".')" placeholder="0">
 								</td>
@@ -1321,8 +1323,11 @@ class Transaksi extends CI_Controller
 							}else{
 								$tdSup = '<td style="padding:6px">
 									<input type="hidden" id="harga_opb'.$i.'" value="">
-									<input type="hidden" id="jumlah_opb'.$i.'" value="">
 									<input type="text" class="form-control" style="width:120px;padding:3px 4px;text-align:right" autocomplete="off" placeholder="0" disabled>
+								</td>
+								<td style="padding:6px">
+									<input type="hidden" id="jumlah_opb'.$i.'" value="">
+									<input type="text" class="form-control" style="width:120px;padding:3px 4px;color:#000;background:none;border:0;font-weight:bold;text-align:right" placeholder="0" disabled>
 								</td>
 								<td style="padding:6px">
 									<select id="plh_supplier'.$i.'" class="form-control select2" disabled>
@@ -1358,8 +1363,6 @@ class Transaksi extends CI_Controller
 								<button type="button" class="btn btn-sm" onclick="editListOPB('."'".$i."'".')"><i class="fas fa-edit"></i></button>'.$d.'
 							</td>';
 						}
-						// TOTAL
-						$subTotal += $jumlah;
 						$htmlDetail .= '<tr>
 							'.$tdKode.'
 							<td style="padding:6px">
@@ -1379,15 +1382,15 @@ class Transaksi extends CI_Controller
 								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
 							</tr>';
 						}
+						// TOTAL
+						$subTotal += $jumlah;
 					}
 					// TOTAL
 					if($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE' || $approve == 'OWNER'){
 						if($opsi == 'view'){
-							$cs = 9;
-							$c2 = 3;
+							$cs = 9; $c2 = 3;
 						}else{
-							$cs = 15;
-							$c2 = 5;
+							$cs = 15; $c2 = 5;
 						}
 						$htmlDetail .= '<tr>
 							<td style="padding:2px;border:0" colspan="11"></td>

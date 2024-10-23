@@ -298,6 +298,7 @@
 		$(".toh").removeClass('tr-opbh-klik').addClass('tr-opbh-all')
 		$("#bth_"+i).prop('disabled', true)
 		$(".list-opb-detail").html('')
+		$(".lil").html('')
 		$(".vvff").html('')
 		$(".list-opb-verif").hide()
 		$.ajax({
@@ -306,7 +307,6 @@
 			data: ({ id_opbh, plh_departemen, opsi }),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(opsi == 'view'){
 					$("#toh_"+i).removeClass('tr-opbh-all').addClass('tr-opbh-klik')
 					$("#id_opbh").val(data.opbh.id_opbh)
@@ -472,6 +472,8 @@
 					// END VERIF OWNER
 				}
 				if(opsi == 'edit'){
+					$(".list-detail").html('')
+					$(".list-cart").html('')
 					$(".list-edit-cart").html(data.htmlDetail)
 				}
 				$(".select2").select2()
@@ -526,9 +528,8 @@
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(data.result){
-					btnHeader(0)
+					loadHeader()
 				}else{
 					toastr.error(`<b>KETERANGAN TIDAK BOLEH KOSONG!</b>`)
 					swal.close()
@@ -681,17 +682,17 @@
 
 	function hargaOPB(i)
 	{
-		let h_qty = $("#h_qty_"+i).val().split('.').join('')
-		let h_harga = $("#h_harga_"+i).val().split('.').join('')
-		let h_total = $("#h_total").val().split('.').join('')
-		let qty = $("#qty"+i).val().split('.').join('')
-		let harga = $("#harga_opb"+i).val().split('.').join('')
+		let h_qty = ($("#h_qty_"+i).val() == undefined) ? 0 : $("#h_qty_"+i).val().split('.').join('');
+		let h_harga = ($("#h_harga_"+i).val() == undefined) ? 0 : $("#h_harga_"+i).val().split('.').join('');
+		let h_total = ($("#h_total").val() == undefined) ? 0 : $("#h_total").val().split('.').join('');
+		let qty = ($("#qty"+i).val() == undefined) ? 0 : $("#qty"+i).val().split('.').join('');
+		let harga = ($("#harga_opb"+i).val() == undefined) ? 0 : $("#harga_opb"+i).val().split('.').join('');
 		$("#harga_opb"+i).val(format_angka(harga))
 		let jumlah = parseInt(qty) * parseInt(harga);
 		(isNaN(jumlah)) ? jumlah = 0 : jumlah = jumlah;
 		$("#jumlah_opb"+i).val(format_angka(jumlah))
-		let total_opb = $("#total_opb").val().split('.').join('')
-		let hitung_total = (parseInt(h_total) - (parseInt(h_qty) * parseInt(h_harga))) + jumlah
+		let hitung_total = (parseInt(h_total) - (parseInt(h_qty) * parseInt(h_harga))) + jumlah;
+		(isNaN(hitung_total)) ? hitung_total = 0 : hitung_total = hitung_total;
 		$("#total_opb").val(format_angka(hitung_total))
 	}
 
@@ -720,7 +721,6 @@
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(data.data){
 					cartOPB()
 				}else{
@@ -770,7 +770,6 @@
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(data.data && status == 'insert'){
 					tambah('kembali')
 				}else if(data.data && status == 'update'){
@@ -786,6 +785,7 @@
 	{
 		let id_opbh = $("#id_opbh").val()
 		let h_ii = $("#h_ii").val()
+		$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
 		$(".row-list").hide()
 		$(".row-input").show()
 		$("#id_mbh").val('')
@@ -799,8 +799,6 @@
 			data: ({ id_opbh }),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
-				$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
 				$("#tgl_opb").val(data.opbh.tgl_opb)
 				$("#no_opb").val(data.opbh.no_opb).prop('disabled', true)
 				$("#plh_departemen").val(data.opbh.kode_dpt).trigger('change')
@@ -836,7 +834,6 @@
 			data: ({ id_opbh, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, harga, plh_supplier, ket_pengadaan, plh_bagian }),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(data.data){
 					editOPB()
 					loadList(kode_dpt)
@@ -876,7 +873,6 @@
 				data : ({ id_opbh, id_opbd, opsi }),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					if(opsi == 'header' && data.opbh && data.opbd){
 						loadHeader()
 					}

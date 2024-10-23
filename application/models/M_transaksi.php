@@ -1143,13 +1143,24 @@ class M_transaksi extends CI_Model
 			$data = $this->db->update('trs_opb_detail', $detail);
 			// UPDATE HEADER BATAL ACC
 			if($data){
-				$this->db->set('status_opb', 'Inproses');
-				$this->db->set('acc2', 'N');
-				$this->db->set('by2', null);
-				$this->db->set('ket2', null);
-				$this->db->set('time2', null);
-				$this->db->where('id_opbh', $id_opbh);
-				$this->db->update('trs_opb_header');
+				if($opbh->acc1 == 'Y' && $opbh->acc2 != 'Y' && $opbh->acc3 == 'N'){
+					$this->db->set('status_opb', 'Inproses');
+					$this->db->set('acc2', 'N');
+					$this->db->set('by2', null);
+					$this->db->set('ket2', null);
+					$this->db->set('time2', null);
+					$this->db->where('id_opbh', $id_opbh);
+					$this->db->update('trs_opb_header');
+				}
+				if($opbh->acc1 == 'Y' && $opbh->acc2 == 'Y' && $opbh->acc3 != 'Y'){
+					$this->db->set('status_opb', 'Inproses');
+					$this->db->set('acc3', 'N');
+					$this->db->set('by3', null);
+					$this->db->set('ket3', null);
+					$this->db->set('time3', null);
+					$this->db->where('id_opbh', $id_opbh);
+					$this->db->update('trs_opb_header');
+				}
 			}
 			$msg = 'OK!';
 		}
@@ -1174,17 +1185,28 @@ class M_transaksi extends CI_Model
 			}
 		}
 		if($opsi == 'detail'){
-			$header = '';
+			$opbh = $this->db->query("SELECT*FROM trs_opb_header WHERE id_opbh='$id_opbh'")->row();
 			$this->db->where('id_opbd', $id_opbd);
 			$detail = $this->db->delete('trs_opb_detail');
 			if($detail){
-				$this->db->set('status_opb', 'Inproses');
-				$this->db->set('acc2', 'N');
-				$this->db->set('by2', null);
-				$this->db->set('ket2', null);
-				$this->db->set('time2', null);
-				$this->db->where('id_opbh', $id_opbh);
-				$this->db->update('trs_opb_header');
+				if($opbh->acc1 == 'Y' && $opbh->acc2 != 'Y' && $opbh->acc3 == 'N'){
+					$this->db->set('status_opb', 'Inproses');
+					$this->db->set('acc2', 'N');
+					$this->db->set('by2', null);
+					$this->db->set('ket2', null);
+					$this->db->set('time2', null);
+					$this->db->where('id_opbh', $id_opbh);
+					$header = $this->db->update('trs_opb_header');
+				}
+				if($opbh->acc1 == 'Y' && $opbh->acc2 == 'Y' && $opbh->acc3 != 'Y'){
+					$this->db->set('status_opb', 'Inproses');
+					$this->db->set('acc3', 'N');
+					$this->db->set('by3', null);
+					$this->db->set('ket3', null);
+					$this->db->set('time3', null);
+					$this->db->where('id_opbh', $id_opbh);
+					$header = $this->db->update('trs_opb_header');
+				}
 			}
 		}
 		return ([
