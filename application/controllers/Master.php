@@ -51,7 +51,11 @@ class Master extends CI_Controller
 			'judul' => "Master Barang"
 		);
 		$this->load->view('header', $data);
-		$this->load->view('Master/v_barang', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE'])) {
+			$this->load->view('Master/v_barang', $data);
+		}else{
+			$this->load->view('home');
+		}
 		$this->load->view('footer');
 	}
 
@@ -61,7 +65,11 @@ class Master extends CI_Controller
 			'judul' => "Master Satuan"
 		);
 		$this->load->view('header', $data);
-		$this->load->view('Master/v_satuan', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE'])) {
+			$this->load->view('Master/v_satuan', $data);
+		}else{
+			$this->load->view('home');
+		}
 		$this->load->view('footer');
 	}
 
@@ -872,7 +880,11 @@ class Master extends CI_Controller
 		);
 
 		$this->load->view('header', $data);
-		$this->load->view('Master/v_user', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL'])) {
+			$this->load->view('Master/v_user', $data);
+		}else{
+			$this->load->view('home');
+		}
 		$this->load->view('footer');
 	}
 
@@ -883,7 +895,11 @@ class Master extends CI_Controller
 		);
 
 		$this->load->view('header', $data);
-		$this->load->view('Master/v_user_level', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL'])) {
+			$this->load->view('Master/v_user_level', $data);
+		}else{
+			$this->load->view('home');
+		}
 		$this->load->view('footer');
 	}
 	

@@ -24,10 +24,10 @@
 			<div class="col-md-12">
 				<div class="card card-secondary card-outline">
 					<div class="card-header" style="padding:12px">
-						<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST OPB</h3>
+						<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST ORDER PEMBELIAN BARANG</h3>
 					</div>
 					<div class="card-body" style="padding:0">
-						<?php if(in_array($this->session->userdata('approve'), ['ALL','ADMIN', 'OFFICE', 'GUDANG'])) { ?>
+						<?php if(in_array($this->session->userdata('approve'), ['ALL', 'ADMIN', 'OFFICE'])) { ?>
 							<div style="padding:5px">
 								<button type="button" class="btn btn-primary btn-sm" onclick="tambah('tambah')">Tambah Data</button>
 							</div>
@@ -41,7 +41,7 @@
 								<div style="position:sticky;top:12px">
 									<div class="list-opb-detail"></div>
 									<div class="list-opb-verif" style="display:none;">
-										<div class="row">
+										<div class="row" style="margin-top:12px">
 											<div class="col-md-7"></div>
 											<div class="col-md-5">
 												<div class="card card-success card-outline">
@@ -257,6 +257,7 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadHeader')?>',
 			type: "POST",
+			data: ({ opsi: 'opb' }),
 			success: function(res){
 				data = JSON.parse(res)
 				$(".list-header").html(data.html)
@@ -283,7 +284,7 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadList')?>',
 			type: "POST",
-			data: ({ kode_dpt }),
+			data: ({ opsi: 'opb', kode_dpt }),
 			success: function(res){
 				data = JSON.parse(res)
 				$(".list-opb").html(data.html)
@@ -304,7 +305,7 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadDetail')?>',
 			type: "POST",
-			data: ({ id_opbh, plh_departemen, opsi }),
+			data: ({ id_opbh, plh_departemen, opsi, jenis: 'opb' }),
 			success: function(res){
 				data = JSON.parse(res)
 				if(opsi == 'view'){

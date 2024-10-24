@@ -1,0 +1,300 @@
+<div class="content-wrapper">
+	<section class="content-header">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-6"></div>
+				<div class="col-sm-6">
+					<ol class="breadcrumb float-sm-right"></ol>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<style>
+		/* Chrome, Safari, Edge, Opera */
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+			-webkit-appearance: none;
+			margin: 0;
+		}
+	</style>
+
+	<section class="content">
+		<div class="row row-list">
+			<div class="col-md-12">
+				<div class="card card-secondary card-outline">
+					<div class="card-header" style="padding:12px">
+						<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST BERITA ACARA PENERIMAAN BARANG</h3>
+					</div>
+					<div class="card-body" style="padding:0">
+						<?php if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE', 'GUDANG'])) { ?>
+							<div style="padding:5px">
+								<button type="button" class="btn btn-primary btn-sm" onclick="tambah('tambah')">Tambah Data</button>
+							</div>
+						<?php } ?>
+						<div class="list-header" style="padding:0"></div>
+						<div class="card-body row" style="padding:0">
+							<div class="col-md-3">
+								<div class="list-opb" style="padding:0"></div>
+							</div>
+							<div class="col-md-9" style="padding:0 14px 12px">
+								<div style="position:sticky;top:12px">
+									<div class="list-opb-detail"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input type="hidden" id="id_opbh" value="">
+			<input type="hidden" id="h_kode_dpt" value="">
+			<input type="hidden" id="h_ii" value="">
+		</div>
+
+		<div class="row row-input">
+			<div class="col-md-12">
+				<div class="card card-primary card-outline">
+					<div class="card-header" style="padding:12px">
+						<h3 class="card-title" style="font-weight:bold;font-size:18px">INPUT BAPB</h3>
+					</div>
+					<div class="card-body" style="padding:6px">
+						<div style="padding:0 0 20px">
+							<div class="btn-kembali"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">TANGGAL <span style="color:#f00">*</span></div>
+							<div class="col-md-5">
+								<input type="date" id="tgl_opb" class="form-control" value="<?php echo date('Y-m-d')?>">
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">NO. OPB <span style="color:#f00">*</span></div>
+							<div class="col-md-5">
+								<input type="number" id="no_opb" class="form-control" placeholder="NO. OPB">
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="lil list-detail"></div>
+						<div class="lil list-cart"></div>
+						<div class="lil list-edit-cart"></div>
+					</div>
+				</div>
+			</div>
+			<input type="hidden" id="plh_departemen" value="">
+			<input type="hidden" id="id_mbh" value="">
+			<input type="hidden" id="id_cart" value="0">
+			<input type="hidden" id="destroy">
+		</div>
+	</section>
+</div>
+
+<script type="text/javascript">
+	const urlAuth = '<?= $this->session->userdata('level')?>';
+	const urlUser = '<?= $this->session->userdata('username')?>';
+	const urlAppv = '<?= $this->session->userdata('approve')?>';
+	status = 'insert';
+	$(document).ready(function() {
+		$(".select2").select2()
+		loadHeader()
+	});
+
+	function loadHeader()
+	{
+		$(".list-opb-detail").html('')
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/loadHeader')?>',
+			type: "POST",
+			data: ({ opsi: 'bapb' }),
+			success: function(res){
+				data = JSON.parse(res)
+				$(".list-header").html(data.html)
+			}
+		})
+		btnHeader(0)
+	}
+
+	function btnHeader(kode_dpt)
+	{
+		$("#h_kode_dpt").val(kode_dpt)
+		$(".ff").removeClass('ff-klik').addClass('ff-all')
+		$(".boh").removeClass('btn-opbh-klik').addClass('btn-opbh-all')
+		$("#h_"+kode_dpt).removeClass('btn-opb-header').addClass('btn-opbh-klik')
+		$("#ff_"+kode_dpt).removeClass('ff-all').addClass('ff-klik')
+		$(".list-opb-detail").html('')
+		loadList(kode_dpt)
+	}
+
+	function loadList(kode_dpt)
+	{
+		$("#plh_departemen").val('')
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/loadList')?>',
+			type: "POST",
+			data: ({ opsi: 'bapb', kode_dpt }),
+			success: function(res){
+				data = JSON.parse(res)
+				$(".list-opb").html(data.html)
+			}
+		})
+	}
+
+	function btnDetail(id_opbh, i, opsi)
+	{
+		let plh_departemen = $("#plh_departemen").val()
+		$(".btn-opb-header").prop('disabled', false)
+		$(".toh").removeClass('tr-opbh-klik').addClass('tr-opbh-all')
+		$("#bth_"+i).prop('disabled', true)
+		$(".list-opb-detail").html('')
+		$(".lil").html('')
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/loadDetail')?>',
+			type: "POST",
+			data: ({ id_opbh, plh_departemen, opsi, jenis: 'bapb' }),
+			success: function(res){
+				data = JSON.parse(res)
+				if(opsi == 'view'){
+					$("#toh_"+i).removeClass('tr-opbh-all').addClass('tr-opbh-klik')
+					$("#id_opbh").val(data.opbh.id_opbh)
+					$("#h_ii").val(i)
+					$(".list-opb-detail").html(data.htmlDetail)
+				}
+				if(opsi == 'edit'){
+					// $(".list-detail").html('')
+					// $(".list-cart").html('')
+					$(".list-edit-cart").html(data.htmlDetail)
+				}
+				$(".select2").select2()
+			}
+		})
+	}
+
+	function editOPB()
+	{
+		let id_opbh = $("#id_opbh").val()
+		let h_ii = $("#h_ii").val()
+		$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
+		// $(".row-list").hide()
+		// $(".row-input").show()
+		$("#id_mbh").val('')
+		$("#id_cart").val(0)
+		$(".list-detail").html('')
+		$(".list-cart").html('')
+		$(".list-edit-cart").html('')
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/editOPB')?>',
+			type: "POST",
+			data: ({ id_opbh }),
+			success: function(res){
+				data = JSON.parse(res)
+				$("#plh_departemen").val(data.opbh.kode_dpt)
+				// $(".btn-kembali").html(`<button type="button" class="btn btn-primary btn-sm" onclick="kembali()">Kembali</button>`)
+				btnDetail(id_opbh, h_ii, 'edit')
+			}
+		})
+	}
+
+	function pilihSatuan(i)
+	{
+		$("#qty"+i).val('')
+		$(".txtsatuan"+i).html('')
+		$(".hitungqty"+i).html('')
+		$(".ketsatuan"+i).html('')
+		$("#i_qty1_"+i).val('')
+		$("#i_qty2_"+i).val('')
+		$("#i_qty3_"+i).val('')
+		$("#plh_bagian"+i).val('')
+		$("#ket_pengadaan"+i).val('')
+	}
+
+	function pengadaaan(i)
+	{
+		const rupiah = new Intl.NumberFormat('id-ID', {styles: 'currency', currency: 'IDR'})
+		let h_satuan = parseInt($("#h_satuan"+i).val())
+		let plh_satuan = $("#plh_satuan"+i).val()
+		let i_qty = parseInt($("#qty"+i).val().split('.').join(''));
+		(isNaN(i_qty) || i_qty == 0 || i_qty < 0 || i_qty.toString().length >= 7) ? i_qty = 0 : i_qty = i_qty;
+		$("#qty"+i).val(rupiah.format(i_qty));
+		let qty1 = parseInt($("#h_qty1_"+i).val())
+		let qty2 = parseInt($("#h_qty2_"+i).val())
+		let qty3 = parseInt($("#h_qty3_"+i).val())
+		let satuan1 = $("#h_satuan1_"+i).val()
+		let satuan2 = $("#h_satuan2_"+i).val()
+		let satuan3 = $("#h_satuan3_"+i).val()
+		// PERHITUNGAN
+		let besar = 0; let tengah = 0; let kecil = 0; let x_besar = 0; let x_tengah = 0; let x_kecil = 0; let style1 = ''; let style2 = ''; let style3 = ''
+		if(h_satuan == 1){
+			x_kecil = i_qty
+			$(".txtsatuan"+i).html(`<span style="color:#f00">TERKECIL</span>`)
+			$(".hitungqty"+i).html(`<span style="color:#f00">${rupiah.format(i_qty)}</span>`)
+			$(".ketsatuan"+i).html(`<span style="color:#f00">${satuan3}</span>`)
+		}
+		if(h_satuan == 2){
+			if(plh_satuan == 'TERBESAR'){
+				besar = i_qty * qty1; kecil = i_qty * qty3;
+				x_besar = besar; x_kecil = kecil;
+				style1 = 'style="color:#f00"'; style3 = ''
+			}
+			if(plh_satuan == 'TERKECIL'){
+				kecil = parseFloat(i_qty / qty3).toFixed(2).split('.00').join('');
+				besar = parseFloat(kecil / qty1).toFixed(2).split('.00').join('');
+				x_besar = parseFloat(kecil * qty1).toFixed(2).split('.00').join('')
+				x_kecil = i_qty
+				style1 = ''; style3 = 'style="color:#f00"'
+			}
+			$(".txtsatuan"+i).html(`<span ${style1}>TERBESAR</span><br><span ${style3}>TERKECIL</span>`)
+			$(".hitungqty"+i).html(`<span ${style1}>${rupiah.format(x_besar)}</span><br><span ${style3}>${rupiah.format(x_kecil)}</span>`)
+			$(".ketsatuan"+i).html(`<span ${style1}>${satuan1}</span><br><span ${style3}>${satuan3}</span>`)
+		}
+		if(h_satuan == 3){
+			if(plh_satuan == 'TERBESAR'){
+				besar = i_qty * qty1; tengah = besar * qty2; kecil = tengah * qty3;
+				x_besar = besar; x_tengah = tengah; x_kecil = kecil;
+				style1 = 'style="color:#f00"'; style2 = ''; style3 = ''
+			}
+			if(plh_satuan == 'TENGAH'){
+				kecil = i_qty * qty3;
+				besar = parseFloat(i_qty / qty2).toFixed(2).split('.00').join('')
+				x_besar = parseFloat(besar * qty1).toFixed(2).split('.00').join('')
+				x_tengah = i_qty
+				x_kecil = kecil
+				style1 = ''; style2 = 'style="color:#f00"'; style3 = ''
+			}
+			if(plh_satuan == 'TERKECIL'){
+				kecil = parseFloat(i_qty / qty3).toFixed(2).split('.00').join('')
+				tengah = parseFloat(kecil / qty2).toFixed(2).split('.00').join('')
+				besar = parseFloat(tengah / qty1).toFixed(2).split('.00').join('')
+				x_besar = parseFloat(tengah * qty1).toFixed(2).split('.00').join('')
+				x_tengah = kecil
+				x_kecil = i_qty
+				style1 = ''; style2 = ''; style3 = 'style="color:#f00"'
+			}
+			$(".txtsatuan"+i).html(`<span ${style1}>TERBESAR</span><br><span ${style2}>TENGAH</span><br><span ${style3}>TERKECIL</span>`)
+			$(".hitungqty"+i).html(`<span ${style1}>${rupiah.format(x_besar)}</span><br><span ${style2}>${rupiah.format(x_tengah)}</span><br><span ${style3}>${rupiah.format(x_kecil)}</span>`)
+			$(".ketsatuan"+i).html(`<span ${style1}>${satuan1}</span><br><span ${style2}>${satuan2}</span><br><span ${style3}>${satuan3}</span>`)
+		}
+		$("#i_qty1_"+i).val(x_besar)
+		$("#i_qty2_"+i).val(x_tengah)
+		$("#i_qty3_"+i).val(x_kecil)
+
+		if(urlAppv == 'ALL' || urlAppv == 'OFFICE'){
+			hargaOPB(i)
+		}
+	}
+
+	function hargaOPB(i)
+	{
+		let h_qty = ($("#h_qty_"+i).val() == undefined) ? 0 : $("#h_qty_"+i).val().split('.').join('');
+		let h_harga = ($("#h_harga_"+i).val() == undefined) ? 0 : $("#h_harga_"+i).val().split('.').join('');
+		let h_total = ($("#h_total").val() == undefined) ? 0 : $("#h_total").val().split('.').join('');
+		let qty = ($("#qty"+i).val() == undefined) ? 0 : $("#qty"+i).val().split('.').join('');
+		let harga = ($("#harga_opb"+i).val() == undefined) ? 0 : $("#harga_opb"+i).val().split('.').join('');
+		$("#harga_opb"+i).val(format_angka(harga))
+		let jumlah = parseInt(qty) * parseInt(harga);
+		(isNaN(jumlah)) ? jumlah = 0 : jumlah = jumlah;
+		$("#jumlah_opb"+i).val(format_angka(jumlah))
+		let hitung_total = (parseInt(h_total) - (parseInt(h_qty) * parseInt(h_harga))) + jumlah;
+		(isNaN(hitung_total)) ? hitung_total = 0 : hitung_total = hitung_total;
+		$("#total_opb").val(format_angka(hitung_total))
+	}
+</script>

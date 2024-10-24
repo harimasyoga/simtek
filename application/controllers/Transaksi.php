@@ -20,16 +20,27 @@ class Transaksi extends CI_Controller
 			'judul' => "OPB",
 		];
 		$this->load->view('header',$data);
-		if($this->session->userdata('level'))
-		{
+		if(in_array($this->session->userdata('approve'), ['ALL', 'ADMIN', 'ACC', 'OFFICE', 'FINANCE', 'OWNER'])) {
 			$this->load->view('Transaksi/v_opb', $data);
 		}else{
 			$this->load->view('home');
 		}
 		$this->load->view('footer');
-
 	}
 
+	function Bapb()
+	{
+		$data = [
+			'judul' => "BAPB",
+		];
+		$this->load->view('header',$data);
+		if(in_array($this->session->userdata('approve'), ['ALL', 'GUDANG', 'OFFICE'])) {
+			$this->load->view('Transaksi/v_bapb', $data);
+		}else{
+			$this->load->view('home');
+		}
+		$this->load->view('footer');
+	}
 
 	public function PO()
 	{
@@ -970,23 +981,33 @@ class Transaksi extends CI_Controller
 
 	function loadHeader()
 	{
-		$html = '';
 		$username = $this->session->userdata('username');
 		$level = $this->session->userdata('level');
 		$approve = $this->session->userdata('approve');
-		($approve == 'ADMIN') ? $wApp = "AND h.creat_by='$username'" : $wApp = "";
-		($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y' AND h.status_opb!='Approve'" : $wOwn = "";
+		$opsi = $_POST["opsi"];
+		// OPSI OPB ATAU BAPB
+		if($opsi == 'opb'){
+			($approve == 'ADMIN') ? $wApp = "AND h.creat_by='$username'" : $wApp = "";
+			($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y' AND h.status_opb!='Approve'" : $wOwn = "";
+			$wOpsi = "AND h.status_opb!='Close'";
+		}
+		if($opsi == 'bapb'){
+			$wApp = ""; $wOwn = ""; $wOpsi = "AND h.status_opb='Approve'";
+		}
+		// ALL
 		$q_all = $this->db->query("SELECT COUNT(h.status_opb) AS aal FROM trs_opb_header h
 		INNER JOIN m_departemen_bagian b ON h.kode_dpt=b.kode_departemen
 		INNER JOIN m_modul_group g ON b.id_group=g.id_group
-		WHERE h.status_opb!='Close' AND g.val_group='$level' $wApp $wOwn");
+		WHERE g.val_group='$level' $wApp $wOwn $wOpsi");
 		($q_all->num_rows() == 0) ? $all = '' : $all = $q_all->row()->aal;
+		// PER DEPARTEMEN
 		$header = $this->db->query("SELECT h.kode_dpt,t.nama,t.icon,COUNT(h.kode_dpt) AS con FROM trs_opb_header h
 		INNER JOIN m_departemen t ON h.kode_dpt=t.kode
 		INNER JOIN m_departemen_bagian b ON t.kode=b.kode_departemen
 		INNER JOIN m_modul_group g ON b.id_group=g.id_group
-		WHERE h.status_opb!='Close' AND g.val_group='$level' $wApp $wOwn
+		WHERE g.val_group='$level' $wApp $wOwn $wOpsi
 		GROUP BY h.kode_dpt ORDER BY t.nama");
+		$html = '';
 		if($header->num_rows() != ''){
 			$html .= '<div class="opb-menu-header" style="border-bottom:3px solid #dee2e6;overflow:auto;white-space:nowrap">
 				<div style="display:flex">
@@ -1016,21 +1037,29 @@ class Transaksi extends CI_Controller
 
 	function loadList()
 	{
-		$html = '';
 		$username = $this->session->userdata('username');
 		$approve = $this->session->userdata('approve');
 		$level = $this->session->userdata('level');
-		($approve == 'ADMIN') ? $wApp = "AND h.creat_by='$username'" : $wApp = "";
-		($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y' AND h.status_opb!='Approve'" : $wOwn = "";
+		$opsi = $_POST["opsi"];
 		$kode_dpt = $_POST["kode_dpt"];
+		// OPSI OPB DAN BAPB
+		if($opsi == 'opb'){
+			($approve == 'ADMIN') ? $wApp = "AND h.creat_by='$username'" : $wApp = "";
+			($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y' AND h.status_opb!='Approve'" : $wOwn = "";
+			$wOpsi = "AND h.status_opb!='Close'";
+		}
+		if($opsi == 'bapb'){
+			$wApp = ""; $wOwn = ""; $wOpsi = "AND h.status_opb='Approve'";
+		}
 		($kode_dpt == 0) ? $wKodeDpt = "" : $wKodeDpt = "AND h.kode_dpt='$kode_dpt'";
+		// QUERY LIST OPB HEADER
 		$header = $this->db->query("SELECT t.nama,t.bg,h.* FROM trs_opb_header h
 		INNER JOIN m_departemen t ON h.kode_dpt=t.kode
 		INNER JOIN m_departemen_bagian b ON t.kode=b.kode_departemen
 		INNER JOIN m_modul_group g ON b.id_group=g.id_group
-		WHERE h.status_opb!='Close' AND g.val_group='$level' $wKodeDpt $wApp $wOwn
-		ORDER BY h.status_opb desc,h.no_opb,t.nama");
-
+		WHERE g.val_group='$level' $wKodeDpt $wApp $wOwn $wOpsi
+		ORDER BY h.status_opb DESC,h.no_opb,t.nama");
+		$html = '';
 		if($header->num_rows() != 0){
 			$html .= '<table class="table" style="margin:0">';
 			$i = 0;
@@ -1050,21 +1079,14 @@ class Transaksi extends CI_Controller
 						$nmBagian .= ', ';
 					}
 				}
-				// CEK BELUM BACA APA BELUM
-				if(
-					($r->acc1 == 'N' && $approve == 'ACC') ||
-					($r->acc2 == 'N' && $approve == 'FINANCE') ||
-					($r->acc3 == 'N' && $approve == 'OWNER') ||
-					($r->acc1 == 'N' && $r->ajukan == 'N' && ($approve == 'OFFICE' || $approve == 'GUDANG' || $approve == 'ADMIN'))
-				){
+				// CEK SUDAH ACC APA BELUM
+				if(($r->acc1 == 'N' && in_array($approve, ['ALL', 'ADMIN', 'ACC', 'OFFICE'])) || ($r->acc2 == 'N' && $approve == 'FINANCE') || ($r->acc3 == 'N' && $approve == 'OWNER')){
 					$read1 = '<span class="rr_'.$i.'" style="position:absolute;top:6px;right:6px"><i class="fas fa-exclamation-circle" style="color:#1ed760"></i></span>';
 				}else{
 					$read1 = '';
 				}
 				// STATUS OPB
-				if($r->status_opb == 'Open' && $r->ajukan == 'Y'){
-					$status = '<span class="i-opbh" style="color:#28a745">pengajuan</span>';
-				}else if($r->status_opb == 'Inproses'){
+				if($r->status_opb == 'Inproses'){
 					if($r->acc1 == 'N'){
 						$ki = ' acc k. bag';
 					}else if($r->acc2 == 'N'){
@@ -1109,13 +1131,13 @@ class Transaksi extends CI_Controller
 
 	function loadDetail()
 	{
-		$htmlDetail = '';
-		$id_opbh = $_POST["id_opbh"];
-		$departemen = $_POST["plh_departemen"];
-		$opsi = $_POST["opsi"];
 		$level = $this->session->userdata('level');
 		$username = $this->session->userdata('username');
 		$approve = $this->session->userdata('approve');
+		$id_opbh = $_POST["id_opbh"];
+		$departemen = $_POST["plh_departemen"];
+		$opsi = $_POST["opsi"];
+		$jenis = $_POST["jenis"];
 		// OPB HEADER
 		$opbh = $this->db->query("SELECT*FROM trs_opb_header WHERE id_opbh='$id_opbh'")->row();
 		// OPB DETAIL
@@ -1142,8 +1164,8 @@ class Transaksi extends CI_Controller
 				}else{
 					$btnEdit = ''; $btnHapus = '';
 				}
-				if(($approve == 'ALL' || $approve == 'OFFICE') && $opbh->acc3 == 'Y'){
-					$btnBAPB = '<button type="button" class="btn btn-xs bg-gradient-success" onclick="">BAPB</button> - ';
+				if(($approve == 'ALL' || $approve == 'OFFICE') && $opbh->acc3 == 'Y' && $jenis == 'bapb'){
+					$btnBAPB = '<button type="button" class="btn btn-xs bg-gradient-success" onclick="editOPB()">Proses</button> - ';
 					$btnClose = ' - <button type="button" class="btn btn-xs bg-gradient-danger" onclick="">Close</button>';
 				}else{
 					$btnBAPB = ''; $btnClose = '';
@@ -1170,7 +1192,8 @@ class Transaksi extends CI_Controller
 			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 260px 6px 6px">SUPPLIER</th>' : $thSup = '';
 			$thEdit = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 12px;text-align:center">AKSI</th>';
 		}
-		$htmlDetail .='<div class="card '.$bgCard.' card-outline" style="margin-top:12px">
+		$htmlDetail = '';
+		$htmlDetail .='<div class="card '.$bgCard.' card-outline" style="margin:12px 0 0">
 			<div class="card-header" style="padding:10px 6px">
 				<h3 class="card-title" style="font-weight:bold;font-size:18px">'.$btnEdit.$btnBAPB.'LIST DETAIL BARANG OPB'.$btnHapus.$btnClose.'</h3>
 			</div>
@@ -1197,11 +1220,20 @@ class Transaksi extends CI_Controller
 					foreach($detail->result() as $r){
 						$i++;
 						// SATUAN
+						$htmlSat = '';
+						($opsi == 'view') ? $fwb = ';font-weight:bold' : $fwb = '';
 						if($r->p_satuan == 1){
 							$dqty = round($r->dqty3,2);
-							$htmlPgd = '<td style="padding:6px;font-weight:bold;color:#f00"><div class="txtsatuan'.$i.'">TERKECIL</div></td>
+							$tdPgd = '<td style="padding:6px;font-weight:bold;color:#f00"><div class="txtsatuan'.$i.'">TERKECIL</div></td>
 							<td style="padding:6px;text-align:right;font-weight:bold;color:#f00"><div class="hitungqty'.$i.'">'.round($r->dqty3,2).'</div></td>
 							<td style="padding:6px;font-weight:bold;color:#f00"><div class="ketsatuan'.$i.'">'.$r->dsatuan3.'</div></td>';
+							if($jenis == 'opb'){
+								$htmlSat .= $tdPgd;
+							}else{
+								$htmlSat .= '<td style="padding:6px;color:#f00'.$fwb.'">TERKECIL</td>
+								<td style="padding:6px;text-align:right;color:#f00'.$fwb.'">'.round($r->dqty3,2).'</td>
+								<td style="padding:6px;color:#f00'.$fwb.'">'.$r->dsatuan3.'</td>';
+							}
 						}
 						if($r->p_satuan == 2){
 							if($r->dsatuan == 'TERBESAR'){
@@ -1212,9 +1244,16 @@ class Transaksi extends CI_Controller
 								$s1 = ''; $s3 = 'style="color:#f00"';
 								$dqty = round($r->dqty3,2);
 							}
-							$htmlPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"><div '.$s1.'>TERBESAR</div><div '.$s3.'>TERKECIL</div></div></td>
+							$tdPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"><div '.$s1.'>TERBESAR</div><div '.$s3.'>TERKECIL</div></div></td>
 							<td style="padding:6px;text-align:right;font-weight:bold"><div class="hitungqty'.$i.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></div></td>
 							<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></div></td>';
+							if($jenis == 'opb'){
+								$htmlSat .= $tdPgd;
+							}else{
+								$htmlSat .= '<td style="padding:6px'.$fwb.'"><div '.$s1.'>TERBESAR</div><div '.$s3.'>TERKECIL</div></td>
+								<td style="padding:6px;text-align:right'.$fwb.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></td>
+								<td style="padding:6px'.$fwb.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></td>';
+							}
 						}
 						if($r->p_satuan == 3){
 							if($r->dsatuan == 'TERBESAR'){
@@ -1229,27 +1268,34 @@ class Transaksi extends CI_Controller
 								$s1 = ''; $s2 = ''; $s3 = 'style="color:#f00"';
 								$dqty = round($r->dqty3,2);
 							}
-							$htmlPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"><div '.$s1.'>TERBESAR</div><div '.$s2.'>TENGAH</div><div '.$s3.'>TERKECIL</div></div></td>
+							$tdPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"><div '.$s1.'>TERBESAR</div><div '.$s2.'>TENGAH</div><div '.$s3.'>TERKECIL</div></div></td>
 							<td style="padding:6px;text-align:right;font-weight:bold"><div class="hitungqty'.$i.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s2.'>'.round($r->dqty2,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></div></td>
 							<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s2.'>'.$r->dsatuan2.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></div></td>';
+							if($jenis == 'opb'){
+								$htmlSat .= $tdPgd;
+							}else{
+								$htmlSat .= '<td style="padding:6px'.$fwb.'"><div '.$s1.'>TERBESAR</div><div '.$s2.'>TENGAH</div><div '.$s3.'>TERKECIL</div></td>
+								<td style="padding:6px;text-align:right'.$fwb.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s2.'>'.round($r->dqty2,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></td>
+								<td style="padding:6px'.$fwb.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s2.'>'.$r->dsatuan2.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></td>';
+							}
 						}
 						// VIEW DAN EDIT
 						($r->dharga == null) ? $harga = 0 : $harga = number_format($r->dharga,0,',','.');
 						($r->dharga == null) ? $jumlah = 0 : $jumlah = $r->dharga * $dqty;
 						if($opsi == 'view'){
-							$tdKode = ''; $htmlSat = ''; $tdSatuan = '';
+							$tdKode = ''; $tdSat = ''; $tdSatuan = ''; $htmlTdSatQty = '';
 							if($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE' || $approve == 'OWNER'){
 								$sup = $this->db->query("SELECT*FROM m_supplier WHERE id_supp='$r->id_supplier'");
 								($sup->num_rows() == 0) ? $tdsp = '-' : $tdsp = $sup->row()->nm_supp;
-								$tdSup = '<td style="padding:6px;font-weight:bold;text-align:right">'.$harga.'</td>
+								$htmlSup = '<td style="padding:6px;font-weight:bold;text-align:right">'.$harga.'</td>
 								<td style="padding:6px;font-weight:bold;text-align:right">'.number_format($jumlah,0,',','.').'</td>
 								<td style="padding:6px;font-weight:bold">'.$tdsp.'</td>';
 							}else{
-								$tdSup = '';
+								$htmlSup = '';
 							}
-							$tdKet = '<td style="padding:6px">'.$r->ket_pengadaan.'</td>';
-							$tdBagian = '<td style="padding:6px">'.$r->nama.'</td>';
-							$tdAksi = '';
+							$htmlKet = '<td style="padding:6px">'.$r->ket_pengadaan.'</td>';
+							$htmlBagian = '<td style="padding:6px">'.$r->nama.'</td>';
+							$htmlAksi = '';
 						}else{
 							$tdKode = '<td style="padding:6px">
 								<input type="hidden" id="h_id_mbh'.$i.'" value="'.$r->id_mbh.'">
@@ -1268,30 +1314,29 @@ class Transaksi extends CI_Controller
 							</td>';
 							// SATUAN
 							if($r->p_satuan == 1){
-								$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERKECIL</td>
+								$tdSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERKECIL</td>
 								<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.number_format($r->qty3,0,',','.').'</td>
 								<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan3.'</td>';
 								$st = array('TERKECIL');
 							}
 							if($r->p_satuan == 2){
-								$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERBESAR<br>TERKECIL</td>
+								$tdSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERBESAR<br>TERKECIL</td>
 								<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
 								<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan1.'<br>'.$r->satuan3.'</td>';
 								$st = array('TERKECIL', 'TERBESAR');
 							}
 							if($r->p_satuan == 3){
-								$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERBESAR<br>TENGAH<br>TERKECIL</td>
+								$tdSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERBESAR<br>TENGAH<br>TERKECIL</td>
 								<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty2,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
 								<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'</td>';
 								$st = array('TERKECIL', 'TENGAH', 'TERBESAR');
 							}
-							// PILIH SATUAN
+							// PILIH SATUAN DAN QTY
 							$htmlPlhSatuan = '';
 							foreach($st as $t){
 								($r->dsatuan == $t) ? $slt = 'selected' : $slt = '';
 								$htmlPlhSatuan .= '<option value="'.$t.'" '.$slt.'>'.$t.'</option>';
 							}
-							// QTY
 							$tdSatuan = '<td style="padding:6px;text-align:center">
 								<select id="plh_satuan'.$i.'" class="form-control" style="padding:3px;width:100%" onchange="pilihSatuan('."'".$i."'".')">
 									'.$htmlPlhSatuan.'
@@ -1300,7 +1345,15 @@ class Transaksi extends CI_Controller
 							<td style="padding:6px;text-align:center">
 								<input type="number" id="qty'.$i.'" class="form-control" style="width:60px;padding:3px 4px;text-align:right" value="'.$dqty.'" onkeyup="pengadaaan('."'".$i."'".')">
 							</td>';
-							// SUPPLIER
+							$htmlTdSatQty = '';
+							if($jenis == 'opb'){
+								$htmlTdSatQty .= $tdSatuan;
+							}else{
+								$htmlTdSatQty .= '<td style="padding:6px">'.$r->dsatuan.'</td>
+								<td style="padding:6px;text-align:right">'.number_format($dqty,0,',','.').'</td>';
+							}
+							// HARGA, JUMLAH, PILIH SUPPLIER
+							$htmlSup = '';
 							if(($approve == 'ALL' || $approve == 'OFFICE') && $opbh->acc1 == 'Y'){
 								$sup = $this->db->query("SELECT*FROM m_supplier ORDER BY nm_supp");
 								$optSup = '';
@@ -1335,33 +1388,60 @@ class Transaksi extends CI_Controller
 									</select>
 								</td>';
 							}
+							if($jenis == 'opb'){
+								$htmlSup .= $tdSup;
+							}else{
+								$nmSupp = $this->db->query("SELECT*FROM m_supplier WHERE id_supp='$r->id_supplier'")->row();
+								$htmlSup .= '<td style="padding:6px;text-align:right">'.$harga.'</td>
+								<td style="padding:6px;text-align:right">'.number_format($jumlah,0,',','.').'</td>
+								<td style="padding:6px">'.$nmSupp->nm_supp.'</td>';
+							}
 							// KETERANGAN
-							$tdKet = '<td style="padding:6px;font-weight:bold">
+							$htmlKet = '';
+							$tdKet = '<td style="padding:6px">
 								<textarea id="ket_pengadaan'.$i.'" class="form-control" style="padding:3px 4px;resize:none" rows="2" placeholder="-" oninput="this.value=this.value.toUpperCase()">'.$r->ket_pengadaan.'</textarea>
 							</td>';
+							if($jenis == 'opb'){
+								$htmlKet .= $tdKet;
+							}else{
+								$htmlKet .= '<td style="padding:6px">'.$r->ket_pengadaan.'</td>';
+							}
 							// BAGIAN
 							$bagian = $this->db->query("SELECT b.id_group,b.kode_departemen,d.nama FROM m_modul_group m 
 							INNER JOIN m_departemen_bagian b ON m.id_group=b.id_group
 							INNER JOIN m_departemen d ON b.kode_departemen=d.kode
 							WHERE m.val_group='$level' AND d.main_menu='$departemen'
 							GROUP BY b.id_group,b.kode_departemen");
-							$htmlBagian = '';
-							$htmlBagian .= '<option value="">PILIH</option>';
+							$optBagian = '';
+							$optBagian .= '<option value="">PILIH</option>';
 							foreach($bagian->result() as $b){
 								($r->kode_bagian == $b->kode_departemen) ? $slb = 'selected' : $slb = '';
-								$htmlBagian .= '<option value="'.$b->kode_departemen.'" '.$slb.'>'.$b->nama.'</option>';
+								$optBagian .= '<option value="'.$b->kode_departemen.'" '.$slb.'>'.$b->nama.'</option>';
 							}
+							$htmlBagian = '';
 							$tdBagian = '<td style="padding:6px">
 								<select id="plh_bagian'.$i.'" class="form-control" style="padding:3px;width:100%">
-									'.$htmlBagian.'
+									'.$optBagian.'
 								</select>
 							</td>';
+							if($jenis == 'opb'){
+								$htmlBagian .= $tdBagian;
+							}else{
+								$htmlBagian .= '<td style="padding:6px">'.$r->nama.'</td>';
+							}
 							// AKSI
 							($detail->num_rows() != 1) ? $d = ' <button type="button" class="btn btn-sm" onclick="hapusOPB('."'detail'".','."'".$i."'".')"><i class="fas fa-times-circle" style="color:#f00"></i></button>' : $d = '';
+							($jenis == 'opb') ? $btnAksi = '<button type="button" class="btn btn-sm" onclick="editListOPB('."'".$i."'".')"><i class="fas fa-edit"></i></button>'.$d : $btnAksi = '';
+							$htmlAksi = '';
 							$tdAksi = '<td style="padding:6px;text-align:center">
 								<input type="hidden" id="h_id_opbd_'.$i.'" value="'.$r->id_opbd.'">
-								<button type="button" class="btn btn-sm" onclick="editListOPB('."'".$i."'".')"><i class="fas fa-edit"></i></button>'.$d.'
+								'.$btnAksi.'
 							</td>';
+							if($jenis == 'opb'){
+								$htmlAksi .= $tdAksi;
+							}else{
+								$htmlAksi .= '<td style="padding:6px;text-align:center">-</td>';
+							}
 						}
 						$htmlDetail .= '<tr>
 							'.$tdKode.'
@@ -1374,10 +1454,20 @@ class Transaksi extends CI_Controller
 							<td style="padding:6px">'.$r->material.'</td>
 							<td style="padding:6px">'.$r->size.'</td>
 							<td style="padding:6px">'.$r->merk.'</td>
-							'.$htmlSat.$tdSatuan.$htmlPgd.$tdSup.$tdKet.$tdBagian.$tdAksi.'
+							'.$tdSat.$htmlTdSatQty.$htmlSat.$htmlSup.$htmlKet.$htmlBagian.$htmlAksi.'
 						</tr>';
+						($opsi == 'view') ? $cx = 12 : $cx = 20;
+						// BAPB
+						if($jenis == 'bapb' && $opsi == 'edit'){
+							$htmlDetail .= '<tr>
+								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
+							</tr>
+							<tr>
+								<td style="padding:6px;font-weight:bold;text-align:right" colspan="9">BAPB :</td>
+								'.$tdSatuan.$tdPgd.$tdSup.$tdKet.$tdBagian.$tdAksi.'
+							</tr>';
+						}
 						if($detail->num_rows() != $i){
-							($opsi == 'view') ? $cx = 12 : $cx = 20;
 							$htmlDetail .= '<tr>
 								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
 							</tr>';
