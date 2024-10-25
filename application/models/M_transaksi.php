@@ -1250,4 +1250,129 @@ class M_transaksi extends CI_Model
 			'result' => $result,
 		];
 	}
+
+	function prosesBAPB()
+	{
+		$approve = $this->session->userdata('approve');
+		$id_opbh = $_POST["id_opbh"];
+		$opbh = $this->db->query("SELECT*FROM trs_opb_header WHERE id_opbh='$id_opbh'")->row();
+		$id_opbd = $_POST["id_opbd"];
+		$kode_dpt = $_POST["kode_dpt"];
+		$tgl_bapb = $_POST["tgl_bapb"];
+		$id_mbh = $_POST["id_mbh"];
+		$id_mbd = $_POST["id_mbd"];
+		$plh_satuan = $_POST["plh_satuan"];
+		$qty = $_POST["qty"];
+		$i_qty1 = $_POST["i_qty1"];
+		$i_qty2 = $_POST["i_qty2"];
+		$i_qty3 = $_POST["i_qty3"];
+		$harga = $_POST["harga"];
+		$plh_supplier = $_POST["plh_supplier"];
+		$ket_pengadaan = $_POST["ket_pengadaan"];
+		$plh_bagian = $_POST["plh_bagian"];
+
+		$dBapb = $this->db->query("SELECT*FROM trs_bapb WHERE tgl_bapb='$tgl_bapb' AND no_opb='$opbh->no_opb' AND id_opbh='$id_opbh' AND id_opbd='$id_opbd' AND id_mbh='$id_mbh' AND id_mbd='$id_mbd'");
+
+		if($qty == 0 || $qty == '' || $qty < 0){
+			$data = false; $qrcode = false; $bapb = ''; $msg = 'HARAP ISI QTY!';
+		}else if($plh_supplier == ''){
+			$data = false; $qrcode = false; $bapb = ''; $msg = 'HARAP PILIH SUPPLIER!';
+		}else if($harga == 0 || $harga == '' || !preg_match("/^[0-9]*$/", $harga)){
+			$data = false; $qrcode = false; $bapb = ''; $msg = 'HARAP ISI HARGA!';
+		}else if($plh_bagian == ''){
+			$data = false; $qrcode = false; $bapb = ''; $msg = 'HARAP PILIH BAGIAN!';
+		}else if($dBapb->num_rows() != 0){
+			$data = false; $qrcode = false; $bapb = ''; $msg = 'DATA SUDAH ADA!';
+		}else{
+			$barang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
+			// SATUAN
+			if($barang->p_satuan == 1){
+				$qty1 = null; $qty2 = null; $qty3 = $i_qty3;
+				$satuan1 = null; $satuan2 = null; $satuan3 = $barang->satuan3;
+			}
+			if($barang->p_satuan == 2){
+				$qty1 = $i_qty1; $qty2 = null; $qty3 = $i_qty3;
+				$satuan1 = $barang->satuan1; $satuan2 = null; $satuan3 = $barang->satuan3;
+			}
+			if($barang->p_satuan == 3){
+				$qty1 = $i_qty1; $qty2 = $i_qty2; $qty3 = $i_qty3;
+				$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
+			}
+			$bapb = [
+				'tgl_bapb' => $tgl_bapb,
+				'no_opb' => $opbh->no_opb,
+				'id_opbh' => $id_opbh,
+				'id_opbd' => $id_opbd,
+				'id_mbh' => $id_mbh,
+				'id_mbd' => $id_mbd,
+				'status_opbd' => 'Open',
+				'bkode_dpt' => $kode_dpt,
+				'bkode_bagian' => $plh_bagian,
+				'bid_supplier' => ($plh_supplier == '') ? null : $plh_supplier,
+				'bharga' => ($harga == '' || $harga == 0) ? null : $harga,
+				'b_satuan' => $barang->p_satuan,
+				'bsatuan' => $plh_satuan,
+				'bqty1' => $qty1,
+				'bsatuan1' => $satuan1,
+				'bqty2' => $qty2,
+				'bsatuan2' => $satuan2,
+				'bqty3' => $qty3,
+				'bsatuan3' => $satuan3,
+				'bket_pengadaan' => ($ket_pengadaan == '') ? null : $ket_pengadaan,
+				'creat_by' => $this->username,
+				'creat_at' => date('Y-m-d H:i:s'),
+			];
+			$data = $this->db->insert('trs_bapb', $bapb);
+			if($data){
+				$qBapb = $this->db->query("SELECT*FROM trs_bapb WHERE tgl_bapb='$tgl_bapb' AND no_opb='$opbh->no_opb' AND id_opbh='$id_opbh' AND id_opbd='$id_opbd' AND id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
+				$qrcode_data = $this->_generate_data_qrcode();
+				$this->db->set('qrcode_path', $this->_generate_qrcode($qrcode_data));
+				$this->db->set('qrcode_data', $qrcode_data);
+				$this->db->where('id_bapb', $qBapb->id_bapb);
+				$qrcode = $this->db->update('trs_bapb');
+			}else{
+				$qrcode = false;
+			}
+			$msg = 'OK!';
+		}
+		return [
+			'data' => $data,
+			'bapb' => $bapb,
+			'msg' => $msg,
+			'qrcode' => $qrcode,
+		];
+	}
+
+	public function _generate_data_qrcode()
+	{
+		$this->load->helper('string');
+		$code = strtoupper(random_string('alnum', 11));
+		$cek_data = $this->db->query("SELECT*FROM trs_bapb WHERE qrcode_data='$code'");
+		if($cek_data->num_rows() != 0){
+			$code = substr_replace($code, count($cek_data) + 1, 10);
+		}
+		return $code;
+	}
+
+	public function _generate_qrcode($qr_code)
+	{
+		$this->load->library('ciqrcode');
+		$directory = "./assets/qrcode";
+		if(!is_dir($directory)) {
+			mkdir($directory, 0777, TRUE);
+		}
+		$config['cacheable'] = true;
+		$config['quality'] = true;
+		$config['size'] = '1024';
+		$config['black'] = array(224, 225, 255);
+		$config['white'] = array(70, 130, 180);
+		$this->ciqrcode->initialize($config);
+		$image_name = $qr_code.rand(pow(10, 2), pow(10, 3)-1).'.png';
+		$params['data'] = base_url('Transaksi/Bapb/').$qr_code;
+		$params['level'] = 'H';
+		$params['size'] = 10;
+		$params['savename'] = $directory.'/'.$image_name;
+		$this->ciqrcode->generate($params);
+		return $image_name;
+	}
 }

@@ -624,6 +624,12 @@ class Transaksi extends CI_Controller
 		echo json_encode($result);
 	}
 
+	function prosesBAPB()
+	{
+		$result = $this->m_transaksi->prosesBAPB();
+		echo json_encode($result);
+	}
+
 	function loadBarang()
 	{
 		$html = '';
@@ -1298,6 +1304,7 @@ class Transaksi extends CI_Controller
 							$htmlAksi = '';
 						}else{
 							$tdKode = '<td style="padding:6px">
+								<input type="hidden" id="h_id_opbd_'.$i.'" value="'.$r->id_opbd.'">
 								<input type="hidden" id="h_id_mbh'.$i.'" value="'.$r->id_mbh.'">
 								<input type="hidden" id="h_id_mbd'.$i.'" value="'.$r->id_mbd.'">
 								<input type="hidden" id="h_satuan'.$i.'" value="'.$r->p_satuan.'">
@@ -1434,7 +1441,6 @@ class Transaksi extends CI_Controller
 							($jenis == 'opb') ? $btnAksi = '<button type="button" class="btn btn-sm" onclick="editListOPB('."'".$i."'".')"><i class="fas fa-edit"></i></button>'.$d : $btnAksi = '';
 							$htmlAksi = '';
 							$tdAksi = '<td style="padding:6px;text-align:center">
-								<input type="hidden" id="h_id_opbd_'.$i.'" value="'.$r->id_opbd.'">
 								'.$btnAksi.'
 							</td>';
 							if($jenis == 'opb'){
@@ -1463,8 +1469,14 @@ class Transaksi extends CI_Controller
 								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
 							</tr>
 							<tr>
-								<td style="padding:6px;font-weight:bold;text-align:right" colspan="9">BAPB :</td>
-								'.$tdSatuan.$tdPgd.$tdSup.$tdKet.$tdBagian.$tdAksi.'
+								<td style="padding:6px;font-weight:bold;text-align:right" colspan="6">BAPB :</td>
+								<td style="padding:6px;font-weight:bold;text-align:right" colspan="3">
+								<input type="date" id="tgl_bapb_'.$i.'" class="form-control" value="'.date('Y-m-d').'">
+								</td>
+								'.$tdSatuan.$tdPgd.$tdSup.$tdKet.$tdBagian.'
+								<td style="padding:6px;text-align:center">
+									<button type="button" class="btn btn-xs btn-success" onclick="prosesBAPB('."'".$i."'".')">proses</button>
+								</td>
 							</tr>';
 						}
 						if($detail->num_rows() != $i){
@@ -1476,7 +1488,7 @@ class Transaksi extends CI_Controller
 						$subTotal += $jumlah;
 					}
 					// TOTAL
-					if($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE' || $approve == 'OWNER'){
+					if(($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'FINANCE' || $approve == 'OWNER') && $jenis == 'opb'){
 						if($opsi == 'view'){
 							$cs = 9; $c2 = 3;
 						}else{

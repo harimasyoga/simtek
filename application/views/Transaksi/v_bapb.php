@@ -297,4 +297,42 @@
 		(isNaN(hitung_total)) ? hitung_total = 0 : hitung_total = hitung_total;
 		$("#total_opb").val(format_angka(hitung_total))
 	}
+
+	function prosesBAPB(i)
+	{
+		let kode_dpt = $("#plh_departemen").val()
+		let id_opbh = $("#id_opbh").val()
+		let h_ii = $("#h_ii").val()
+		let tgl_bapb = $("#tgl_bapb_"+i).val()
+		let id_opbd = $("#h_id_opbd_"+i).val()
+		let id_mbh = $("#h_id_mbh"+i).val()
+		let id_mbd = $("#h_id_mbd"+i).val()
+		let plh_satuan = $("#plh_satuan"+i).val()
+		let qty = $("#qty"+i).val()
+		let i_qty1 = $("#i_qty1_"+i).val()
+		let i_qty2 = $("#i_qty2_"+i).val()
+		let i_qty3 = $("#i_qty3_"+i).val()
+		let harga = $("#harga_opb"+i).val().split('.').join('')
+		let plh_supplier = $("#plh_supplier"+i).val()
+		let ket_pengadaan = $("#ket_pengadaan"+i).val()
+		let plh_bagian = $("#plh_bagian"+i).val()
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/prosesBAPB')?>',
+			type: "POST",
+			async: false,
+			data: ({
+				kode_dpt, id_opbh, tgl_bapb, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, harga, plh_supplier, ket_pengadaan, plh_bagian
+			}),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				// if(data.data){
+				// 	editOPB()
+				// 	loadList(kode_dpt)
+				// }else{
+				// 	toastr.error(`<b>${data.msg}</b>`)
+				// }
+			}
+		})
+	}
 </script>
