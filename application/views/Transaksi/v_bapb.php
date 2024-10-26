@@ -29,7 +29,7 @@
 					<div class="card-body" style="padding:0">
 						<?php if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE', 'GUDANG'])) { ?>
 							<div style="padding:5px">
-								<button type="button" class="btn btn-primary btn-sm" onclick="tambah('tambah')">Tambah Data</button>
+								<button type="button" class="btn btn-primary btn-sm" onclick="">Tambah Data</button>
 							</div>
 						<?php } ?>
 						<div class="list-header" style="padding:0"></div>
@@ -58,26 +58,8 @@
 						<h3 class="card-title" style="font-weight:bold;font-size:18px">INPUT BAPB</h3>
 					</div>
 					<div class="card-body" style="padding:6px">
-						<div style="padding:0 0 20px">
-							<div class="btn-kembali"></div>
-						</div>
-						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">TANGGAL <span style="color:#f00">*</span></div>
-							<div class="col-md-5">
-								<input type="date" id="tgl_opb" class="form-control" value="<?php echo date('Y-m-d')?>">
-							</div>
-							<div class="col-md-5"></div>
-						</div>
-						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">NO. OPB <span style="color:#f00">*</span></div>
-							<div class="col-md-5">
-								<input type="number" id="no_opb" class="form-control" placeholder="NO. OPB">
-							</div>
-							<div class="col-md-5"></div>
-						</div>
-						<div class="lil list-detail"></div>
-						<div class="lil list-cart"></div>
-						<div class="lil list-edit-cart"></div>
+						<div class="btn-kembali"></div>
+						<div class="lil list-opb-bapb"></div>
 					</div>
 				</div>
 			</div>
@@ -160,13 +142,22 @@
 					$(".list-opb-detail").html(data.htmlDetail)
 				}
 				if(opsi == 'edit'){
-					// $(".list-detail").html('')
-					// $(".list-cart").html('')
-					$(".list-edit-cart").html(data.htmlDetail)
+					$(".list-opb-bapb").html(data.htmlDetail)
 				}
 				$(".select2").select2()
 			}
 		})
+	}
+
+	function kembali()
+	{
+		// $(".row-list").show()
+		// $(".row-input").hide()
+		$(".btn-kembali").html('')
+		$(".lil").html('')
+		let id_opbh = $("#id_opbh").val()
+		let h_ii = $("#h_ii").val()
+		btnDetail(id_opbh, h_ii, 'view')
 	}
 
 	function editOPB()
@@ -180,7 +171,7 @@
 		$("#id_cart").val(0)
 		$(".list-detail").html('')
 		$(".list-cart").html('')
-		$(".list-edit-cart").html('')
+		$(".list-opb-bapb").html('')
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/editOPB')?>',
 			type: "POST",
@@ -188,7 +179,7 @@
 			success: function(res){
 				data = JSON.parse(res)
 				$("#plh_departemen").val(data.opbh.kode_dpt)
-				// $(".btn-kembali").html(`<button type="button" class="btn btn-primary btn-sm" onclick="kembali()">Kembali</button>`)
+				$(".btn-kembali").html(`<button type="button" class="btn btn-primary btn-sm" onclick="kembali()">Kembali</button>`)
 				btnDetail(id_opbh, h_ii, 'edit')
 			}
 		})

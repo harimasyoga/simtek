@@ -1325,11 +1325,13 @@ class M_transaksi extends CI_Model
 			$data = $this->db->insert('trs_bapb', $bapb);
 			if($data){
 				$qBapb = $this->db->query("SELECT*FROM trs_bapb WHERE tgl_bapb='$tgl_bapb' AND no_opb='$opbh->no_opb' AND id_opbh='$id_opbh' AND id_opbd='$id_opbd' AND id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
-				$qrcode_data = $this->_generate_data_qrcode();
-				$this->db->set('qrcode_path', $this->_generate_qrcode($qrcode_data));
-				$this->db->set('qrcode_data', $qrcode_data);
-				$this->db->where('id_bapb', $qBapb->id_bapb);
-				$qrcode = $this->db->update('trs_bapb');
+				$qrcode_data = $this->generateDataQRCode();
+				$datacode = [
+					'id_bapb' => $qBapb->id_bapb,
+					'qrcode_path' => $this->generateQRCode($qrcode_data),
+					'qrcode_data' => $qrcode_data,
+				];
+				$qrcode = $this->db->insert('m_qrcode', $datacode);
 			}else{
 				$qrcode = false;
 			}
@@ -1343,18 +1345,21 @@ class M_transaksi extends CI_Model
 		];
 	}
 
-	public function _generate_data_qrcode()
+	function generateDataQRCode()
 	{
-		$this->load->helper('string');
-		$code = strtoupper(random_string('alnum', 11));
-		$cek_data = $this->db->query("SELECT*FROM trs_bapb WHERE qrcode_data='$code'");
+		$stringSpace = '_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
+		$stringLength = strlen($stringSpace);
+		$string = str_repeat($stringSpace, ceil(11 / $stringLength));
+		$shuffledString = str_shuffle($string);
+		$code = substr($shuffledString, 1, 11);
+		$cek_data = $this->db->query("SELECT*FROM m_qrcode WHERE qrcode_data='$code'");
 		if($cek_data->num_rows() != 0){
-			$code = substr_replace($code, count($cek_data) + 1, 10);
+			$code = substr_replace($code, count($cek_data) + 1, 11);
 		}
 		return $code;
 	}
 
-	public function _generate_qrcode($qr_code)
+	function generateQRCode($qr_code)
 	{
 		$this->load->library('ciqrcode');
 		$directory = "./assets/qrcode";
@@ -1367,7 +1372,7 @@ class M_transaksi extends CI_Model
 		$config['black'] = array(224, 225, 255);
 		$config['white'] = array(70, 130, 180);
 		$this->ciqrcode->initialize($config);
-		$image_name = $qr_code.rand(pow(10, 2), pow(10, 3)-1).'.png';
+		$image_name = $qr_code.'.png';
 		$params['data'] = base_url('Transaksi/Bapb/').$qr_code;
 		$params['level'] = 'H';
 		$params['size'] = 10;

@@ -1162,7 +1162,7 @@ class Transaksi extends CI_Controller
 		if($opsi == 'view'){
 			$bgCard = 'card-primary';
 			if($approve == 'ACC' || $approve == 'FINANCE' || $approve == 'OWNER'){
-			$btnEdit = ''; $btnHapus = '';
+			$btnEdit = ''; $btnHapus = ''; $btnBAPB = ''; $btnClose = '';
 			}else{
 				if(($approve == 'ALL' || $approve == 'OFFICE') && $opbh->acc3 != 'Y'){
 					$btnEdit = '<button type="button" class="btn btn-xs bg-gradient-dark" onclick="editOPB()">Edit</button> - ';
@@ -1225,9 +1225,11 @@ class Transaksi extends CI_Controller
 					$i = 0; $subTotal = 0;
 					foreach($detail->result() as $r){
 						$i++;
+						($opsi == 'view') ? $fwb = ';font-weight:bold' : $fwb = '';
+						($opsi == 'view') ? $cx = 12 : $cx = 20;
+						($opsi == 'view') ? $cz = 8 : $cz = 6;
 						// SATUAN
 						$htmlSat = '';
-						($opsi == 'view') ? $fwb = ';font-weight:bold' : $fwb = '';
 						if($r->p_satuan == 1){
 							$dqty = round($r->dqty3,2);
 							$tdPgd = '<td style="padding:6px;font-weight:bold;color:#f00"><div class="txtsatuan'.$i.'">TERKECIL</div></td>
@@ -1284,6 +1286,74 @@ class Transaksi extends CI_Controller
 								<td style="padding:6px;text-align:right'.$fwb.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s2.'>'.round($r->dqty2,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></td>
 								<td style="padding:6px'.$fwb.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s2.'>'.$r->dsatuan2.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></td>';
 							}
+						}
+						// CEK OPB YANG SUDAH DI BAPB
+						$htmlBapb = '';
+						$cekBapb = $this->db->query("SELECT*FROM trs_bapb WHERE id_opbd='$r->id_opbd' ORDER BY tgl_bapb");
+						if($cekBapb->num_rows() != 0){
+							$xx = 0;
+							$sum1 = 0;
+							$sum2 = 0;
+							$sum3 = 0;
+							foreach($cekBapb->result() as $p){
+								$xx++;
+								$sum1 += ($p->bqty1 == null) ? 0 : round($p->bqty1,2);
+								$sum2 += ($p->bqty2 == null) ? 0 : round($p->bqty2,2);
+								$sum3 += ($p->bqty3 == null) ? 0 : round($p->bqty3,2);
+								// QTY DAN SATUAN
+								if($p->b_satuan == 1){
+									$tdQtySatBapb = '';
+								}
+								if($p->b_satuan == 2){
+									$tdQtySatBapb = '';
+								}
+								if($p->b_satuan == 3){
+									if($p->bsatuan == 'TERBESAR'){
+										$p1 = 'style="color:#f00"'; $p2 = ''; $p3 = '';
+										$pqty = round($p->bqty1,2);
+									}
+									if($p->bsatuan == 'TENGAH'){
+										$p1 = ''; $p2 = 'style="color:#f00"'; $p3 = '';
+										$pqty = round($p->bqty2,2);
+									}
+									if($p->bsatuan == 'TERKECIL'){
+										$p1 = ''; $p2 = ''; $p3 = 'style="color:#f00"';
+										$pqty = round($p->bqty3,2);
+									}
+									$tdQtySatBapb = '<td style="padding:6px;text-align:right">'.$pqty.'</td>
+									<td style="padding:6px"><div '.$p1.'>TERBESAR</div><div '.$p2.'>TENGAH</div><div '.$p3.'>TERKECIL</div></td>
+									<td style="padding:6px;text-align:right"><div '.$p1.'>'.round($p->bqty1,2).'</div><div '.$p2.'>'.round($p->bqty2,2).'</div><div '.$p3.'>'.round($p->bqty3,2).'</div></td>
+									<td style="padding:6px"><div '.$p1.'>'.$p->bsatuan1.'</div><div '.$p2.'>'.$p->bsatuan2.'</div><div '.$p3.'>'.$p->bsatuan3.'</div></td>';
+								}
+								$htmlBapb .= '<tr>
+									<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
+								</tr>
+								<tr>
+									<td style="padding:6px;font-weight:bold;text-align:right" colspan="'.$cz.'">'.$xx.'.</td>
+									<td style="padding:6px;font-weight:bold" colspan="3">'.$this->m_fungsi->tanggal_format_indonesia($p->tgl_bapb).'</td>
+									<td style="padding:6px;font-weight:bold">'.$p->bsatuan.'</td>
+									'.$tdQtySatBapb.'
+								</tr>';
+							}
+							// TOTAL / KEKURANGAN
+							if($p->b_satuan == 1){
+								$tdTotQtySatBapb = '';
+							}
+							if($p->b_satuan == 2){
+								$tdTotQtySatBapb = '';
+							}
+							if($p->b_satuan == 3){
+								$tdTotQtySatBapb = '<td style="padding:6px"><div>TERBESAR</div><div>TENGAH</div><div>TERKECIL</div></td>
+								<td style="padding:6px;text-align:right"><div>'.round($sum1,2).'</div><div>'.round($sum2,2).'</div><div>'.round($sum3,2).'</div></td>
+								<td style="padding:6px"><div>'.$p->bsatuan1.'</div><div>'.$p->bsatuan2.'</div><div>'.$p->bsatuan3.'</div></td>';
+							}
+							$htmlBapb .= '<tr>
+								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
+							</tr>
+							<tr>
+								<td style="padding:6px;text-align:right;font-weight:bold" colspan="11">KEKURANGAN</td>
+								'.$tdTotQtySatBapb.'
+							</tr>';
 						}
 						// VIEW DAN EDIT
 						($r->dharga == null) ? $harga = 0 : $harga = number_format($r->dharga,0,',','.');
@@ -1462,10 +1532,11 @@ class Transaksi extends CI_Controller
 							<td style="padding:6px">'.$r->merk.'</td>
 							'.$tdSat.$htmlTdSatQty.$htmlSat.$htmlSup.$htmlKet.$htmlBagian.$htmlAksi.'
 						</tr>';
-						($opsi == 'view') ? $cx = 12 : $cx = 20;
+						// TAMPIL OPB YANG SUDAH BAPB
+						// $htmlDetail .= $htmlBapb;
 						// BAPB
 						if($jenis == 'bapb' && $opsi == 'edit'){
-							$htmlDetail .= '<tr>
+							$htmlDetail .= $htmlBapb.'<tr>
 								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
 							</tr>
 							<tr>
@@ -1480,8 +1551,9 @@ class Transaksi extends CI_Controller
 							</tr>';
 						}
 						if($detail->num_rows() != $i){
+							($jenis == 'bapb' && $opsi == 'edit') ? $bgb = ';background:#828282' : $bgb = '';
 							$htmlDetail .= '<tr>
-								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
+								<td style="padding:2px;border:0'.$bgb.'" colspan="'.$cx.'"></td>
 							</tr>';
 						}
 						// TOTAL
@@ -1495,7 +1567,7 @@ class Transaksi extends CI_Controller
 							$cs = 15; $c2 = 5;
 						}
 						$htmlDetail .= '<tr>
-							<td style="padding:2px;border:0" colspan="11"></td>
+							<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
 						</tr>
 						<tr>
 							<td style="padding:6px;font-weight:bold;text-align:right" colspan="'.$cs.'">TOTAL</td>
