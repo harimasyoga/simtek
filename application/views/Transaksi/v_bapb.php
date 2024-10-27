@@ -194,6 +194,9 @@
 		$("#i_qty1_"+i).val('')
 		$("#i_qty2_"+i).val('')
 		$("#i_qty3_"+i).val('')
+		$("#harga_opb"+i).val('')
+		$("#jumlah_opb"+i).val('')
+		$("#plh_supplier"+i).val('').trigger('change')
 		$("#plh_bagian"+i).val('')
 		$("#ket_pengadaan"+i).val('')
 	}
@@ -275,18 +278,12 @@
 
 	function hargaOPB(i)
 	{
-		let h_qty = ($("#h_qty_"+i).val() == undefined) ? 0 : $("#h_qty_"+i).val().split('.').join('');
-		let h_harga = ($("#h_harga_"+i).val() == undefined) ? 0 : $("#h_harga_"+i).val().split('.').join('');
-		let h_total = ($("#h_total").val() == undefined) ? 0 : $("#h_total").val().split('.').join('');
 		let qty = ($("#qty"+i).val() == undefined) ? 0 : $("#qty"+i).val().split('.').join('');
 		let harga = ($("#harga_opb"+i).val() == undefined) ? 0 : $("#harga_opb"+i).val().split('.').join('');
 		$("#harga_opb"+i).val(format_angka(harga))
 		let jumlah = parseInt(qty) * parseInt(harga);
 		(isNaN(jumlah)) ? jumlah = 0 : jumlah = jumlah;
 		$("#jumlah_opb"+i).val(format_angka(jumlah))
-		let hitung_total = (parseInt(h_total) - (parseInt(h_qty) * parseInt(h_harga))) + jumlah;
-		(isNaN(hitung_total)) ? hitung_total = 0 : hitung_total = hitung_total;
-		$("#total_opb").val(format_angka(hitung_total))
 	}
 
 	function prosesBAPB(i)
@@ -316,14 +313,40 @@
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
-				// if(data.data){
-				// 	editOPB()
-				// 	loadList(kode_dpt)
-				// }else{
-				// 	toastr.error(`<b>${data.msg}</b>`)
-				// }
+				if(data.data && data.qrcode){
+					btnDetail(id_opbh, h_ii, 'edit')
+				}else{
+					toastr.error(`<b>${data.msg}</b>`)
+				}
 			}
 		})
+	}
+
+	function hapusBAPB(id_bapb)
+	{
+		let id_opbh = $("#id_opbh").val()
+		let h_ii = $("#h_ii").val()
+		swal({
+			title: "Apakah Kamu Yakin?",
+			text: "",
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#C00",
+			confirmButtonText: "Delete"
+		}).then(function(result) {
+			$.ajax({
+				url: '<?php echo base_url('Transaksi/hapusBAPB')?>',
+				type: "POST",
+				data : ({ id_bapb }),
+				success: function(res){
+					data = JSON.parse(res)
+					if(data.hapusBAPB){
+						btnDetail(id_opbh, h_ii, 'edit')
+					}else{
+						toastr.error(`<b>TERJADI KESALAHAN!</b>`)
+					}
+				}
+			})
+		});
 	}
 </script>

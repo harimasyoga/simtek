@@ -602,6 +602,9 @@
 		$("#i_qty1_"+i).val('')
 		$("#i_qty2_"+i).val('')
 		$("#i_qty3_"+i).val('')
+		$("#harga_opb"+i).val('')
+		$("#jumlah_opb"+i).val('')
+		$("#plh_supplier"+i).val('').trigger('change')
 		$("#plh_bagian"+i).val('')
 		$("#ket_pengadaan"+i).val('')
 	}
@@ -683,18 +686,12 @@
 
 	function hargaOPB(i)
 	{
-		let h_qty = ($("#h_qty_"+i).val() == undefined) ? 0 : $("#h_qty_"+i).val().split('.').join('');
-		let h_harga = ($("#h_harga_"+i).val() == undefined) ? 0 : $("#h_harga_"+i).val().split('.').join('');
-		let h_total = ($("#h_total").val() == undefined) ? 0 : $("#h_total").val().split('.').join('');
 		let qty = ($("#qty"+i).val() == undefined) ? 0 : $("#qty"+i).val().split('.').join('');
 		let harga = ($("#harga_opb"+i).val() == undefined) ? 0 : $("#harga_opb"+i).val().split('.').join('');
 		$("#harga_opb"+i).val(format_angka(harga))
 		let jumlah = parseInt(qty) * parseInt(harga);
 		(isNaN(jumlah)) ? jumlah = 0 : jumlah = jumlah;
 		$("#jumlah_opb"+i).val(format_angka(jumlah))
-		let hitung_total = (parseInt(h_total) - (parseInt(h_qty) * parseInt(h_harga))) + jumlah;
-		(isNaN(hitung_total)) ? hitung_total = 0 : hitung_total = hitung_total;
-		$("#total_opb").val(format_angka(hitung_total))
 	}
 
 	function addCartOPB(i)

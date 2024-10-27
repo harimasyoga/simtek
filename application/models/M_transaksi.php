@@ -1345,9 +1345,36 @@ class M_transaksi extends CI_Model
 		];
 	}
 
+	function hapusBAPB()
+	{
+		$id_bapb = $_POST["id_bapb"];
+		// HAPUS DATA QR CODE
+		$qrcode = $this->db->query("SELECT*FROM m_qrcode WHERE id_bapb='$id_bapb'")->row();
+		$file = "./assets/qrcode/".$qrcode->qrcode_path;
+		$hapusQRCode = unlink($file);
+		if($hapusQRCode){
+			$this->db->where('id_bapb', $id_bapb);
+			$hapusDataQRCode = $this->db->delete('m_qrcode');
+			if($hapusDataQRCode){
+				// HAPUS DATA BAPB
+				$this->db->where('id_bapb', $id_bapb);
+				$hapusBAPB = $this->db->delete('trs_bapb');
+			}else{
+				$hapusDataQRCode = false;
+			}
+		}else{
+			$hapusQRCode = false; $hapusDataQRCode = false; $hapusBAPB = false;
+		}
+		return [
+			'hapusQRCode' => $hapusQRCode,
+			'hapusDataQRCode' => $hapusDataQRCode,
+			'hapusBAPB' => $hapusBAPB,
+		];
+	}
+
 	function generateDataQRCode()
 	{
-		$stringSpace = '_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
+		$stringSpace = '-0123456789_abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ_';
 		$stringLength = strlen($stringSpace);
 		$string = str_repeat($stringSpace, ceil(11 / $stringLength));
 		$shuffledString = str_shuffle($string);

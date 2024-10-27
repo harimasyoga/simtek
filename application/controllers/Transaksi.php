@@ -630,6 +630,12 @@ class Transaksi extends CI_Controller
 		echo json_encode($result);
 	}
 
+	function hapusBAPB()
+	{
+		$result = $this->m_transaksi->hapusBAPB();
+		echo json_encode($result);
+	}
+
 	function loadBarang()
 	{
 		$html = '';
@@ -1215,7 +1221,7 @@ class Transaksi extends CI_Controller
 						'.$thSatuan.'
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">PENGADAAN</th>
 						'.$thSup.'
-						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 32px;text-align:center">KETERANGAN</th>
+						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 50px;text-align:center">KETERANGAN</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 32px;text-align:center">BAGIAN</th>
 						'.$thEdit.'
 					</tr>
@@ -1226,15 +1232,21 @@ class Transaksi extends CI_Controller
 					foreach($detail->result() as $r){
 						$i++;
 						($opsi == 'view') ? $fwb = ';font-weight:bold' : $fwb = '';
-						($opsi == 'view') ? $cx = 12 : $cx = 20;
-						($opsi == 'view') ? $cz = 8 : $cz = 6;
+						($opsi == 'view') ? $cx = 13 : $cx = 20;
+						($opsi == 'view') ? $cz = 3 : $cz = 9;
 						// SATUAN
 						$htmlSat = '';
 						if($r->p_satuan == 1){
 							$dqty = round($r->dqty3,2);
-							$tdPgd = '<td style="padding:6px;font-weight:bold;color:#f00"><div class="txtsatuan'.$i.'">TERKECIL</div></td>
-							<td style="padding:6px;text-align:right;font-weight:bold;color:#f00"><div class="hitungqty'.$i.'">'.round($r->dqty3,2).'</div></td>
-							<td style="padding:6px;font-weight:bold;color:#f00"><div class="ketsatuan'.$i.'">'.$r->dsatuan3.'</div></td>';
+							if($jenis == 'opb'){
+								$tdPgd = '<td style="padding:6px;font-weight:bold;color:#f00"><div class="txtsatuan'.$i.'">TERKECIL</div></td>
+								<td style="padding:6px;text-align:right;font-weight:bold;color:#f00"><div class="hitungqty'.$i.'">'.round($r->dqty3,2).'</div></td>
+								<td style="padding:6px;font-weight:bold;color:#f00"><div class="ketsatuan'.$i.'">'.$r->dsatuan3.'</div></td>';
+							}else{
+								$tdPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"></div></td>
+								<td style="padding:6px;font-weight:bold"><div class="hitungqty'.$i.'"></div></td>
+								<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"></div></td>';
+							}
 							if($jenis == 'opb'){
 								$htmlSat .= $tdPgd;
 							}else{
@@ -1245,16 +1257,20 @@ class Transaksi extends CI_Controller
 						}
 						if($r->p_satuan == 2){
 							if($r->dsatuan == 'TERBESAR'){
-								$s1 = 'style="color:#f00"'; $s3 = '';
-								$dqty = round($r->dqty1,2);
+								$s1 = 'style="color:#f00"'; $s3 = ''; $dqty = round($r->dqty1,2);
 							}
 							if($r->dsatuan == 'TERKECIL'){
-								$s1 = ''; $s3 = 'style="color:#f00"';
-								$dqty = round($r->dqty3,2);
+								$s1 = ''; $s3 = 'style="color:#f00"'; $dqty = round($r->dqty3,2);
 							}
-							$tdPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"><div '.$s1.'>TERBESAR</div><div '.$s3.'>TERKECIL</div></div></td>
-							<td style="padding:6px;text-align:right;font-weight:bold"><div class="hitungqty'.$i.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></div></td>
-							<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></div></td>';
+							if($jenis == 'opb'){
+								$tdPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"><div '.$s1.'>TERBESAR</div><div '.$s3.'>TERKECIL</div></div></td>
+								<td style="padding:6px;text-align:right;font-weight:bold"><div class="hitungqty'.$i.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></div></td>
+								<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></div></td>';
+							}else{
+								$tdPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"></div></td>
+								<td style="padding:6px;font-weight:bold"><div class="hitungqty'.$i.'"></div></td>
+								<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"></div></td>';
+							}
 							if($jenis == 'opb'){
 								$htmlSat .= $tdPgd;
 							}else{
@@ -1265,20 +1281,23 @@ class Transaksi extends CI_Controller
 						}
 						if($r->p_satuan == 3){
 							if($r->dsatuan == 'TERBESAR'){
-								$s1 = 'style="color:#f00"'; $s2 = ''; $s3 = '';
-								$dqty = round($r->dqty1,2);
+								$s1 = 'style="color:#f00"'; $s2 = ''; $s3 = ''; $dqty = round($r->dqty1,2);
 							}
 							if($r->dsatuan == 'TENGAH'){
-								$s1 = ''; $s2 = 'style="color:#f00"'; $s3 = '';
-								$dqty = round($r->dqty2,2);
+								$s1 = ''; $s2 = 'style="color:#f00"'; $s3 = ''; $dqty = round($r->dqty2,2);
 							}
 							if($r->dsatuan == 'TERKECIL'){
-								$s1 = ''; $s2 = ''; $s3 = 'style="color:#f00"';
-								$dqty = round($r->dqty3,2);
+								$s1 = ''; $s2 = ''; $s3 = 'style="color:#f00"'; $dqty = round($r->dqty3,2);
 							}
-							$tdPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"><div '.$s1.'>TERBESAR</div><div '.$s2.'>TENGAH</div><div '.$s3.'>TERKECIL</div></div></td>
-							<td style="padding:6px;text-align:right;font-weight:bold"><div class="hitungqty'.$i.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s2.'>'.round($r->dqty2,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></div></td>
-							<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s2.'>'.$r->dsatuan2.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></div></td>';
+							if($jenis == 'opb'){
+								$tdPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"><div '.$s1.'>TERBESAR</div><div '.$s2.'>TENGAH</div><div '.$s3.'>TERKECIL</div></div></td>
+								<td style="padding:6px;text-align:right;font-weight:bold"><div class="hitungqty'.$i.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s2.'>'.round($r->dqty2,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></div></td>
+								<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s2.'>'.$r->dsatuan2.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></div></td>';
+							}else{
+								$tdPgd = '<td style="padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"></div></td>
+								<td style="padding:6px;font-weight:bold"><div class="hitungqty'.$i.'"></div></td>
+								<td style="padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"></div></td>';
+							}
 							if($jenis == 'opb'){
 								$htmlSat .= $tdPgd;
 							}else{
@@ -1286,74 +1305,6 @@ class Transaksi extends CI_Controller
 								<td style="padding:6px;text-align:right'.$fwb.'"><div '.$s1.'>'.round($r->dqty1,2).'</div><div '.$s2.'>'.round($r->dqty2,2).'</div><div '.$s3.'>'.round($r->dqty3,2).'</div></td>
 								<td style="padding:6px'.$fwb.'"><div '.$s1.'>'.$r->dsatuan1.'</div><div '.$s2.'>'.$r->dsatuan2.'</div><div '.$s3.'>'.$r->dsatuan3.'</div></td>';
 							}
-						}
-						// CEK OPB YANG SUDAH DI BAPB
-						$htmlBapb = '';
-						$cekBapb = $this->db->query("SELECT*FROM trs_bapb WHERE id_opbd='$r->id_opbd' ORDER BY tgl_bapb");
-						if($cekBapb->num_rows() != 0){
-							$xx = 0;
-							$sum1 = 0;
-							$sum2 = 0;
-							$sum3 = 0;
-							foreach($cekBapb->result() as $p){
-								$xx++;
-								$sum1 += ($p->bqty1 == null) ? 0 : round($p->bqty1,2);
-								$sum2 += ($p->bqty2 == null) ? 0 : round($p->bqty2,2);
-								$sum3 += ($p->bqty3 == null) ? 0 : round($p->bqty3,2);
-								// QTY DAN SATUAN
-								if($p->b_satuan == 1){
-									$tdQtySatBapb = '';
-								}
-								if($p->b_satuan == 2){
-									$tdQtySatBapb = '';
-								}
-								if($p->b_satuan == 3){
-									if($p->bsatuan == 'TERBESAR'){
-										$p1 = 'style="color:#f00"'; $p2 = ''; $p3 = '';
-										$pqty = round($p->bqty1,2);
-									}
-									if($p->bsatuan == 'TENGAH'){
-										$p1 = ''; $p2 = 'style="color:#f00"'; $p3 = '';
-										$pqty = round($p->bqty2,2);
-									}
-									if($p->bsatuan == 'TERKECIL'){
-										$p1 = ''; $p2 = ''; $p3 = 'style="color:#f00"';
-										$pqty = round($p->bqty3,2);
-									}
-									$tdQtySatBapb = '<td style="padding:6px;text-align:right">'.$pqty.'</td>
-									<td style="padding:6px"><div '.$p1.'>TERBESAR</div><div '.$p2.'>TENGAH</div><div '.$p3.'>TERKECIL</div></td>
-									<td style="padding:6px;text-align:right"><div '.$p1.'>'.round($p->bqty1,2).'</div><div '.$p2.'>'.round($p->bqty2,2).'</div><div '.$p3.'>'.round($p->bqty3,2).'</div></td>
-									<td style="padding:6px"><div '.$p1.'>'.$p->bsatuan1.'</div><div '.$p2.'>'.$p->bsatuan2.'</div><div '.$p3.'>'.$p->bsatuan3.'</div></td>';
-								}
-								$htmlBapb .= '<tr>
-									<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
-								</tr>
-								<tr>
-									<td style="padding:6px;font-weight:bold;text-align:right" colspan="'.$cz.'">'.$xx.'.</td>
-									<td style="padding:6px;font-weight:bold" colspan="3">'.$this->m_fungsi->tanggal_format_indonesia($p->tgl_bapb).'</td>
-									<td style="padding:6px;font-weight:bold">'.$p->bsatuan.'</td>
-									'.$tdQtySatBapb.'
-								</tr>';
-							}
-							// TOTAL / KEKURANGAN
-							if($p->b_satuan == 1){
-								$tdTotQtySatBapb = '';
-							}
-							if($p->b_satuan == 2){
-								$tdTotQtySatBapb = '';
-							}
-							if($p->b_satuan == 3){
-								$tdTotQtySatBapb = '<td style="padding:6px"><div>TERBESAR</div><div>TENGAH</div><div>TERKECIL</div></td>
-								<td style="padding:6px;text-align:right"><div>'.round($sum1,2).'</div><div>'.round($sum2,2).'</div><div>'.round($sum3,2).'</div></td>
-								<td style="padding:6px"><div>'.$p->bsatuan1.'</div><div>'.$p->bsatuan2.'</div><div>'.$p->bsatuan3.'</div></td>';
-							}
-							$htmlBapb .= '<tr>
-								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
-							</tr>
-							<tr>
-								<td style="padding:6px;text-align:right;font-weight:bold" colspan="11">KEKURANGAN</td>
-								'.$tdTotQtySatBapb.'
-							</tr>';
 						}
 						// VIEW DAN EDIT
 						($r->dharga == null) ? $harga = 0 : $harga = number_format($r->dharga,0,',','.');
@@ -1411,16 +1362,21 @@ class Transaksi extends CI_Controller
 							// PILIH SATUAN DAN QTY
 							$htmlPlhSatuan = '';
 							foreach($st as $t){
-								($r->dsatuan == $t) ? $slt = 'selected' : $slt = '';
-								$htmlPlhSatuan .= '<option value="'.$t.'" '.$slt.'>'.$t.'</option>';
+								if($jenis == 'opb'){
+									($r->dsatuan == $t) ? $slt = ' selected' : $slt = '';
+								}else{
+									$slt = '';
+								}
+								$htmlPlhSatuan .= '<option value="'.$t.'"'.$slt.'>'.$t.'</option>';
 							}
+							($jenis == 'opb') ? $vdgty = $dqty : $vdgty = '';
 							$tdSatuan = '<td style="padding:6px;text-align:center">
 								<select id="plh_satuan'.$i.'" class="form-control" style="padding:3px;width:100%" onchange="pilihSatuan('."'".$i."'".')">
 									'.$htmlPlhSatuan.'
 								</select>
 							</td>
 							<td style="padding:6px;text-align:center">
-								<input type="number" id="qty'.$i.'" class="form-control" style="width:60px;padding:3px 4px;text-align:right" value="'.$dqty.'" onkeyup="pengadaaan('."'".$i."'".')">
+								<input type="number" id="qty'.$i.'" class="form-control" style="width:60px;padding:3px 4px;text-align:right" value="'.$vdgty.'" onkeyup="pengadaaan('."'".$i."'".')">
 							</td>';
 							$htmlTdSatQty = '';
 							if($jenis == 'opb'){
@@ -1435,14 +1391,20 @@ class Transaksi extends CI_Controller
 								$sup = $this->db->query("SELECT*FROM m_supplier ORDER BY nm_supp");
 								$optSup = '';
 								foreach($sup->result() as $s){
-									($s->id_supp == $r->id_supplier) ? $slp = 'selected' : $slp = '';
-									$optSup .= '<option value="'.$s->id_supp.'" '.$slp.'>'.$s->nm_supp.'</option>';
+									if($jenis == 'opb'){
+										($s->id_supp == $r->id_supplier) ? $slp = ' selected' : $slp = '';
+									}else{
+										$slp = '';
+									}
+									$optSup .= '<option value="'.$s->id_supp.'"'.$slp.'>'.$s->nm_supp.'</option>';
 								}
+								($jenis == 'opb') ? $tharga = $harga : $tharga = '';
+								($jenis == 'opb') ? $tjumlah = number_format($jumlah,0,',','.') : $tjumlah = 0;
 								$tdSup = '<td style="padding:6px">
-									<input type="text" id="harga_opb'.$i.'" class="form-control" style="width:120px;padding:3px 4px;text-align:right" value="'.$harga.'" autocomplete="off" onkeyup="hargaOPB('."'".$i."'".')" placeholder="0">
+									<input type="text" id="harga_opb'.$i.'" class="form-control" style="width:120px;padding:3px 4px;text-align:right" value="'.$tharga.'" autocomplete="off" onkeyup="hargaOPB('."'".$i."'".')" placeholder="0">
 								</td>
 								<td style="padding:6px">
-									<input type="text" id="jumlah_opb'.$i.'" class="form-control" style="width:120px;padding:3px 4px;color:#000;background:none;border:0;font-weight:bold;text-align:right" value="'.number_format($jumlah,0,',','.').'" disabled>
+									<input type="text" id="jumlah_opb'.$i.'" class="form-control" style="width:120px;padding:3px 4px;color:#000;background:none;border:0;font-weight:bold;text-align:right" value="'.$tjumlah.'" disabled>
 								</td>
 								<td style="padding:6px">
 									<select id="plh_supplier'.$i.'" class="form-control select2">
@@ -1475,8 +1437,9 @@ class Transaksi extends CI_Controller
 							}
 							// KETERANGAN
 							$htmlKet = '';
+							($jenis == 'opb') ? $tketpgd = $r->ket_pengadaan : $tketpgd = '';
 							$tdKet = '<td style="padding:6px">
-								<textarea id="ket_pengadaan'.$i.'" class="form-control" style="padding:3px 4px;resize:none" rows="2" placeholder="-" oninput="this.value=this.value.toUpperCase()">'.$r->ket_pengadaan.'</textarea>
+								<textarea id="ket_pengadaan'.$i.'" class="form-control" style="padding:3px 4px;resize:none" rows="2" placeholder="-" oninput="this.value=this.value.toUpperCase()">'.$tketpgd.'</textarea>
 							</td>';
 							if($jenis == 'opb'){
 								$htmlKet .= $tdKet;
@@ -1492,8 +1455,12 @@ class Transaksi extends CI_Controller
 							$optBagian = '';
 							$optBagian .= '<option value="">PILIH</option>';
 							foreach($bagian->result() as $b){
-								($r->kode_bagian == $b->kode_departemen) ? $slb = 'selected' : $slb = '';
-								$optBagian .= '<option value="'.$b->kode_departemen.'" '.$slb.'>'.$b->nama.'</option>';
+								if($jenis == 'opb'){
+									($r->kode_bagian == $b->kode_departemen) ? $slb = ' selected' : $slb = '';
+								}else{
+									$slb = '';
+								}
+								$optBagian .= '<option value="'.$b->kode_departemen.'"'.$slb.'>'.$b->nama.'</option>';
 							}
 							$htmlBagian = '';
 							$tdBagian = '<td style="padding:6px">
@@ -1521,11 +1488,7 @@ class Transaksi extends CI_Controller
 						}
 						$htmlDetail .= '<tr>
 							'.$tdKode.'
-							<td style="padding:6px">
-								<input type="hidden" id="h_qty_'.$i.'" value="'.$dqty.'">
-								<input type="hidden" id="h_harga_'.$i.'" value="'.$r->dharga.'">
-								'.$r->nm_barang.'
-							</td>
+							<td style="padding:6px">'.$r->nm_barang.'</td>
 							<td style="padding:6px">'.$r->jenis_tipe.'</td>
 							<td style="padding:6px">'.$r->material.'</td>
 							<td style="padding:6px">'.$r->size.'</td>
@@ -1533,10 +1496,119 @@ class Transaksi extends CI_Controller
 							'.$tdSat.$htmlTdSatQty.$htmlSat.$htmlSup.$htmlKet.$htmlBagian.$htmlAksi.'
 						</tr>';
 						// TAMPIL OPB YANG SUDAH BAPB
-						// $htmlDetail .= $htmlBapb;
+						$htmlBapb = '';
+						$cekBapb = $this->db->query("SELECT s.nm_supp,d.nama,b.* FROM trs_bapb b
+						INNER JOIN m_supplier s ON b.bid_supplier=s.id_supp
+						INNER JOIN m_departemen d ON b.bkode_bagian=d.kode
+						WHERE b.id_opbd='$r->id_opbd' ORDER BY b.tgl_bapb");
+						if($cekBapb->num_rows() != 0){
+							$sum1 = 0; $sum2 = 0; $sum3 = 0;
+							foreach($cekBapb->result() as $p){
+								$sum1 += ($p->bqty1 == null) ? 0 : round($p->bqty1,2);
+								$sum2 += ($p->bqty2 == null) ? 0 : round($p->bqty2,2);
+								$sum3 += ($p->bqty3 == null) ? 0 : round($p->bqty3,2);
+								// QTY DAN SATUAN
+								if($p->b_satuan == 1){
+									$bqty = round($p->bqty3,2);
+									$tdQtySatBapb = '<td style="padding:6px;color:#f00">TERKECIL</td>
+									<td style="padding:6px;color:#f00;text-align:right">'.round($p->bqty3,2).'</td>
+									<td style="padding:6px;color:#f00">'.$p->bsatuan3.'</td>';
+								}
+								if($p->b_satuan == 2){
+									if($p->bsatuan == 'TERBESAR'){
+										$p1 = 'style="color:#f00"'; $p3 = ''; $bqty = round($p->bqty1,2);
+									}
+									if($p->bsatuan == 'TERKECIL'){
+										$p1 = ''; $p3 = 'style="color:#f00"'; $bqty = round($p->bqty3,2);
+									}
+									$tdQtySatBapb = '<td style="padding:6px"><div '.$p1.'>TERBESAR</div><div '.$p3.'>TERKECIL</div></td>
+									<td style="padding:6px;text-align:right"><div '.$p1.'>'.round($p->bqty1,2).'</div><div '.$p3.'>'.round($p->bqty3,2).'</div></td>
+									<td style="padding:6px"><div '.$p1.'>'.$p->bsatuan1.'</div><div '.$p3.'>'.$p->bsatuan3.'</div></td>';
+								}
+								if($p->b_satuan == 3){
+									if($p->bsatuan == 'TERBESAR'){
+										$p1 = 'style="color:#f00"'; $p2 = ''; $p3 = ''; $bqty = round($p->bqty1,2);
+									}
+									if($p->bsatuan == 'TENGAH'){
+										$p1 = ''; $p2 = 'style="color:#f00"'; $p3 = ''; $bqty = round($p->bqty2,2);
+									}
+									if($p->bsatuan == 'TERKECIL'){
+										$p1 = ''; $p2 = ''; $p3 = 'style="color:#f00"'; $bqty = round($p->bqty3,2);
+									}
+									$tdQtySatBapb = '<td style="padding:6px"><div '.$p1.'>TERBESAR</div><div '.$p2.'>TENGAH</div><div '.$p3.'>TERKECIL</div></td>
+									<td style="padding:6px;text-align:right"><div '.$p1.'>'.round($p->bqty1,2).'</div><div '.$p2.'>'.round($p->bqty2,2).'</div><div '.$p3.'>'.round($p->bqty3,2).'</div></td>
+									<td style="padding:6px"><div '.$p1.'>'.$p->bsatuan1.'</div><div '.$p2.'>'.$p->bsatuan2.'</div><div '.$p3.'>'.$p->bsatuan3.'</div></td>';
+								}
+								// JUMLAH
+								$pJumlah = $bqty * $p->bharga;
+								// KETERANGAN
+								($p->bket_pengadaan == null) ? $bket_pengadaan = '-' : $bket_pengadaan = $p->bket_pengadaan;
+								// AKSI
+								if($opsi == 'edit'){
+									$aksiBAPB = '<td style="padding:6px;text-align:center">
+										<button type="button" class="btn btn-sm" onclick="hapusBAPB('."'".$p->id_bapb."'".')"><i class="fas fa-times-circle" style="color:#f00"></i></button>
+									</td>';
+								}else{
+									$aksiBAPB = '';
+								}
+								$htmlBapb .= '<tr>
+									<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
+								</tr>
+								<tr style="font-style:italic">
+									<td style="padding:6px;font-weight:bold;text-align:right" colspan="'.$cz.'">-</td>
+									<td style="padding:6px" colspan="2">'.$this->m_fungsi->haru($p->tgl_bapb).', '.$this->m_fungsi->tanggal_format_indonesia($p->tgl_bapb).'</td>
+									'.$tdQtySatBapb.'
+									<td style="padding:6px;text-align:right">'.number_format($p->bharga,0,',','.').'</td>
+									<td style="padding:6px;text-align:right">'.number_format($pJumlah,0,',','.').'</td>
+									<td style="padding:6px">'.$p->nm_supp.'</td>
+									<td style="padding:6px">'.$bket_pengadaan.'</td>
+									<td style="padding:6px">'.$p->nama.'</td>
+									'.$aksiBAPB.'
+								</tr>';
+							}
+							// TOTAL / KEKURANGAN
+							if($p->b_satuan == 1){
+								$hitSum3 = round($sum3,2) - round($r->dqty3,2);
+								($hitSum3 > 0) ? $thitSum3 = '+'.round($hitSum3,2) : $thitSum3 = round($hitSum3,2);
+								$tdTotQtySatBapb = '<td style="padding:6px;font-weight:bold"><div>TERKECIL</div></td>
+								<td style="padding:6px;font-weight:bold;text-align:right"><div>'.$thitSum3.'</div></td>
+								<td style="padding:6px;font-weight:bold"><div>'.$p->bsatuan3.'</div></td>';
+							}
+							if($p->b_satuan == 2){
+								$hitSum1 = round($sum1,2) - round($r->dqty1,2);
+								$hitSum3 = round($sum3,2) - round($r->dqty3,2);
+								($hitSum1 > 0) ? $thitSum1 = '+'.round($hitSum1,2) : $thitSum1 = round($hitSum1,2);
+								($hitSum3 > 0) ? $thitSum3 = '+'.round($hitSum3,2) : $thitSum3 = round($hitSum3,2);
+								$tdTotQtySatBapb = '<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TERKECIL</div></td>
+								<td style="padding:6px;font-weight:bold;text-align:right"><div>'.$thitSum1.'</div><div>'.$thitSum3.'</div></td>
+								<td style="padding:6px;font-weight:bold"><div>'.$p->bsatuan1.'</div><div>'.$p->bsatuan3.'</div></td>';
+							}
+							if($p->b_satuan == 3){
+								$hitSum1 = round($sum1,2) - round($r->dqty1,2);
+								$hitSum2 = round($sum2,2) - round($r->dqty2,2);
+								$hitSum3 = round($sum3,2) - round($r->dqty3,2);
+								($hitSum1 > 0) ? $thitSum1 = '+'.round($hitSum1,2) : $thitSum1 = round($hitSum1,2);
+								($hitSum2 > 0) ? $thitSum2 = '+'.round($hitSum2,2) : $thitSum2 = round($hitSum2,2);
+								($hitSum3 > 0) ? $thitSum3 = '+'.round($hitSum3,2) : $thitSum3 = round($hitSum3,2);
+								$tdTotQtySatBapb = '<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TENGAH</div><div>TERKECIL</div></td>
+								<td style="padding:6px;font-weight:bold;text-align:right"><div>'.$thitSum1.'</div><div>'.$thitSum2.'</div><div>'.$thitSum3.'</div></td>
+								<td style="padding:6px;font-weight:bold"><div>'.$p->bsatuan1.'</div><div>'.$p->bsatuan2.'</div><div>'.$p->bsatuan3.'</div></td>';
+							}
+							($opsi == 'view') ? $xz = 5 : $xz = 11;
+							($opsi == 'view') ? $zx = 5 : $zx = 6;
+							$htmlBapb .= '<tr>
+								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
+							</tr>
+							<tr style="font-style:italic">
+								<td style="padding:6px" colspan="'.$xz.'"></td>
+								'.$tdTotQtySatBapb.'
+								<td style="padding:6px" colspan="'.$zx.'"></td>
+							</tr>';
+						}
+						$htmlDetail .= $htmlBapb;
 						// BAPB
 						if($jenis == 'bapb' && $opsi == 'edit'){
-							$htmlDetail .= $htmlBapb.'<tr>
+							$htmlDetail .= '<tr>
 								<td style="padding:2px;border:0" colspan="'.$cx.'"></td>
 							</tr>
 							<tr>
@@ -1551,7 +1623,7 @@ class Transaksi extends CI_Controller
 							</tr>';
 						}
 						if($detail->num_rows() != $i){
-							($jenis == 'bapb' && $opsi == 'edit') ? $bgb = ';background:#828282' : $bgb = '';
+							($jenis == 'bapb') ? $bgb = ';background:#828282' : $bgb = '';
 							$htmlDetail .= '<tr>
 								<td style="padding:2px;border:0'.$bgb.'" colspan="'.$cx.'"></td>
 							</tr>';
@@ -1572,8 +1644,7 @@ class Transaksi extends CI_Controller
 						<tr>
 							<td style="padding:6px;font-weight:bold;text-align:right" colspan="'.$cs.'">TOTAL</td>
 							<td style="padding:6px;font-weight:bold;text-align:right">
-								<input type="hidden" id="h_total" value="'.$subTotal.'">
-								<input type="text" id="total_opb" class="form-control" style="padding:0;color:#000;height:23px;background:none;border:0;font-weight:bold;text-align:right" value="'.number_format($subTotal,0,',','.').'" disabled>
+								<input type="text" class="form-control" style="padding:0;color:#000;height:23px;background:none;border:0;font-weight:bold;text-align:right" value="'.number_format($subTotal,0,',','.').'" disabled>
 							</td>
 							<td style="padding:6px" colspan="'.$c2.'"></td>
 						</tr>';
