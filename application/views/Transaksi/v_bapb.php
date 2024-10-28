@@ -185,6 +185,35 @@
 		})
 	}
 
+	function pilihBarangBAPB(i)
+	{
+		let id_mbh = $("#h_id_mbh"+i).val()
+		let id_mbd = $("#id_mbd_BAPB_"+i).val()
+		$.ajax({
+			url: '<?php echo base_url('Transaksi/pilihBarangBAPB')?>',
+			type: "POST",
+			data: ({ id_mbh, id_mbd }),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+				$("#h_id_mbh"+i).val(data.barang.id_mbh)
+				$("#h_id_mbd"+i).val(data.barang.id_mbd)
+				$("#h_satuan"+i).val(data.barang.p_satuan)
+				$("#h_qty1_"+i).val(data.barang.qty1)
+				$("#h_qty2_"+i).val(data.barang.qty2)
+				$("#h_qty3_"+i).val(data.barang.qty3)
+				$("#h_satuan1_"+i).val(data.barang.satuan1)
+				$("#h_satuan2_"+i).val(data.barang.satuan2)
+				$("#h_satuan3_"+i).val(data.barang.satuan3)
+				$(".ptd1_"+i).html(data.td1)
+				$(".ptd2_"+i).html(data.td2)
+				$(".ptd3_"+i).html(data.td3)
+				$("#plh_satuan"+i).html(data.optSatuan)
+				pilihSatuan(i)
+			}
+		})
+	}
+
 	function pilihSatuan(i)
 	{
 		$("#qty"+i).val('')
@@ -304,16 +333,17 @@
 		let plh_supplier = $("#plh_supplier"+i).val()
 		let ket_pengadaan = $("#ket_pengadaan"+i).val()
 		let plh_bagian = $("#plh_bagian"+i).val()
+		let app_bapb = $("#app_bapb"+i).val()
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/prosesBAPB')?>',
 			type: "POST",
 			async: false,
 			data: ({
-				kode_dpt, id_opbh, tgl_bapb, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, harga, plh_supplier, ket_pengadaan, plh_bagian
+				kode_dpt, id_opbh, tgl_bapb, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, harga, plh_supplier, ket_pengadaan, plh_bagian, app_bapb
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				if(data.data && data.qrcode){
+				if(data.data && data.qrcode && data.stok){
 					btnDetail(id_opbh, h_ii, 'edit')
 				}else{
 					toastr.error(`<b>${data.msg}</b>`)
@@ -348,5 +378,25 @@
 				}
 			})
 		});
+	}
+
+	function btnQRCode(i)
+	{
+		$(".qrqr").hide()
+		$(".trqr1-"+i).show()
+		$(".trqr2-"+i).show()
+		$(".qrcode-"+i).html('test')
+
+		let h_tr = $("#h_tr").val()
+		if(parseInt(h_tr) == parseInt(i)){
+			$("#h_tr").val("")
+			$(".qrqr").hide()
+		}else{
+			$("#h_tr").val(i)
+			$(".qrqr").hide()
+			$(".trqr1-"+i).show()
+			$(".trqr2-"+i).show()
+			$(".qrcode-"+i).html('test')
+		}
 	}
 </script>

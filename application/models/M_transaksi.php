@@ -1270,19 +1270,24 @@ class M_transaksi extends CI_Model
 		$plh_supplier = $_POST["plh_supplier"];
 		$ket_pengadaan = $_POST["ket_pengadaan"];
 		$plh_bagian = $_POST["plh_bagian"];
+		$app_bapb = $_POST["app_bapb"];
 
 		$dBapb = $this->db->query("SELECT*FROM trs_bapb WHERE tgl_bapb='$tgl_bapb' AND no_opb='$opbh->no_opb' AND id_opbh='$id_opbh' AND id_opbd='$id_opbd' AND id_mbh='$id_mbh' AND id_mbd='$id_mbd'");
 
-		if($qty == 0 || $qty == '' || $qty < 0){
-			$data = false; $qrcode = false; $bapb = ''; $msg = 'HARAP ISI QTY!';
+		if($tgl_bapb == ''){
+			$data = false; $qrcode = false; $stok = false; $bapb = ''; $msg = 'HARAP PILIH TANGGAL!';
+		}else if($qty == 0 || $qty == '' || $qty < 0){
+			$data = false; $qrcode = false; $stok = false; $bapb = ''; $msg = 'HARAP ISI QTY!';
 		}else if($plh_supplier == ''){
-			$data = false; $qrcode = false; $bapb = ''; $msg = 'HARAP PILIH SUPPLIER!';
+			$data = false; $qrcode = false; $stok = false; $bapb = ''; $msg = 'HARAP PILIH SUPPLIER!';
 		}else if($harga == 0 || $harga == '' || !preg_match("/^[0-9]*$/", $harga)){
-			$data = false; $qrcode = false; $bapb = ''; $msg = 'HARAP ISI HARGA!';
+			$data = false; $qrcode = false; $stok = false; $bapb = ''; $msg = 'HARAP ISI HARGA!';
 		}else if($plh_bagian == ''){
-			$data = false; $qrcode = false; $bapb = ''; $msg = 'HARAP PILIH BAGIAN!';
+			$data = false; $qrcode = false; $stok = false; $bapb = ''; $msg = 'HARAP PILIH BAGIAN!';
+		}else if($app_bapb == ''){
+			$data = false; $qrcode = false; $stok = false; $bapb = ''; $msg = 'HARAP PILIH STATUS!';
 		}else if($dBapb->num_rows() != 0){
-			$data = false; $qrcode = false; $bapb = ''; $msg = 'DATA SUDAH ADA!';
+			$data = false; $qrcode = false; $stok = false; $bapb = ''; $msg = 'DATA SUDAH ADA!';
 		}else{
 			$barang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
 			// SATUAN
@@ -1305,7 +1310,7 @@ class M_transaksi extends CI_Model
 				'id_opbd' => $id_opbd,
 				'id_mbh' => $id_mbh,
 				'id_mbd' => $id_mbd,
-				'status_opbd' => 'Open',
+				'status_bapb' => 'Open',
 				'bkode_dpt' => $kode_dpt,
 				'bkode_bagian' => $plh_bagian,
 				'bid_supplier' => ($plh_supplier == '') ? null : $plh_supplier,
@@ -1318,12 +1323,14 @@ class M_transaksi extends CI_Model
 				'bsatuan2' => $satuan2,
 				'bqty3' => $qty3,
 				'bsatuan3' => $satuan3,
+				'acc_bapb' => $app_bapb,
 				'bket_pengadaan' => ($ket_pengadaan == '') ? null : $ket_pengadaan,
 				'creat_by' => $this->username,
 				'creat_at' => date('Y-m-d H:i:s'),
 			];
 			$data = $this->db->insert('trs_bapb', $bapb);
-			if($data){
+			if($data && $app_bapb == 'STOK'){
+				// MEMBUAT QRCODE
 				$qBapb = $this->db->query("SELECT*FROM trs_bapb WHERE tgl_bapb='$tgl_bapb' AND no_opb='$opbh->no_opb' AND id_opbh='$id_opbh' AND id_opbd='$id_opbd' AND id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
 				$qrcode_data = $this->generateDataQRCode();
 				$datacode = [
@@ -1332,8 +1339,39 @@ class M_transaksi extends CI_Model
 					'qrcode_data' => $qrcode_data,
 				];
 				$qrcode = $this->db->insert('m_qrcode', $datacode);
+				if($qrcode){
+					// INPUT KE STOK
+					$qQRcode = $this->db->query("SELECT*FROM m_qrcode WHERE id_bapb='$qBapb->id_bapb'")->row();
+					$dataStok = [
+						'no_opb' => $opbh->no_opb,
+						'id_opbh' => $id_opbh,
+						'id_opbd' => $id_opbd,
+						'id_bapb' => $qBapb->id_bapb,
+						'id_mbh' => $id_mbh,
+						'id_mbd' => $id_mbd,
+						'id_qrcode' => $qQRcode->id_qrcode,
+						'status_stok' => 'Open',
+						'skode_dpt' => $kode_dpt,
+						'skode_bagian' => $plh_bagian,
+						'sid_supplier' => ($plh_supplier == '') ? null : $plh_supplier,
+						'sharga' => ($harga == '' || $harga == 0) ? null : $harga,
+						's_satuan' => $barang->p_satuan,
+						'ssatuan' => $plh_satuan,
+						'sqty1' => $qty1,
+						'ssatuan1' => $satuan1,
+						'sqty2' => $qty2,
+						'ssatuan2' => $satuan2,
+						'sqty3' => $qty3,
+						'ssatuan3' => $satuan3,
+						'creat_by' => $this->username,
+						'creat_at' => date('Y-m-d H:i:s'),
+					];
+					$stok = $this->db->insert('m_stok', $dataStok);
+				}else{
+					$stok = true;
+				}
 			}else{
-				$qrcode = false;
+				$qrcode = true; $stok = true;
 			}
 			$msg = 'OK!';
 		}
@@ -1342,6 +1380,7 @@ class M_transaksi extends CI_Model
 			'bapb' => $bapb,
 			'msg' => $msg,
 			'qrcode' => $qrcode,
+			'stok' => $stok,
 		];
 	}
 
