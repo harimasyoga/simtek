@@ -1439,7 +1439,7 @@ class M_transaksi extends CI_Model
 		$config['white'] = array(70, 130, 180);
 		$this->ciqrcode->initialize($config);
 		$image_name = $qr_code.'.png';
-		$params['data'] = base_url('Transaksi/Bapb/').$qr_code;
+		$params['data'] = base_url('Qrcode?v=').$qr_code;
 		$params['level'] = 'H';
 		$params['size'] = 10;
 		$params['savename'] = $directory.'/'.$image_name;

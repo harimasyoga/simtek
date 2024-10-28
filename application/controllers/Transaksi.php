@@ -1502,9 +1502,8 @@ class Transaksi extends CI_Controller
 						INNER JOIN m_departemen d ON b.bkode_bagian=d.kode
 						WHERE b.id_opbd='$r->id_opbd' ORDER BY b.tgl_bapb");
 						if($cekBapb->num_rows() != 0){
-							$x = 0; $sum1 = 0; $sum2 = 0; $sum3 = 0;
+							$sum1 = 0; $sum2 = 0; $sum3 = 0;
 							foreach($cekBapb->result() as $p){
-								$x++;
 								$sum1 += ($p->bqty1 == null) ? 0 : round($p->bqty1,2);
 								$sum2 += ($p->bqty2 == null) ? 0 : round($p->bqty2,2);
 								$sum3 += ($p->bqty3 == null) ? 0 : round($p->bqty3,2);
@@ -1554,6 +1553,7 @@ class Transaksi extends CI_Controller
 									$aksiBAPB = '';
 								}
 								($opsi == 'view') ? $cz = 3 : $cz = 9;
+								$x = ((rand(50, 100) * rand(1, 10)) - rand(1, 50)) + rand(1, 50);
 								($p->acc_bapb == 'STOK') ? $btnQrc = '<button type="button" class="btn btn-sm btn-light" onclick="btnQRCode('."'".$x."'".')"><i class="fas fa-qrcode" style="color:#000"></i></button>' : $btnQrc = '-';
 								if($r->id_mbd != $p->id_mbd){
 									if($opsi == 'view'){

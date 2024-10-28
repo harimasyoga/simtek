@@ -957,344 +957,52 @@ class Logistik extends CI_Controller
 		}
 	}
 
-	//
-
-	function Gudang()
+	function Stok()
 	{
 		$data_header = array(
-			'judul' => "Gudang",
+			'judul' => "Stok",
 		);
-
 		$this->load->view('header', $data_header);
-
-		$jenis = $this->uri->segment(3);
-		if($jenis == 'Add'){
-			if(in_array($this->session->userdata('level'), ['Admin','Gudang'])){
-				$this->load->view('Logistik/v_gudang_add');
-			}else{
-				$this->load->view('home');
-			}
-		}else{
-			if(in_array($this->session->userdata('level'), ['Admin', 'Gudang'])){
-				$this->load->view('Logistik/v_gudang');
-			}else{
-				$this->load->view('home');
-			}
-		}
-
-
+		$this->load->view('Logistik/v_stok');
 		$this->load->view('footer');
 	}
 
-	function loadGudang()
+	function loadDataStok()
 	{
-		$result = $this->m_logistik->loadGudang();
-		echo json_encode($result);
-	}
-
-	function simpanGudang()
-	{
-		$result = $this->m_logistik->simpanGudang();
-		echo json_encode($result);
-	}
-
-	function plhListPlan()
-	{
-		$html = '';
-		$opsi = $_POST["opsi"];
-		$id_pelanggan = $_POST["id_pelanggan"];
-		if($opsi == 'cor'){
-			$where = "WHERE g.gd_id_plan_cor!='0' AND g.gd_id_plan_flexo IS NULL AND g.gd_id_plan_finishing IS NULL";
-		}else if($opsi == 'flexo'){
-			$where = "WHERE g.gd_id_plan_cor!='0' AND g.gd_id_plan_flexo!='0' AND g.gd_id_plan_finishing IS NULL";
-		}else if($opsi == 'finishing'){
-			$where = "WHERE g.gd_id_plan_cor!='0' AND g.gd_id_plan_flexo!='0' AND g.gd_id_plan_finishing!='0'";
-		}else{
-			$where = "";
-		}
-
-		$data = $this->db->query("SELECT p.nm_pelanggan,g.* FROM m_gudang g
-		INNER JOIN m_pelanggan p ON g.gd_id_pelanggan=p.id_pelanggan
-		$where
-		GROUP BY p.nm_pelanggan");
-
-		$html .= '<table class="table table-bordered" style="margin:0;border:0">
-			<thead>';
-				foreach($data->result() as $r){
-					if($id_pelanggan == $r->gd_id_pelanggan){
-						$bgTd = 'class="h-tlp-td"';
-					}else{
-						$bgTd = 'class="h-tlpf-td"';
-					}
-
-					$html .= '<tr>
-						<td '.$bgTd.' style="padding:6px;border-width:0 0 1px">
-							<a href="javascript:void(0)" onclick="plhListPlan('."'".$opsi."'".','."'".$r->gd_id_pelanggan."'".')">'.$r->nm_pelanggan.'</a>
-						</td>
-					</tr>';
+		$data = array();
+		$query = $this->db->query("SELECT h.nm_barang,d.kode_barang,d.jenis_tipe,d.material,d.size,d.merk,s.* FROM m_stok s
+		INNER JOIN m_barang_detail d ON s.id_mbh=d.id_mbh AND s.id_mbd=d.id_mbd
+		INNER JOIN m_barang_header h ON s.id_mbh=h.id_mbh
+		WHERE s.status_stok='Open'
+		GROUP BY s.id_mbh,s.id_mbd
+		ORDER BY h.nm_barang,d.kode_barang,d.jenis_tipe,d.material,d.size,d.merk")->result();
+			$i = 0;
+			foreach ($query as $r) {
+				$i++;
+				$row = array();
+				$row[] = '<div class="text-center">'.$i.'</div>';
+				$row[] = $r->kode_barang;
+				$row[] = $r->nm_barang;
+				$row[] = $r->jenis_tipe;
+				$row[] = $r->material;
+				$row[] = $r->size;
+				$row[] = $r->merk;
+				// NO. OPB
+				$no_opb = $this->db->query("SELECT no_opb FROM trs_opb_detail WHERE id_mbh='$r->id_mbh' AND id_mbd='$r->id_mbd' GROUP BY no_opb");
+				$htmlNoOPB = '';
+				foreach($no_opb->result() as $o){
+					$htmlNoOPB .= '<div>'.$o->no_opb.'</div>';
 				}
-			$html .= '</thead>
-		</table>';
-
-		echo $html;
-	}
-
-	function loadListProduksiPlan()
-	{
-		$html = '';
-		$opsi = $_POST["opsi"];
-		$id_pelanggan = $_POST["id_pelanggan"];
-		$id_produk = $_POST["id_produk"];
-		$data = $this->m_logistik->loadListProduksiPlan();
-
-		if($data->num_rows() == 0){
-			$html .='LIST';
-		}else{
-			$html .= '<div id="accordion">
-				<div class="card m-0" style="border-radius:0">';
-					$i = 0;
-					foreach($data->result() as $r){
-						$i++;
-						$html .= '<div class="card-header" style="padding:0;border-radius:0">
-							<a class="d-block w-100" style="font-weight:bold;padding:6px" data-toggle="collapse" href="#collapse'.$i.'" onclick="clickHasilProduksiPlan('."'".$opsi."'".','."'".$r->gd_id_pelanggan."'".','."'".$r->gd_id_produk."'".','."'".$r->kode_po."'".','."'".$i."'".')">
-								'.$r->kode_po.' <span id="i_span'.$i.'" class="bg-secondary" style="vertical-align:top;font-weight:bold;padding:2px 4px;font-size:12px;border-radius:4px">'.$r->jml_gd.'</span>
-							</a>
-						</div>
-						<div id="collapse'.$i.'" class="collapse" data-parent="#accordion">
-							<div id="isi-list-gudang-'.$i.'" style="padding:3px"></div>
-						</div>';
-					}
-				$html .= '</div>
-			</div>';
-		}
-
-		echo $html;
-	}
-
-	function clickHasilProduksiPlan()
-	{
-		$html = '';
-		$opsi = $_POST["opsi"];
-		$id_pelanggan = $_POST["id_pelanggan"];
-		$id_produk = $_POST["id_produk"];
-		$no_po = $_POST["no_po"];
-		$i = $_POST["i"];
-		$data = $this->m_logistik->clickHasilProduksiPlan();
-
-		$html .='<div style="overflow:auto;white-space:nowrap">
-			<table class="table table-bordered" style="margin:0;border:0;text-align:center">
-				<thead>
-					<tr>
-						<th style="background:#dee2e6;border-bottom:1px solid #bec2c6;padding:6px">PLAN</th>
-						<th style="background:#dee2e6;border-bottom:1px solid #bec2c6;padding:6px">HASIL COR</th>
-						<th style="background:#dee2e6;border-bottom:1px solid #bec2c6;padding:6px 25px">GOOD</th>
-						<th style="background:#dee2e6;border-bottom:1px solid #bec2c6;padding:6px 18px">REJECT</th>
-						<th style="background:#dee2e6;border-bottom:1px solid #bec2c6;padding:6px">AKSI</th>
-					</tr>
-				</thead>';
-				foreach($data->result() as $r){
-					// gd_good_qty  gd_reject_qty  gd_cek_spv
-					
-					if($opsi == 'cor'){
-						$shift = $r->shift_plan;
-						$mesin = str_replace('CORR', '', $r->machine_plan);
-						$tgl = $r->tgl_plan;
-					}else if($opsi == 'flexo'){
-						$shift = $r->shift_flexo;
-						$mesin = str_replace('FLEXO', '', $r->mesin_flexo);
-						$tgl = $r->tgl_flexo;
-					}else{
-						$shift = $r->shift_fs;
-						$mesin = substr($r->joint_fs,0,1);
-						$tgl = $r->tgl_fs;
-					}
-
-					if($r->gd_cek_spv == 'Open'){
-						$btnAksi = '<button type="button" id="simpan_gudang'.$r->id_gudang.'" class="btn btn-sm btn-success btn-block" style="font-weight:bold" onclick="simpanGudang('."'".$r->id_gudang."'".','."'".$opsi."'".','."'".$id_pelanggan."'".','."'".$id_produk."'".','."'".$no_po."'".','."'".$i."'".')">SIMPAN</button>';
-						$disabledInput = '';
-					}else{
-						$btnAksi = '<button type="button" class="btn btn-sm btn-secondary btn-block" style="font-weight:bold;cursor:default" disabled)">SIMPAN</button>';
-						$disabledInput = 'disabled';
-					}
-
-					$html .= '<tr>
-						<td style="padding:6px;text-align:left">['.$shift.'.'.$mesin.'] '.substr($this->m_fungsi->getHariIni($tgl),0,3).', '.$this->m_fungsi->tglIndSkt($tgl).'</td>
-						<td style="padding:6px">'.number_format($r->gd_hasil_plan,0,",",".").'</td>
-						<td style="padding:6px">
-							<input type="number" class="form-control" id="good-'.$r->id_gudang.'" autocomplete="off" value="'.$r->gd_good_qty.'" onkeyup="hitungGudang('."'".$r->id_gudang."'".')" '.$disabledInput.'>
-						</td>
-						<td style="padding:6px">
-							<input type="number" class="form-control" id="reject-'.$r->id_gudang.'" autocomplete="off" value="'.$r->gd_reject_qty.'" onkeyup="hitungGudang('."'".$r->id_gudang."'".')" '.$disabledInput.'>
-						</td>
-						<td style="padding:6px">'.$btnAksi.'</td>
-					</tr>';
-				}
-			$html .= '</table>
-		</div>';
-
-		echo $html;
-	}
-
-	function timeline()
-	{
-		$html = '';
-		$opsi = $_POST["opsi"];
-		$id_pelanggan = $_POST["id_pelanggan"];
-		$id_produk = $_POST["id_produk"];
-		$no_po = $_POST["no_po"];
-
-		if($opsi == 'cor'){
-			$tgl = $this->db->query("SELECT*FROM m_gudang g
-			INNER JOIN plan_cor c ON g.gd_id_plan_cor=c.id_plan
-			INNER JOIN trs_wo w ON g.gd_id_trs_wo=w.id
-			WHERE g.gd_id_pelanggan='$id_pelanggan' AND g.gd_id_produk='$id_produk' AND w.kode_po='$no_po'
-			AND g.gd_id_plan_cor IS NOT NULL AND g.gd_id_plan_flexo IS NULL AND g.gd_id_plan_finishing IS NULL
-			GROUP BY c.tgl_plan");
-		}else if($opsi == 'flexo'){
-			$tgl = $this->db->query("SELECT*FROM m_gudang g
-			INNER JOIN plan_flexo fx ON g.gd_id_plan_cor=fx.id_plan_cor AND g.gd_id_plan_flexo=fx.id_flexo
-			INNER JOIN trs_wo w ON g.gd_id_trs_wo=w.id
-			WHERE g.gd_id_pelanggan='$id_pelanggan' AND g.gd_id_produk='$id_produk' AND w.kode_po='$no_po'
-			AND g.gd_id_plan_cor IS NOT NULL AND g.gd_id_plan_flexo IS NOT NULL AND g.gd_id_plan_finishing IS NULL
-			GROUP BY fx.tgl_flexo");
-		}else if($opsi == 'finishing'){
-			$tgl = $this->db->query("SELECT*FROM m_gudang g
-			INNER JOIN plan_finishing fs ON g.gd_id_plan_cor=fs.id_plan_cor AND g.gd_id_plan_flexo=fs.id_plan_flexo AND g.gd_id_plan_finishing=fs.id_fs
-			INNER JOIN trs_wo w ON g.gd_id_trs_wo=w.id
-			WHERE g.gd_id_pelanggan='$id_pelanggan' AND g.gd_id_produk='$id_produk' AND w.kode_po='$no_po'
-			AND g.gd_id_plan_cor IS NOT NULL AND g.gd_id_plan_flexo IS NOT NULL AND g.gd_id_plan_finishing IS NOT NULL
-			GROUP BY fs.tgl_fs");
-		}else{
-			$tgl = '';
-		}
-
-		if($tgl == ''){
-			$html .='kosong';
-		}else{
-			$html .='<div class="timeline">';
-				$i = 0;
-				foreach($tgl->result() as $r){
-					$i++;
-
-					if($opsi == 'cor'){
-						$tglList = $r->tgl_plan;
-						$list = $this->db->query("SELECT*FROM m_gudang g
-						INNER JOIN plan_cor c ON g.gd_id_plan_cor=c.id_plan
-						INNER JOIN trs_wo w ON g.gd_id_trs_wo=w.id
-						INNER JOIN m_produk p ON g.gd_id_produk=p.id_produk
-						WHERE g.gd_id_pelanggan='$r->gd_id_pelanggan' AND g.gd_id_produk='$r->gd_id_produk' AND w.kode_po='$r->kode_po' AND c.tgl_plan='$r->tgl_plan'
-						AND g.gd_id_plan_cor IS NOT NULL AND g.gd_id_plan_flexo IS NULL AND g.gd_id_plan_finishing IS NULL
-						ORDER BY c.tgl_plan");
-					}else if($opsi == 'flexo'){
-						$tglList = $r->tgl_flexo;
-						$list = $this->db->query("SELECT*FROM m_gudang g
-						INNER JOIN plan_flexo fx ON g.gd_id_plan_cor=fx.id_plan_cor AND g.gd_id_plan_flexo=fx.id_flexo
-						INNER JOIN trs_wo w ON g.gd_id_trs_wo=w.id
-						INNER JOIN m_produk p ON g.gd_id_produk=p.id_produk
-						WHERE g.gd_id_pelanggan='$r->gd_id_pelanggan' AND g.gd_id_produk='$r->gd_id_produk' AND w.kode_po='$r->kode_po' AND fx.tgl_flexo='$r->tgl_flexo'
-						AND g.gd_id_plan_cor IS NOT NULL AND g.gd_id_plan_flexo IS NOT NULL AND g.gd_id_plan_finishing IS NULL
-						ORDER BY fx.tgl_flexo");
-					}else if($opsi == 'finishing'){
-						$tglList = $r->tgl_fs;
-						$list = $this->db->query("SELECT*FROM m_gudang g
-						INNER JOIN plan_finishing fs ON g.gd_id_plan_cor=fs.id_plan_cor AND g.gd_id_plan_flexo=fs.id_plan_flexo AND g.gd_id_plan_finishing=fs.id_fs
-						INNER JOIN trs_wo w ON g.gd_id_trs_wo=w.id
-						INNER JOIN m_produk p ON g.gd_id_produk=p.id_produk
-						WHERE g.gd_id_pelanggan='$r->gd_id_pelanggan' AND g.gd_id_produk='$r->gd_id_produk' AND w.kode_po='$r->kode_po' AND fs.tgl_fs='$r->tgl_fs'
-						AND g.gd_id_plan_cor IS NOT NULL AND g.gd_id_plan_flexo IS NOT NULL AND g.gd_id_plan_finishing IS NOT NULL
-						ORDER BY fs.tgl_fs");
-					}else{
-						$tglList = '';
-						$list = '';
-					}
-
-					$html .='<div class="time-label" style="margin-right:0">
-						<span class="bg-gradient-red">'.$i.'. '.substr($this->m_fungsi->getHariIni($tglList),0,3).', '.$this->m_fungsi->tglIndSkt($tglList).'</span>
-					</div>';
-
-					$l = 0;
-					foreach($list->result() as $r2){
-						$l++;
-
-						if($opsi == 'cor'){
-							$shift = $r2->shift_plan;
-							$txtMesin = 'MESIN';
-							$mesin = str_replace('CORR', '', $r2->machine_plan);
-						}else if($opsi == 'flexo'){
-							$shift = $r2->shift_flexo;
-							$txtMesin = 'MESIN';
-							$mesin = str_replace('FLEXO', '', $r2->mesin_flexo);
-						}else{
-							$shift = $r2->shift_fs;
-							$txtMesin = 'JOINT';
-							$mesin = $r->joint_fs;
-						}
-
-						($r2->gd_cek_spv == 'Close') ? $bgBlue = 'bg-blue' : $bgBlue = 'bg-secondary';
-						$html .='<div style="margin-right:5px">
-							<i class="fas '.$bgBlue.'">'.$l.'</i>
-							<div class="timeline-item mr-0">
-								<h3 class="timeline-header p-0">
-									<table style="width:100%">
-										<tr>
-											<th colspan="3" style="background:#dee2e6;padding:10px;border-bottom:1px solid #bec2c6">DETAIL</th>
-										</tr>
-										<tr>
-											<th style="padding:5px">NO.WO</th>
-											<th>:</th>
-											<th style="padding:5px">'.$r2->no_wo.'</th>
-										</tr>
-										<tr>
-											<th style="padding:5px">KD.MC</th>
-											<th>:</th>
-											<th style="padding:5px">'.$r2->kode_mc.'</th>
-										</tr>
-										<tr>
-											<th colspan="3" style="background:#dee2e6;padding:10px;border:1px solid #bec2c6;border-width:1px 0">PRODUKSI</th>
-										</tr>
-										<tr>
-											<th style="padding:5px">SHIFT</th>
-											<th>:</th>
-											<th style="padding:5px">'.$shift.'</th>
-										</tr>
-										<tr>
-											<th style="padding:5px">'.$txtMesin.'</th>
-											<th>:</th>
-											<th style="padding:5px">'.$mesin.'</th>
-										</tr>
-										<tr>
-											<th style="padding:5px">HASIL</th>
-											<th>:</th>
-											<th style="padding:5px">'.number_format($r2->gd_hasil_plan,0,",",".").'</th>
-										</tr>';
-										if($r2->gd_cek_spv == 'Close'){
-											$html .='<tr>
-												<th colspan="3" style="background:#dee2e6;padding:10px;border:1px solid #bec2c6;border-width:1px 0">GUDANG</th>
-											</tr>
-											<tr>
-												<th style="padding:5px">GOOD</th>
-												<th>:</th>
-												<th style="padding:5px">'.number_format($r2->gd_good_qty,0,",",".").'</th>
-											</tr>
-											<tr>
-												<th style="padding:5px">REJECT</th>
-												<th>:</th>
-												<th style="padding:5px">'.number_format($r2->gd_reject_qty,0,",",".").'</th>
-											</tr>';
-										}
-									$html .='</table>
-								</h3>
-							</div>
-						</div>';
-					}
-				}
-				$html .='<div>
-					<i class="fas fa-clock bg-gray"></i>
-				</div>
-			</div>';
-		}
-
-		echo $html;
+				$row[] = $htmlNoOPB;
+				$row[] = '<div class="text-center">
+					<button type="button" class="btn btn-info btn-sm" onclick=""><i class="fas fa-search"></i></button>
+				</div>';
+				$data[] = $row;
+			}
+		$output = array(
+			"data" => $data,
+		);
+		echo json_encode($output);
 	}
 
 }

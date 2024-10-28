@@ -78,7 +78,7 @@ class Master extends CI_Controller
 	function loadDataBarang()
 	{
 		$data = array();
-		$query = $this->m_master->query("SELECT*FROM m_barang_header ORDER BY nm_barang ASC")->result();
+		$query = $this->db->query("SELECT*FROM m_barang_header ORDER BY nm_barang ASC")->result();
 			$i = 0;
 			foreach ($query as $r) {
 				$i++;
