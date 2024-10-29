@@ -630,6 +630,12 @@ class Transaksi extends CI_Controller
 		echo json_encode($result);
 	}
 
+	function closeOPB()
+	{
+		$result = $this->m_transaksi->closeOPB();
+		echo json_encode($result);
+	}
+
 	function hapusBAPB()
 	{
 		$result = $this->m_transaksi->hapusBAPB();
@@ -870,6 +876,9 @@ class Transaksi extends CI_Controller
 		$harga_opb = $_POST["harga_opb"];
 		$plh_supplier = $_POST["plh_supplier"];
 		$status = $_POST["status"];
+		if($jenis_opb == 'STOK' && $harga_opb == ''){
+			echo json_encode(['data' => false, 'msg' => 'HARAP ISI HARGA!']); return;
+		}
 		if($jenis_opb == 'STOK' && $plh_supplier == ''){
 			echo json_encode(['data' => false, 'msg' => 'HARAP PILIH SUPPLIER!']); return;
 		}
@@ -1061,7 +1070,7 @@ class Transaksi extends CI_Controller
 		if($opsi == 'opb'){
 			($approve == 'ADMIN') ? $wApp = "AND h.creat_by='$username'" : $wApp = "";
 			($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y'" : $wOwn = "";
-			$wOpsi = "AND h.status_opb!='Approve'";
+			$wOpsi = "AND h.status_opb!='Approve' AND h.status_opb!='Close'";
 		}
 		if($opsi == 'bapb'){
 			$wApp = ""; $wOwn = ""; $wOpsi = "AND h.status_opb='Approve'";
@@ -1118,7 +1127,7 @@ class Transaksi extends CI_Controller
 		if($opsi == 'opb'){
 			($approve == 'ADMIN') ? $wApp = "AND h.creat_by='$username'" : $wApp = "";
 			($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y'" : $wOwn = "";
-			$wOpsi = "AND h.status_opb!='Approve'";
+			$wOpsi = "AND h.status_opb!='Approve' AND h.status_opb!='Close'";
 		}
 		if($opsi == 'bapb'){
 			$wApp = ""; $wOwn = ""; $wOpsi = "AND h.status_opb='Approve'";
@@ -1238,7 +1247,7 @@ class Transaksi extends CI_Controller
 				}
 				if(($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'GUDANG') && $opbh->acc3 == 'Y' && $jenis == 'bapb'){
 					$btnBAPB = '<button type="button" class="btn btn-xs bg-gradient-success" onclick="editOPB()">Proses</button> - ';
-					$btnClose = ' - <button type="button" class="btn btn-xs bg-gradient-danger" onclick="">Close</button>';
+					$btnClose = ' - <button type="button" class="btn btn-xs bg-gradient-danger" onclick="closeOPB()">Close</button>';
 				}else{
 					$btnBAPB = ''; $btnClose = '';
 				}

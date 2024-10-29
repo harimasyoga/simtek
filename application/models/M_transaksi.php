@@ -998,95 +998,220 @@ class M_transaksi extends CI_Model
 		// CEK NOMER OPB
 		$cekNoOpb = $this->db->query("SELECT*FROM trs_opb_header WHERE no_opb='$no_opb'");
 		if($jenis_opb == ''){
-			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH JENIS OPB!';
+			$data = false; $i_header = false; $i_detail = false; $i_bapb = false; $i_stok = false; $msg = 'HARAP PILIH JENIS OPB!';
 		}else if($tgl_opb == ''){
-			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH TANGGAL!';
+			$data = false; $i_header = false; $i_detail = false; $i_bapb = false; $i_stok = false; $msg = 'HARAP PILIH TANGGAL!';
 		}else if($jenis_opb == 'PEMBELIAN' && $no_opb == ''){
-			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP ISI NO. OPB!';
+			$data = false; $i_header = false; $i_detail = false; $i_bapb = false; $i_stok = false; $msg = 'HARAP ISI NO. OPB!';
 		}else if($departemen == ''){
-			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH DEPARTEMEN!';
+			$data = false; $i_header = false; $i_detail = false; $i_bapb = false; $i_stok = false; $msg = 'HARAP PILIH DEPARTEMEN!';
 		}else if($cekNoOpb->num_rows() != 0 && $status == 'insert'){
-			$data = false; $i_header = false; $i_detail = false; $msg = 'NO. OPB SUDAH TERPAKAI!';
+			$data = false; $i_header = false; $i_detail = false; $i_bapb = false; $i_stok = false; $msg = 'NO. OPB SUDAH TERPAKAI!';
 		}else{
-			if($jenis_opb == 'PEMBELIAN'){
-				$dHeader = [
-					'tgl_opb' => $tgl_opb,
-					'no_opb' => $no_opb,
-					'kode_dpt' => $departemen,
-					'status_opb' => 'Open',
-				];
-				if($status == 'insert'){
-					$this->db->set('creat_by', $this->username);
-					$this->db->set('creat_at', date('Y-m-d H:i:s'));
-					$i_header = $this->db->insert('trs_opb_header', $dHeader);
+			// INSERT OPB HEADER
+			// NO. OPB - PEMBELIAN ATAU STOK
+			if($jenis_opb == 'STOK'){
+				$b = $this->db->query("SELECT*FROM trs_opb_header WHERE jenis_opb='STOK' ORDER BY no_opb DESC");
+				if($b->num_rows() != 0){
+					$no = str_replace('S', '', $b->row()->no_opb);
+					$noOpb = 'S'.str_pad($no+1, 4, "0", STR_PAD_LEFT);
 				}else{
-					$this->db->set('tgl_opb', $tgl_opb);
-					$this->db->set('edit_by', $this->username);
-					$this->db->set('edit_at', date('Y-m-d H:i:s'));
-					$this->db->where('id_opbh', $id_opbh);
-					$i_header = $this->db->update('trs_opb_header', $dHeader);
+					$noOpb = 'S0001';
 				}
-				if($i_header){
-					// GET OPB HEADER
-					if($status == 'insert'){
-						$opbH = $this->db->query("SELECT*FROM trs_opb_header WHERE tgl_opb='$tgl_opb' AND no_opb='$no_opb' AND kode_dpt='$departemen' AND status_opb='Open'")->row()->id_opbh;
+			}else{
+				$noOpb = $no_opb;
+			}
+			$dHeader = [
+				'tgl_opb' => $tgl_opb,
+				'no_opb' => $noOpb,
+				'jenis_opb' => $jenis_opb,
+				'kode_dpt' => $departemen,
+			];
+			if($status == 'insert'){
+				if($jenis_opb == 'PEMBELIAN'){
+					$this->db->set('status_opb', 'Open');
+				}
+				if($jenis_opb == 'STOK'){
+					$this->db->set('status_opb', 'Close');
+					$this->db->set('acc1', 'Y');
+					$this->db->set('by1', $this->username);
+					$this->db->set('ket1', 'STOK OK');
+					$this->db->set('time1', date('Y-m-d H:i:s'));
+					$this->db->set('acc2', 'Y');
+					$this->db->set('by2', $this->username);
+					$this->db->set('ket2', 'STOK OK');
+					$this->db->set('time2', date('Y-m-d H:i:s'));
+					$this->db->set('acc3', 'Y');
+					$this->db->set('by3', $this->username);
+					$this->db->set('ket3', 'STOK OK');
+					$this->db->set('time3', date('Y-m-d H:i:s'));
+				}
+				$this->db->set('creat_by', $this->username);
+				$this->db->set('creat_at', date('Y-m-d H:i:s'));
+				$i_header = $this->db->insert('trs_opb_header', $dHeader);
+			}else{
+				// UPDATE OPB HEADER PEMBELIAN
+				$this->db->set('tgl_opb', $tgl_opb);
+				$this->db->set('edit_by', $this->username);
+				$this->db->set('edit_at', date('Y-m-d H:i:s'));
+				$this->db->where('id_opbh', $id_opbh);
+				$i_header = $this->db->update('trs_opb_header', $dHeader);
+			}
+			if($i_header){
+				// GET OPB HEADER
+				if($status == 'insert'){
+					if($jenis_opb == 'STOK'){
+						$opbH = $this->db->query("SELECT*FROM trs_opb_header
+						WHERE jenis_opb='STOK' AND tgl_opb='$tgl_opb' AND no_opb='$noOpb' AND kode_dpt='$departemen' AND status_opb='Close'")->row()->id_opbh;
 					}else{
-						$opbH = $id_opbh;
+						$opbH = $this->db->query("SELECT*FROM trs_opb_header
+						WHERE jenis_opb='PEMBELIAN' AND tgl_opb='$tgl_opb' AND no_opb='$noOpb' AND kode_dpt='$departemen' AND status_opb='Open'")->row()->id_opbh;
 					}
-					if($this->cart->total_items() != 0){
-						foreach($this->cart->contents() as $r){
-							// GET BARANG DETAIL
-							$id_mbh = $r['options']['id_mbh'];
-							$id_mbd = $r['options']['id_mbd'];
-							$barang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
-							// SATUAN
-							if($barang->p_satuan == 1){
-								$qty1 = null; $qty2 = null; $qty3 = $r['options']['i_qty3'];
-								$satuan1 = null; $satuan2 = null; $satuan3 = $barang->satuan3;
-							}
-							if($barang->p_satuan == 2){
-								$qty1 = $r['options']['i_qty1']; $qty2 = null; $qty3 = $r['options']['i_qty3'];
-								$satuan1 = $barang->satuan1; $satuan2 = null; $satuan3 = $barang->satuan3;
-							}
-							if($barang->p_satuan == 3){
-								$qty1 = $r['options']['i_qty1']; $qty2 = $r['options']['i_qty2']; $qty3 = $r['options']['i_qty3'];
-								$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
-							}
-							$dDetail = [
+				}else{
+					$opbH = $id_opbh;
+				}
+				if($this->cart->total_items() != 0){
+					// INSERT OPB DETAIL
+					foreach($this->cart->contents() as $r){
+						// GET BARANG DETAIL
+						$id_mbh = $r['options']['id_mbh'];
+						$id_mbd = $r['options']['id_mbd'];
+						$kode_dpt = $r['options']['kode_departemen'];
+						$plh_bagian = $r['options']['plh_bagian'];
+						$barang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
+						// SATUAN
+						if($barang->p_satuan == 1){
+							$qty1 = null; $qty2 = null; $qty3 = $r['options']['i_qty3'];
+							$satuan1 = null; $satuan2 = null; $satuan3 = $barang->satuan3;
+						}
+						if($barang->p_satuan == 2){
+							$qty1 = $r['options']['i_qty1']; $qty2 = null; $qty3 = $r['options']['i_qty3'];
+							$satuan1 = $barang->satuan1; $satuan2 = null; $satuan3 = $barang->satuan3;
+						}
+						if($barang->p_satuan == 3){
+							$qty1 = $r['options']['i_qty1']; $qty2 = $r['options']['i_qty2']; $qty3 = $r['options']['i_qty3'];
+							$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
+						}
+						$dDetail = [
+							'id_opbh' => $opbH,
+							'no_opb' => $noOpb,
+							'id_mbh' => $id_mbh,
+							'id_mbd' => $id_mbd,
+							'kode_dpt' => $r['options']['kode_departemen'],
+							'kode_bagian' => $r['options']['plh_bagian'],
+							'p_satuan' => $barang->p_satuan,
+							'dsatuan' => $r['options']['plh_satuan'],
+							'dqty1' => $qty1,
+							'dsatuan1' => $satuan1,
+							'dqty2' => $qty2,
+							'dsatuan2' => $satuan2,
+							'dqty3' => $qty3,
+							'dsatuan3' => $satuan3,
+							'ket_pengadaan' => $r['options']['ket_pengadaan'],
+							'creat_by' => $this->username,
+							'creat_at' => date('Y-m-d H:i:s'),
+						];
+						if($jenis_opb == 'PEMBELIAN'){
+							$this->db->set('status_opbd', 'Open');
+						}
+						if($jenis_opb == 'STOK'){
+							$this->db->set('status_opbd', 'Close');
+							$this->db->set('id_supplier', $r['options']['plh_supplier']);
+							$this->db->set('dharga', ($r['options']['harga_opb'] == '') ? 0 : $r['options']['harga_opb']);
+						}
+						$i_detail = $this->db->insert('trs_opb_detail', $dDetail);
+						if($i_detail && $jenis_opb == 'STOK'){
+							// INSERT BAPB
+							// GET DATA OPB DETAIL
+							$opbDetail = $this->db->query("SELECT*FROM trs_opb_detail
+							WHERE status_opbd='Close' AND id_opbh='$opbH' AND no_opb='$noOpb' AND id_mbh='$id_mbh' AND id_mbd='$id_mbd' AND kode_dpt='$kode_dpt' AND kode_bagian='$plh_bagian'")->row();
+							$dBapb = [
+								'tgl_bapb' => $tgl_opb,
+								'no_opb' => $noOpb,
 								'id_opbh' => $opbH,
-								'no_opb' => $no_opb,
+								'id_opbd' => $opbDetail->id_opbd,
 								'id_mbh' => $id_mbh,
 								'id_mbd' => $id_mbd,
-								'kode_dpt' => $r['options']['kode_departemen'],
-								'kode_bagian' => $r['options']['plh_bagian'],
-								'p_satuan' => $barang->p_satuan,
-								'dsatuan' => $r['options']['plh_satuan'],
-								'dqty1' => $qty1,
-								'dsatuan1' => $satuan1,
-								'dqty2' => $qty2,
-								'dsatuan2' => $satuan2,
-								'dqty3' => $qty3,
-								'dsatuan3' => $satuan3,
-								'ket_pengadaan' => $r['options']['ket_pengadaan'],
+								'status_bapb' => 'Close',
+								'bharga' => ($r['options']['harga_opb'] == '') ? 0 : $r['options']['harga_opb'],
+								'bid_supplier' => $r['options']['plh_supplier'],
+								'bkode_dpt' => $r['options']['kode_departemen'],
+								'bkode_bagian' => $r['options']['plh_bagian'],
+								'b_satuan' => $barang->p_satuan,
+								'bsatuan' => $r['options']['plh_satuan'],
+								'bqty1' => $qty1,
+								'bsatuan1' => $satuan1,
+								'bqty2' => $qty2,
+								'bsatuan2' => $satuan2,
+								'bqty3' => $qty3,
+								'bsatuan3' => $satuan3,
+								'bket_pengadaan' => $r['options']['ket_pengadaan'],
+								'acc_bapb' => 'STOK',
 								'creat_by' => $this->username,
 								'creat_at' => date('Y-m-d H:i:s'),
 							];
-							$i_detail = $this->db->insert('trs_opb_detail', $dDetail);
+							$i_bapb = $this->db->insert('trs_bapb', $dBapb);
+							if($i_bapb && $jenis_opb == 'STOK'){
+								// MEMBUAT QRCODE
+								$qBapb = $this->db->query("SELECT*FROM trs_bapb
+								WHERE status_bapb='Close' AND tgl_bapb='$tgl_opb' AND no_opb='$noOpb' AND id_opbh='$opbH' AND id_opbd='$opbDetail->id_opbd' AND id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
+								$qrcode_data = $this->generateDataQRCode();
+								$datacode = [
+									'id_bapb' => $qBapb->id_bapb,
+									'qrcode_path' => $this->generateQRCode($qrcode_data),
+									'qrcode_data' => $qrcode_data,
+								];
+								$qrcode = $this->db->insert('m_qrcode', $datacode);
+								if($qrcode){
+									// INPUT KE STOK
+									$qQRcode = $this->db->query("SELECT*FROM m_qrcode WHERE id_bapb='$qBapb->id_bapb'")->row();
+									$dataStok = [
+										'no_opb' => $noOpb,
+										'id_opbh' => $opbH,
+										'id_opbd' => $opbDetail->id_opbd,
+										'id_bapb' => $qBapb->id_bapb,
+										'id_mbh' => $id_mbh,
+										'id_mbd' => $id_mbd,
+										'id_qrcode' => $qQRcode->id_qrcode,
+										'status_stok' => 'Open',
+										'skode_dpt' => $kode_dpt,
+										'skode_bagian' => $plh_bagian,
+										'sid_supplier' => $r['options']['plh_supplier'],
+										'sharga' => ($r['options']['harga_opb'] == '') ? 0 : $r['options']['harga_opb'],
+										's_satuan' => $barang->p_satuan,
+										'ssatuan' => $r['options']['plh_satuan'],
+										'sqty1' => $qty1,
+										'ssatuan1' => $satuan1,
+										'sqty2' => $qty2,
+										'ssatuan2' => $satuan2,
+										'sqty3' => $qty3,
+										'ssatuan3' => $satuan3,
+										'creat_by' => $this->username,
+										'creat_at' => date('Y-m-d H:i:s'),
+									];
+									$i_stok = $this->db->insert('m_stok', $dataStok);
+								}else{
+									$i_stok = false;
+								}
+							}else{
+								$i_stok = false;
+							}
+						}else{
+							$i_bapb = false; $i_stok = false;
 						}
-					}else{
-						$i_detail = false;
 					}
+				}else{
+					$i_detail = false; $i_bapb = false; $i_stok = false;
 				}
-				$data = true; $msg = 'OK!';
 			}
-			if($jenis_opb == 'STOK'){
-				$data = false; $i_header = false; $i_detail = false; $msg = false;
-			}
+			$data = true; $msg = 'OK!';
 		}
 		return ([
 			'data' => $data,
 			'i_header' => $i_header,
 			'i_detail' => $i_detail,
+			'i_bapb' => $i_bapb,
+			'i_stok' => $i_stok,
 			'msg' => $msg,
 		]);
 	}
@@ -1416,6 +1541,34 @@ class M_transaksi extends CI_Model
 			'hapusQRCode' => $hapusQRCode,
 			'hapusDataQRCode' => $hapusDataQRCode,
 			'hapusBAPB' => $hapusBAPB,
+		];
+	}
+
+	function closeOPB()
+	{
+		$id_opbh = $_POST["id_opbh"];
+		// CLOSE OPB HEADER
+		$this->db->set('close_by', $this->username);
+		$this->db->set('close_at', date('Y-m-d H:i:s'));
+		$this->db->set('status_opb', 'Close');
+		$this->db->where('id_opbh', $id_opbh);
+		$opbHeader = $this->db->update('trs_opb_header');
+		if($opbHeader){
+			// CLOSE OPB DETAIL
+			$this->db->set('status_opbd', 'Close');
+			$this->db->where('id_opbh', $id_opbh);
+			$opbDetail = $this->db->update('trs_opb_detail');
+			if($opbDetail){
+				// CLOSE BAPB
+				$this->db->set('status_bapb', 'Close');
+				$this->db->where('id_opbh', $id_opbh);
+				$opbBapb = $this->db->update('trs_bapb');
+			}
+		}
+		return [
+			'opbHeader' => $opbHeader,
+			'opbDetail' => $opbDetail,
+			'opbBapb' => $opbBapb,
 		];
 	}
 

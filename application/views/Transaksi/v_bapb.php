@@ -27,11 +27,6 @@
 						<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST BERITA ACARA PENERIMAAN BARANG</h3>
 					</div>
 					<div class="card-body" style="padding:0">
-						<?php if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE', 'GUDANG'])) { ?>
-							<div style="padding:5px">
-								<button type="button" class="btn btn-primary btn-sm" onclick="">Tambah Data</button>
-							</div>
-						<?php } ?>
 						<div class="list-header" style="padding:0"></div>
 						<div class="card-body row" style="padding:0">
 							<div class="col-md-3">
@@ -51,7 +46,7 @@
 			<input type="hidden" id="h_ii" value="">
 		</div>
 
-		<div class="row row-proses">
+		<div class="row row-proses" style="display:none">
 			<div class="col-md-12">
 				<div class="card card-primary card-outline">
 					<div class="card-header" style="padding:12px">
@@ -145,14 +140,15 @@
 					$(".list-opb-bapb").html(data.htmlDetail)
 				}
 				$(".select2").select2()
+				swal.close()
 			}
 		})
 	}
 
 	function kembali()
 	{
-		// $(".row-list").show()
-		// $(".row-proses").hide()
+		$(".row-list").show()
+		$(".row-proses").hide()
 		$(".btn-kembali").html('')
 		$(".lil").html('')
 		let id_opbh = $("#id_opbh").val()
@@ -165,14 +161,24 @@
 		let id_opbh = $("#id_opbh").val()
 		let h_ii = $("#h_ii").val()
 		$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
-		// $(".row-list").hide()
-		// $(".row-proses").show()
+		$(".row-list").hide()
+		$(".row-proses").show()
 		$("#id_mbh").val('')
 		$("#id_cart").val(0)
 		$(".list-opb-bapb").html('')
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/editOPB')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({ id_opbh }),
 			success: function(res){
 				data = JSON.parse(res)
@@ -335,7 +341,16 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/prosesBAPB')?>',
 			type: "POST",
-			async: false,
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({
 				kode_dpt, id_opbh, tgl_bapb, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, harga, plh_supplier, ket_pengadaan, plh_bagian, app_bapb
 			}),
@@ -345,6 +360,7 @@
 					btnDetail(id_opbh, h_ii, 'edit')
 				}else{
 					toastr.error(`<b>${data.msg}</b>`)
+					swal.close()
 				}
 			}
 		})
@@ -365,6 +381,16 @@
 			$.ajax({
 				url: '<?php echo base_url('Transaksi/hapusBAPB')?>',
 				type: "POST",
+				beforeSend: function() {
+					swal({
+						title: 'Loading',
+						allowEscapeKey: false,
+						allowOutsideClick: false,
+						onOpen: () => {
+							swal.showLoading();
+						}
+					});
+				},
 				data : ({ id_bapb }),
 				success: function(res){
 					data = JSON.parse(res)
@@ -372,7 +398,46 @@
 						btnDetail(id_opbh, h_ii, 'edit')
 					}else{
 						toastr.error(`<b>TERJADI KESALAHAN!</b>`)
+						swal.close()
 					}
+				}
+			})
+		});
+	}
+
+	function closeOPB()
+	{
+		let id_opbh = $("#id_opbh").val()
+		swal({
+			title: "Apakah Kamu Yakin?",
+			text: "",
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#C00",
+			confirmButtonText: "Delete"
+		}).then(function(result) {
+			$.ajax({
+				url: '<?php echo base_url('Transaksi/closeOPB')?>',
+				type: "POST",
+				beforeSend: function() {
+					swal({
+						title: 'Loading',
+						allowEscapeKey: false,
+						allowOutsideClick: false,
+						onOpen: () => {
+							swal.showLoading();
+						}
+					});
+				},
+				data : ({ id_opbh }),
+				success: function(res){
+					data = JSON.parse(res)
+					if(data.opbBapb){
+						loadHeader()
+					}else{
+						toastr.error(`<b>TERJADI KESALAHAN!</b>`)
+					}
+					swal.close()
 				}
 			})
 		});

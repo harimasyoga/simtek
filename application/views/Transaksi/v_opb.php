@@ -95,6 +95,13 @@
 							<div class="btn-kembali"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">TANGGAL <span style="color:#f00">*</span></div>
+							<div class="col-md-5">
+								<input type="date" id="tgl_opb" class="form-control" value="<?php echo date('Y-m-d')?>">
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
 							<div class="col-md-2">OPB <span style="color:#f00">*</span></div>
 							<div class="col-md-5">
 								<select id="jenis_opb" class="form-control select2" onchange="pilihBarang()">
@@ -106,20 +113,6 @@
 							<div class="col-md-5"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">TANGGAL <span style="color:#f00">*</span></div>
-							<div class="col-md-5">
-								<input type="date" id="tgl_opb" class="form-control" value="<?php echo date('Y-m-d')?>">
-							</div>
-							<div class="col-md-5"></div>
-						</div>
-						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">NO. OPB <span style="color:#f00">*</span></div>
-							<div class="col-md-5">
-								<input type="number" id="no_opb" class="form-control" placeholder="NO. OPB">
-							</div>
-							<div class="col-md-5"></div>
-						</div>
-						<div class="card-body row" style="font-weight:bold;padding:0 0 20px">
 							<div class="col-md-2">DEPARTEMEN <span style="color:#f00">*</span></div>
 							<div class="col-md-5">
 								<select id="plh_departemen" class="form-control select2" onchange="pilihBarang()">
@@ -138,6 +131,13 @@
 										echo $html1
 									?>
 								</select>
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 20px">
+							<div class="col-md-2">NO. OPB <span style="color:#f00">*</span></div>
+							<div class="col-md-5">
+								<input type="number" id="no_opb" class="form-control" placeholder="NO. OPB">
 							</div>
 							<div class="col-md-5"></div>
 						</div>
@@ -244,6 +244,7 @@
 		}
 		if(opsi == 'kembali'){
 			loadHeader()
+			swal.close()
 		}
 		status = 'insert'
 	}
@@ -490,6 +491,7 @@
 					$(".list-edit-cart").html(data.htmlDetail)
 				}
 				$(".select2").select2()
+				swal.close()
 			}
 		})
 	}
@@ -536,6 +538,16 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/btnVerifOpb')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({
 				id_opbh, ket_laminasi, aksi, status_verif
 			}),
@@ -545,14 +557,15 @@
 					loadHeader()
 				}else{
 					toastr.error(`<b>KETERANGAN TIDAK BOLEH KOSONG!</b>`)
-					swal.close()
 				}
+				swal.close()
 			}
 		})
 	}
 
 	function loadBarang()
 	{
+		$("#plh_barang").html('<option value="">PILIH</option>')
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadBarang')?>',
 			type: "POST",
@@ -577,7 +590,7 @@
 		if(jenis_opb == 'STOK'){
 			$("#no_opb").val('').attr('placeholder', 'AUTO').prop('disabled', true)
 		}else{
-			$("#no_opb").val('').attr('placeholder', 'NO. OPB').prop('disabled', false)
+			$("#no_opb").attr('placeholder', 'NO. OPB').prop('disabled', false)
 		}
 		let plh_departemen = $("#plh_departemen").val()
 		let id_mbh = $("#plh_barang").val()
@@ -586,7 +599,7 @@
 		let material = $("#material").val()
 		let ukuran = $("#ukuran").val()
 		let merk = $("#merk").val()
-		$("#no_opb").val('')
+		// $("#no_opb").val('')
 		$("#jenistipe").html('<option value="">PILIH</option>')
 		$("#material").html('<option value="">PILIH</option>')
 		$("#ukuran").html('<option value="">PILIH</option>')
@@ -594,6 +607,16 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/detailBarang')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({
 				jenis_opb, plh_departemen, id_mbh, id_mbh_lama, jenistipe, material, ukuran, merk
 			}),
@@ -610,6 +633,7 @@
 				$("#ukuran").html(data.htmlS).val((id_mbh == id_mbh_lama) ? ukuran : '')
 				$("#merk").html(data.htmlMr).val((id_mbh == id_mbh_lama) ? merk : '')
 				$(".select2").select2()
+				swal.close()
 			}
 		})
 	}
@@ -744,6 +768,16 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/addCartOPB')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data : ({
 				id_cart, id_opbh, jenis_opb, tgl_opb, no_opb, plh_departemen, id_mbh, id_mbd, plh_bagian, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, harga_opb, plh_supplier, status
 			}),
@@ -753,6 +787,7 @@
 					cartOPB()
 				}else{
 					toastr.error(`<b>${data.msg}</b>`)
+					swal.close()
 				}
 			}
 		})
@@ -769,6 +804,7 @@
 			success: function(res){
 				data = JSON.parse(res)
 				$(".list-cart").html(data.html)
+				swal.close()
 			}
 		})
 	}
@@ -778,6 +814,16 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/hapusCart')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({ rowid }),
 			success: function(res){
 				cartOPB()
@@ -796,19 +842,28 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/simpanOPB')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({
 				id_opbh, jenis_opb, tgl_opb, no_opb, plh_departemen, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
-				// if(data.data && status == 'insert'){
-				// 	tambah('kembali')
-				// }else if(data.data && status == 'update'){
-				// 	kembali()
-				// }else{
-				// 	toastr.error(`<b>${data.msg}</b>`)
-				// }
+				if(data.data && status == 'insert'){
+					tambah('kembali')
+				}else if(data.data && status == 'update'){
+					kembali()
+				}else{
+					toastr.error(`<b>${data.msg}</b>`)
+				}
 			}
 		})
 	}
@@ -829,8 +884,19 @@
 			url: '<?php echo base_url('Transaksi/editOPB')?>',
 			type: "POST",
 			data: ({ id_opbh }),
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			success: function(res){
 				data = JSON.parse(res)
+				console.log(data.opbh.no_opb)
 				$("#jenis_opb").val(data.opbh.jenis_opb).prop('disabled', true)
 				$("#tgl_opb").val(data.opbh.tgl_opb)
 				$("#no_opb").val(data.opbh.no_opb).prop('disabled', true)
@@ -863,7 +929,16 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/editListOPB')?>',
 			type: "POST",
-			async: false,
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({ id_opbh, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, harga, plh_supplier, ket_pengadaan, plh_bagian }),
 			success: function(res){
 				data = JSON.parse(res)
@@ -903,11 +978,22 @@
 			$.ajax({
 				url: '<?php echo base_url('Transaksi/hapusOPB')?>',
 				type: "POST",
+				beforeSend: function() {
+					swal({
+						title: 'Loading',
+						allowEscapeKey: false,
+						allowOutsideClick: false,
+						onOpen: () => {
+							swal.showLoading();
+						}
+					});
+				},
 				data : ({ id_opbh, id_opbd, opsi }),
 				success: function(res){
 					data = JSON.parse(res)
 					if(opsi == 'header' && data.opbh && data.opbd){
 						loadHeader()
+						swal.close()
 					}
 					if(opsi == 'detail' && data.opbd){
 						btnDetail(id_opbh, h_ii, 'edit')

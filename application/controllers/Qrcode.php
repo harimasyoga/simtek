@@ -20,10 +20,9 @@ class Qrcode extends CI_Controller
 			'code' => $code,
 		);
 		$this->load->view('header', $data);
-		if(in_array($approve, ['ALL', 'OFFICE', 'GUDANG', 'OWNER'])){
+		if(in_array($approve, ['ALL', 'ACC', 'OFFICE', 'FINANCE', 'GUDANG', 'OWNER'])){
 			$this->load->view('Qrcode/v_qrcode', $data);
 		}else{
-			// $this->load->view('home');
 			$this->session->sess_destroy();
 			redirect(base_url('login'));
 		}

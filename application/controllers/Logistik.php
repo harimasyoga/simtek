@@ -974,7 +974,7 @@ class Logistik extends CI_Controller
 		INNER JOIN m_barang_detail d ON s.id_mbh=d.id_mbh AND s.id_mbd=d.id_mbd
 		INNER JOIN m_barang_header h ON s.id_mbh=h.id_mbh
 		WHERE s.status_stok='Open'
-		GROUP BY s.id_mbh,s.id_mbd
+		GROUP BY s.id_mbh,s.id_mbd,s.status_stok
 		ORDER BY h.nm_barang,d.kode_barang,d.jenis_tipe,d.material,d.size,d.merk")->result();
 			$i = 0;
 			foreach ($query as $r) {
@@ -988,7 +988,11 @@ class Logistik extends CI_Controller
 				$row[] = $r->size;
 				$row[] = $r->merk;
 				// NO. OPB
-				$no_opb = $this->db->query("SELECT no_opb FROM trs_opb_detail WHERE id_mbh='$r->id_mbh' AND id_mbd='$r->id_mbd' GROUP BY no_opb");
+				$no_opb = $this->db->query("SELECT*FROM trs_opb_header h
+				INNER JOIN trs_opb_detail d ON h.id_opbh=d.id_opbh AND h.no_opb=d.no_opb
+				INNER JOIN trs_bapb b ON h.id_opbh=b.id_opbh AND b.no_opb=d.no_opb AND d.id_opbd=b.id_opbd
+				WHERE d.id_mbh='$r->id_mbh' AND d.id_mbd='$r->id_mbd' AND (h.status_opb='Approve' OR h.status_opb='Close')
+				GROUP BY h.no_opb");
 				$htmlNoOPB = '';
 				foreach($no_opb->result() as $o){
 					$htmlNoOPB .= '<div>'.$o->no_opb.'</div>';
