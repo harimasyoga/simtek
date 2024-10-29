@@ -51,11 +51,11 @@
 			<input type="hidden" id="h_ii" value="">
 		</div>
 
-		<div class="row row-input">
+		<div class="row row-proses">
 			<div class="col-md-12">
 				<div class="card card-primary card-outline">
 					<div class="card-header" style="padding:12px">
-						<h3 class="card-title" style="font-weight:bold;font-size:18px">INPUT BAPB</h3>
+						<h3 class="card-title" style="font-weight:bold;font-size:18px">PROSES BAPB</h3>
 					</div>
 					<div class="card-body" style="padding:6px">
 						<div class="btn-kembali"></div>
@@ -152,7 +152,7 @@
 	function kembali()
 	{
 		// $(".row-list").show()
-		// $(".row-input").hide()
+		// $(".row-proses").hide()
 		$(".btn-kembali").html('')
 		$(".lil").html('')
 		let id_opbh = $("#id_opbh").val()
@@ -166,11 +166,9 @@
 		let h_ii = $("#h_ii").val()
 		$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
 		// $(".row-list").hide()
-		// $(".row-input").show()
+		// $(".row-proses").show()
 		$("#id_mbh").val('')
 		$("#id_cart").val(0)
-		$(".list-detail").html('')
-		$(".list-cart").html('')
 		$(".list-opb-bapb").html('')
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/editOPB')?>',

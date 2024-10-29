@@ -95,6 +95,17 @@
 							<div class="btn-kembali"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">OPB <span style="color:#f00">*</span></div>
+							<div class="col-md-5">
+								<select id="jenis_opb" class="form-control select2" onchange="pilihBarang()">
+									<option value="">PILIH</option>
+									<option value="PEMBELIAN">PEMBELIAN</option>
+									<option value="STOK">STOK</option>
+								</select>
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
 							<div class="col-md-2">TANGGAL <span style="color:#f00">*</span></div>
 							<div class="col-md-5">
 								<input type="date" id="tgl_opb" class="form-control" value="<?php echo date('Y-m-d')?>">
@@ -221,6 +232,7 @@
 		$("#id_opbh").val('')
 		$("#id_mbh").val('')
 		$("#h_ii").val('')
+		$("#jenis_opb").val('').trigger('change').prop('disabled', false)
 		$("#plh_departemen").val('').trigger('change').prop('disabled', false)
 		$(".lil").html('')
 		if(opsi == 'tambah'){
@@ -561,6 +573,12 @@
 
 	function pilihBarang()
 	{
+		let jenis_opb = $("#jenis_opb").val()
+		if(jenis_opb == 'STOK'){
+			$("#no_opb").val('').attr('placeholder', 'AUTO').prop('disabled', true)
+		}else{
+			$("#no_opb").val('').attr('placeholder', 'NO. OPB').prop('disabled', false)
+		}
 		let plh_departemen = $("#plh_departemen").val()
 		let id_mbh = $("#plh_barang").val()
 		let id_mbh_lama = $("#id_mbh").val()
@@ -568,6 +586,7 @@
 		let material = $("#material").val()
 		let ukuran = $("#ukuran").val()
 		let merk = $("#merk").val()
+		$("#no_opb").val('')
 		$("#jenistipe").html('<option value="">PILIH</option>')
 		$("#material").html('<option value="">PILIH</option>')
 		$("#ukuran").html('<option value="">PILIH</option>')
@@ -576,12 +595,14 @@
 			url: '<?php echo base_url('Transaksi/detailBarang')?>',
 			type: "POST",
 			data: ({
-				plh_departemen, id_mbh, id_mbh_lama, jenistipe, material, ukuran, merk
+				jenis_opb, plh_departemen, id_mbh, id_mbh_lama, jenistipe, material, ukuran, merk
 			}),
 			success: function(res){
 				data = JSON.parse(res);
+				(jenis_opb != '') ? jprop = true : jprop = false;
+				$("#jenis_opb").prop('disabled', jprop);
 				(plh_departemen != '') ? prop = true : prop = false;
-				$("#plh_departemen").prop('disabled', prop)
+				$("#plh_departemen").prop('disabled', prop);
 				$("#id_mbh").val(id_mbh)
 				$(".list-detail").html(data.html)
 				$("#jenistipe").html(data.htmlJT).val((id_mbh == id_mbh_lama) ? jenistipe : '')
@@ -591,6 +612,12 @@
 				$(".select2").select2()
 			}
 		})
+	}
+
+	function hargaOPB(i)
+	{
+		let harga = ($("#harga_opb"+i).val() == undefined) ? 0 : $("#harga_opb"+i).val().split('.').join('');
+		$("#harga_opb"+i).val(format_angka(harga))
 	}
 
 	function pilihSatuan(i)
@@ -699,6 +726,7 @@
 		let id_cart = parseInt($("#id_cart").val()) + 1;
 		$("#id_cart").val(id_cart)
 		let id_opbh = $("#id_opbh").val()
+		let jenis_opb = $("#jenis_opb").val()
 		let tgl_opb = $("#tgl_opb").val()
 		let no_opb = $("#no_opb").val()
 		let id_mbh = $("#h_id_mbh"+i).val()
@@ -711,11 +739,13 @@
 		let i_qty2 = $("#i_qty2_"+i).val()
 		let i_qty3 = $("#i_qty3_"+i).val()
 		let ket_pengadaan = $("#ket_pengadaan"+i).val()
+		let harga_opb = $("#harga_opb"+i).val().split('.').join('')
+		let plh_supplier = $("#plh_supplier"+i).val()
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/addCartOPB')?>',
 			type: "POST",
 			data : ({
-				id_cart, id_opbh, tgl_opb, no_opb, plh_departemen, id_mbh, id_mbd, plh_bagian, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, status
+				id_cart, id_opbh, jenis_opb, tgl_opb, no_opb, plh_departemen, id_mbh, id_mbd, plh_bagian, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, harga_opb, plh_supplier, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
@@ -730,10 +760,12 @@
 
 	function cartOPB()
 	{
+		let jenis_opb = $("#jenis_opb").val()
 		$(".list-cart").html('')
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/cartOPB')?>',
 			type: "POST",
+			data: ({ jenis_opb }),
 			success: function(res){
 				data = JSON.parse(res)
 				$(".list-cart").html(data.html)
@@ -757,6 +789,7 @@
 	{
 		let id_opbh = $("#id_opbh").val()
 		let h_ii = $("#h_ii").val()
+		let jenis_opb = $("#jenis_opb").val()
 		let tgl_opb = $("#tgl_opb").val()
 		let no_opb = $("#no_opb").val()
 		let plh_departemen = $("#plh_departemen").val()
@@ -764,17 +797,18 @@
 			url: '<?php echo base_url('Transaksi/simpanOPB')?>',
 			type: "POST",
 			data: ({
-				id_opbh, tgl_opb, no_opb, plh_departemen, status
+				id_opbh, jenis_opb, tgl_opb, no_opb, plh_departemen, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				if(data.data && status == 'insert'){
-					tambah('kembali')
-				}else if(data.data && status == 'update'){
-					kembali()
-				}else{
-					toastr.error(`<b>${data.msg}</b>`)
-				}
+				console.log(data)
+				// if(data.data && status == 'insert'){
+				// 	tambah('kembali')
+				// }else if(data.data && status == 'update'){
+				// 	kembali()
+				// }else{
+				// 	toastr.error(`<b>${data.msg}</b>`)
+				// }
 			}
 		})
 	}
@@ -797,6 +831,7 @@
 			data: ({ id_opbh }),
 			success: function(res){
 				data = JSON.parse(res)
+				$("#jenis_opb").val(data.opbh.jenis_opb).prop('disabled', true)
 				$("#tgl_opb").val(data.opbh.tgl_opb)
 				$("#no_opb").val(data.opbh.no_opb).prop('disabled', true)
 				$("#plh_departemen").val(data.opbh.kode_dpt).trigger('change')

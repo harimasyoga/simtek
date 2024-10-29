@@ -13,14 +13,20 @@ class Qrcode extends CI_Controller
 
 	function index()
 	{
+		$approve = $this->session->userdata('approve');
 		$code = $_GET["v"];
 		$data = array(
 			'judul' => "QR Code",
 			'code' => $code,
 		);
 		$this->load->view('header', $data);
-		$this->load->view('Qrcode/v_qrcode', $data);
-		// $this->load->view('home');
+		if(in_array($approve, ['ALL', 'OFFICE', 'GUDANG', 'OWNER'])){
+			$this->load->view('Qrcode/v_qrcode', $data);
+		}else{
+			// $this->load->view('home');
+			$this->session->sess_destroy();
+			redirect(base_url('login'));
+		}
 		$this->load->view('footer');
 	}
 }

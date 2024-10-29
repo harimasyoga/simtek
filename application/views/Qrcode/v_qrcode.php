@@ -20,16 +20,16 @@
 	</style>
 
 	<section class="content">
-		<div class="card card-barang">
-			<div class="card-header" style="font-family:Cambria">
-				<h3 class="card-title" style="color:#4e73df;"><b>DATA QR CODE</b></h3>
-				<div class="card-tools">
-					<button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
-						<i class="fas fa-minus"></i></button>
+		<div class="row row-list">
+			<div class="col-md-12">
+				<div class="card card-secondary card-outline">
+					<div class="card-header" style="padding:12px">
+						<h3 class="card-title" style="font-weight:bold;font-size:18px">DATA QR CODE</h3>
+					</div>
+					<div class="card-body" style="padding:12px 6px">
+						<div class="list-barang"></div>
+					</div>
 				</div>
-			</div>
-			<div class="card-body" style="padding:12px 6px">
-				<?= $code ?>
 			</div>
 		</div>
 	</section>

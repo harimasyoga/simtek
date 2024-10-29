@@ -655,6 +655,7 @@ class Transaksi extends CI_Controller
 	function detailBarang()
 	{
 		$html = ''; $htmlJT = '<option value="">PILIH</option>'; $htmlM = '<option value="">PILIH</option>'; $htmlS = '<option value="">PILIH</option>'; $htmlMr = '<option value="">PILIH</option>';
+		$jenis_opb = $_POST["jenis_opb"];
 		$departemen = $_POST["plh_departemen"];
 		$id_mbh = $_POST["id_mbh"];
 		$id_mbh_lama = $_POST["id_mbh_lama"];
@@ -671,7 +672,7 @@ class Transaksi extends CI_Controller
 		}else{
 			$where = "";
 		}
-		if($departemen == '' || $id_mbh == ''){
+		if($jenis_opb == '' || $departemen == '' || $id_mbh == ''){
 			$html = '';
 		}else{
 			$detail = $this->db->query("SELECT h.nm_barang,d.* FROM m_barang_detail d
@@ -691,6 +692,12 @@ class Transaksi extends CI_Controller
 				foreach($bagian->result() as $b){
 					$htmlBagian .= '<option value="'.$b->kode_departemen.'">'.$b->nama.'</option>';
 				}
+				if($jenis_opb == 'PEMBELIAN'){
+					$thOpb = '';
+				}else{
+					$thOpb = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">HARGA (Rp.)</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 260px 6px 6px;text-align:center">SUPPLIER</th>';
+				}
 				$html .='<div style="margin:20px 0 0;font-weight:bold">DETAIL BARANG :</div>
 				<div style="overflow:auto;white-space:nowrap"><table style="margin:0;border:1px solid #dee2e6">
 					<tr>
@@ -704,6 +711,7 @@ class Transaksi extends CI_Controller
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 12px;text-align:center">PILIH SATUAN</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">QTY</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">PENGADAAN</th>
+						'.$thOpb.'
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 50px;text-align:center">KETERANGAN</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 30px;text-align:center">BAGIAN</th>
 						<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">AKSI</th>
@@ -730,6 +738,27 @@ class Transaksi extends CI_Controller
 							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'</td>';
 							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option><option value="TENGAH">TENGAH</option><option value="TERBESAR">TERBESAR</option>';
 						}
+						// OPB STOK ATAU PEMBELIAN
+						$hidSup = ''; $htmlSup = '';
+						if($jenis_opb == 'STOK'){
+							$optSup = '';
+							$sup = $this->db->query("SELECT*FROM m_supplier ORDER BY nm_supp");
+							foreach($sup->result() as $s){
+								$optSup .= '<option value="'.$s->id_supp.'">'.$s->nm_supp.'</option>';
+							}
+							$htmlSup .= '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">
+								<input type="text" id="harga_opb'.$i.'" class="form-control" style="width:120px;padding:3px 4px;text-align:right" onkeyup="hargaOPB('."'".$i."'".')" autocomplete="off" placeholder="0">
+							</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">
+								<select id="plh_supplier'.$i.'" class="form-control select2">
+									<option value="">PILIH</option>
+									'.$optSup.'
+								</select>
+							</td>';
+						}else{
+							$hidSup .= '<input type="hidden" id="harga_opb'.$i.'" value="">
+							<input type="hidden" id="plh_supplier'.$i.'" value="">';
+						}
 						// PENGADAAN
 						$html .= '<tr style="vertical-align:top">
 							<td style="position:sticky;left:0;background:#f2f2f2;border:1px solid #dee2e6;padding:6px">
@@ -745,6 +774,7 @@ class Transaksi extends CI_Controller
 								<input type="hidden" id="h_satuan1_'.$i.'" value="'.$r->satuan1.'">
 								<input type="hidden" id="h_satuan2_'.$i.'" value="'.$r->satuan2.'">
 								<input type="hidden" id="h_satuan3_'.$i.'" value="'.$r->satuan3.'">
+								'.$hidSup.'
 								'.$r->kode_barang.'
 							</td>
 							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->nm_barang.'</td>
@@ -764,6 +794,7 @@ class Transaksi extends CI_Controller
 							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold"><div class="txtsatuan'.$i.'"></div></td>
 							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold;text-align:right"><div class="hitungqty'.$i.'"></div></td>
 							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold"><div class="ketsatuan'.$i.'"></div></td>
+							'.$htmlSup.'
 							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold">
 								<textarea id="ket_pengadaan'.$i.'" class="form-control" style="padding:3px 4px;resize:none" rows="2" placeholder="-" oninput="this.value=this.value.toUpperCase()"></textarea>
 							</td>
@@ -822,6 +853,7 @@ class Transaksi extends CI_Controller
 
 	function addCartOPB()
 	{
+		$jenis_opb = $_POST["jenis_opb"];
 		$tgl_opb = $_POST["tgl_opb"];
 		$id_opbh = $_POST["id_opbh"];
 		$no_opb = $_POST["no_opb"];
@@ -835,11 +867,16 @@ class Transaksi extends CI_Controller
 		$i_qty2 = $_POST["i_qty2"];
 		$i_qty3 = $_POST["i_qty3"];
 		$ket_pengadaan = $_POST["ket_pengadaan"];
+		$harga_opb = $_POST["harga_opb"];
+		$plh_supplier = $_POST["plh_supplier"];
 		$status = $_POST["status"];
+		if($jenis_opb == 'STOK' && $plh_supplier == ''){
+			echo json_encode(['data' => false, 'msg' => 'HARAP PILIH SUPPLIER!']); return;
+		}
 		if($tgl_opb == ''){
 			echo json_encode(['data' => false, 'msg' => 'HARAP PILIH TANGGAL!']); return;
 		}
-		if($no_opb == '' || $no_opb < 0 || !preg_match("/^[0-9]*$/", $no_opb)){
+		if($jenis_opb == 'PEMBELIAN' && ($no_opb == '' || $no_opb < 0 || !preg_match("/^[0-9]*$/", $no_opb))){
 			echo json_encode(['data' => false, 'msg' => 'HARAP ISI NO. OPB!']); return;
 		}
 		if($qty == 0 || $qty == '' || $qty < 0){
@@ -870,6 +907,8 @@ class Transaksi extends CI_Controller
 				'i_qty2' => $i_qty2,
 				'i_qty3' => $i_qty3,
 				'ket_pengadaan' => $ket_pengadaan,
+				'harga_opb' => $harga_opb,
+				'plh_supplier' => $plh_supplier,
 			)
 		);
 		if($this->cart->total_items() != 0){
@@ -888,11 +927,19 @@ class Transaksi extends CI_Controller
 
 	function cartOPB()
 	{
+		$jenis_opb = $_POST["jenis_opb"];
 		$html = '';
 		if($this->cart->total_items() == 0){
 			$html .= '';
 		}
 		if($this->cart->total_items() != 0){
+			($jenis_opb == 'STOK') ? $ss = 14 : $ss = 12;
+			if($jenis_opb == 'STOK'){
+				$thOPB = '<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">HARGA (Rp.)</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SUPPLIER</th>';
+			}else{
+				$thOPB = '';
+			}
 			$html .='<div style="margin:20px 0 0;font-weight:bold">DETAIL LIST BARANG OPB :</div>
 			<div style="overflow:auto;white-space:nowrap"><table class="table table-bordered table-striped" style="margin:0">
 				<tr>
@@ -903,6 +950,7 @@ class Transaksi extends CI_Controller
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SIZE</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">MERK</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">PENGADAAN</th>
+					'.$thOPB.'
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KETERANGAN</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">BAGIAN</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">AKSI</th>
@@ -921,6 +969,8 @@ class Transaksi extends CI_Controller
 					$i_qty2 = $r['options']['i_qty2'];
 					$i_qty3 = $r['options']['i_qty3'];
 					$ket_pengadaan = $r['options']['ket_pengadaan'];
+					$harga_opb = $r['options']['harga_opb'];
+					$plh_supplier = $r['options']['plh_supplier'];
 					$b = $this->db->query("SELECT h.nm_barang,d.* FROM m_barang_detail d
 					INNER JOIN m_barang_header h ON d.id_mbh=h.id_mbh
 					WHERE d.id_mbh='$id_mbh' AND d.id_mbd='$id_mbd'")->row();
@@ -959,6 +1009,15 @@ class Transaksi extends CI_Controller
 					($ket_pengadaan == '') ? $keterangan = '-' : $keterangan = $ket_pengadaan;
 					// BAGIAN
 					$bagian = $this->db->query("SELECT*FROM m_departemen WHERE kode='$plh_bagian'")->row();
+					// STOK DAN PEMBELIAN
+					if($jenis_opb == 'STOK'){
+						// $harga_opb $plh_supplier
+						$sup = $this->db->query("SELECT*FROM m_supplier WHERE id_supp='$plh_supplier'")->row();
+						$tdOPB = '<td style="padding:6px;text-align:right">'.number_format($harga_opb,0,',','.').'</td>
+						<td style="padding:6px">'.$sup->nm_supp.'</td>';
+					}else{
+						$tdOPB = '';
+					}
 					$html .= '<tr>
 						<td style="padding:6px">'.$b->kode_barang.'</td>
 						<td style="padding:6px">'.$b->nm_barang.'</td>
@@ -967,6 +1026,7 @@ class Transaksi extends CI_Controller
 						<td style="padding:6px">'.$b->size.'</td>
 						<td style="padding:6px">'.$b->merk.'</td>
 						'.$htmlPgd.'
+						'.$tdOPB.'
 						<td style="padding:6px">'.$keterangan.'</td>
 						<td style="padding:6px">'.$bagian->nama.'</td>
 						<td style="padding:6px;text-align:center">
@@ -975,12 +1035,12 @@ class Transaksi extends CI_Controller
 					</tr>';
 					if($this->cart->total_items() != $i){
 						$html .= '<tr>
-							<td style="padding:2px;border:0" colspan="12"></td>
+							<td style="padding:2px;border:0" colspan="'.$ss.'"></td>
 						</tr>';
 					}
 				}
 				$html .= '<tr>
-					<td style="padding:6px;text-align:right" colspan="12">
+					<td style="padding:6px;text-align:right" colspan="'.$ss.'">
 						<button type="button" class="btn btn-sm btn-primary" style="font-weight:bold" onclick="simpanOPB()"><i class="fas fa-save"></i> SIMPAN</button>
 					</td>
 				</tr>';
@@ -1000,8 +1060,8 @@ class Transaksi extends CI_Controller
 		// OPSI OPB ATAU BAPB
 		if($opsi == 'opb'){
 			($approve == 'ADMIN') ? $wApp = "AND h.creat_by='$username'" : $wApp = "";
-			($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y' AND h.status_opb!='Approve'" : $wOwn = "";
-			$wOpsi = "AND h.status_opb!='Close'";
+			($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y'" : $wOwn = "";
+			$wOpsi = "AND h.status_opb!='Approve'";
 		}
 		if($opsi == 'bapb'){
 			$wApp = ""; $wOwn = ""; $wOpsi = "AND h.status_opb='Approve'";
@@ -1057,8 +1117,8 @@ class Transaksi extends CI_Controller
 		// OPSI OPB DAN BAPB
 		if($opsi == 'opb'){
 			($approve == 'ADMIN') ? $wApp = "AND h.creat_by='$username'" : $wApp = "";
-			($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y' AND h.status_opb!='Approve'" : $wOwn = "";
-			$wOpsi = "AND h.status_opb!='Close'";
+			($approve == 'OWNER') ? $wOwn = "AND h.acc1='Y' AND h.acc2='Y'" : $wOwn = "";
+			$wOpsi = "AND h.status_opb!='Approve'";
 		}
 		if($opsi == 'bapb'){
 			$wApp = ""; $wOwn = ""; $wOpsi = "AND h.status_opb='Approve'";
@@ -1385,7 +1445,7 @@ class Transaksi extends CI_Controller
 								$htmlTdSatQty .= '<td style="padding:6px">'.$r->dsatuan.'</td>
 								<td style="padding:6px;text-align:right">'.number_format($dqty,0,',','.').'</td>';
 							}
-							// HARGA, JUMLAH, PILIH SUPPLIER
+							// HARGA, JUMLAH, PILIH SUPPLIER //
 							$htmlSup = '';
 							if(($approve == 'ALL' || $approve == 'OFFICE' || $approve == 'GUDANG') && $opbh->acc1 == 'Y'){
 								$sup = $this->db->query("SELECT*FROM m_supplier ORDER BY nm_supp");

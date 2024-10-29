@@ -990,90 +990,98 @@ class M_transaksi extends CI_Model
 	function simpanOPB()
 	{
 		$id_opbh = $_POST["id_opbh"];
+		$jenis_opb = $_POST["jenis_opb"];
 		$tgl_opb = $_POST["tgl_opb"];
 		$no_opb = $_POST["no_opb"];
 		$departemen = $_POST["plh_departemen"];
 		$status = $_POST["status"];
 		// CEK NOMER OPB
 		$cekNoOpb = $this->db->query("SELECT*FROM trs_opb_header WHERE no_opb='$no_opb'");
-		if($tgl_opb == ''){
+		if($jenis_opb == ''){
+			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH JENIS OPB!';
+		}else if($tgl_opb == ''){
 			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH TANGGAL!';
-		}else if($no_opb == ''){
+		}else if($jenis_opb == 'PEMBELIAN' && $no_opb == ''){
 			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP ISI NO. OPB!';
 		}else if($departemen == ''){
 			$data = false; $i_header = false; $i_detail = false; $msg = 'HARAP PILIH DEPARTEMEN!';
 		}else if($cekNoOpb->num_rows() != 0 && $status == 'insert'){
 			$data = false; $i_header = false; $i_detail = false; $msg = 'NO. OPB SUDAH TERPAKAI!';
 		}else{
-			$dHeader = [
-				'tgl_opb' => $tgl_opb,
-				'no_opb' => $no_opb,
-				'kode_dpt' => $departemen,
-				'status_opb' => 'Open',
-			];
-			if($status == 'insert'){
-				$this->db->set('creat_by', $this->username);
-				$this->db->set('creat_at', date('Y-m-d H:i:s'));
-				$i_header = $this->db->insert('trs_opb_header', $dHeader);
-			}else{
-				$this->db->set('tgl_opb', $tgl_opb);
-				$this->db->set('edit_by', $this->username);
-				$this->db->set('edit_at', date('Y-m-d H:i:s'));
-				$this->db->where('id_opbh', $id_opbh);
-				$i_header = $this->db->update('trs_opb_header', $dHeader);
-			}
-			if($i_header){
-				// GET OPB HEADER
+			if($jenis_opb == 'PEMBELIAN'){
+				$dHeader = [
+					'tgl_opb' => $tgl_opb,
+					'no_opb' => $no_opb,
+					'kode_dpt' => $departemen,
+					'status_opb' => 'Open',
+				];
 				if($status == 'insert'){
-					$opbH = $this->db->query("SELECT*FROM trs_opb_header WHERE tgl_opb='$tgl_opb' AND no_opb='$no_opb' AND kode_dpt='$departemen' AND status_opb='Open'")->row()->id_opbh;
+					$this->db->set('creat_by', $this->username);
+					$this->db->set('creat_at', date('Y-m-d H:i:s'));
+					$i_header = $this->db->insert('trs_opb_header', $dHeader);
 				}else{
-					$opbH = $id_opbh;
+					$this->db->set('tgl_opb', $tgl_opb);
+					$this->db->set('edit_by', $this->username);
+					$this->db->set('edit_at', date('Y-m-d H:i:s'));
+					$this->db->where('id_opbh', $id_opbh);
+					$i_header = $this->db->update('trs_opb_header', $dHeader);
 				}
-				if($this->cart->total_items() != 0){
-					foreach($this->cart->contents() as $r){
-						// GET BARANG DETAIL
-						$id_mbh = $r['options']['id_mbh'];
-						$id_mbd = $r['options']['id_mbd'];
-						$barang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
-						// SATUAN
-						if($barang->p_satuan == 1){
-							$qty1 = null; $qty2 = null; $qty3 = $r['options']['i_qty3'];
-							$satuan1 = null; $satuan2 = null; $satuan3 = $barang->satuan3;
-						}
-						if($barang->p_satuan == 2){
-							$qty1 = $r['options']['i_qty1']; $qty2 = null; $qty3 = $r['options']['i_qty3'];
-							$satuan1 = $barang->satuan1; $satuan2 = null; $satuan3 = $barang->satuan3;
-						}
-						if($barang->p_satuan == 3){
-							$qty1 = $r['options']['i_qty1']; $qty2 = $r['options']['i_qty2']; $qty3 = $r['options']['i_qty3'];
-							$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
-						}
-						$dDetail = [
-							'id_opbh' => $opbH,
-							'no_opb' => $no_opb,
-							'id_mbh' => $id_mbh,
-							'id_mbd' => $id_mbd,
-							'kode_dpt' => $r['options']['kode_departemen'],
-							'kode_bagian' => $r['options']['plh_bagian'],
-							'p_satuan' => $barang->p_satuan,
-							'dsatuan' => $r['options']['plh_satuan'],
-							'dqty1' => $qty1,
-							'dsatuan1' => $satuan1,
-							'dqty2' => $qty2,
-							'dsatuan2' => $satuan2,
-							'dqty3' => $qty3,
-							'dsatuan3' => $satuan3,
-							'ket_pengadaan' => $r['options']['ket_pengadaan'],
-							'creat_by' => $this->username,
-							'creat_at' => date('Y-m-d H:i:s'),
-						];
-						$i_detail = $this->db->insert('trs_opb_detail', $dDetail);
+				if($i_header){
+					// GET OPB HEADER
+					if($status == 'insert'){
+						$opbH = $this->db->query("SELECT*FROM trs_opb_header WHERE tgl_opb='$tgl_opb' AND no_opb='$no_opb' AND kode_dpt='$departemen' AND status_opb='Open'")->row()->id_opbh;
+					}else{
+						$opbH = $id_opbh;
 					}
-				}else{
-					$i_detail = false;
+					if($this->cart->total_items() != 0){
+						foreach($this->cart->contents() as $r){
+							// GET BARANG DETAIL
+							$id_mbh = $r['options']['id_mbh'];
+							$id_mbd = $r['options']['id_mbd'];
+							$barang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
+							// SATUAN
+							if($barang->p_satuan == 1){
+								$qty1 = null; $qty2 = null; $qty3 = $r['options']['i_qty3'];
+								$satuan1 = null; $satuan2 = null; $satuan3 = $barang->satuan3;
+							}
+							if($barang->p_satuan == 2){
+								$qty1 = $r['options']['i_qty1']; $qty2 = null; $qty3 = $r['options']['i_qty3'];
+								$satuan1 = $barang->satuan1; $satuan2 = null; $satuan3 = $barang->satuan3;
+							}
+							if($barang->p_satuan == 3){
+								$qty1 = $r['options']['i_qty1']; $qty2 = $r['options']['i_qty2']; $qty3 = $r['options']['i_qty3'];
+								$satuan1 = $barang->satuan1; $satuan2 = $barang->satuan2; $satuan3 = $barang->satuan3;
+							}
+							$dDetail = [
+								'id_opbh' => $opbH,
+								'no_opb' => $no_opb,
+								'id_mbh' => $id_mbh,
+								'id_mbd' => $id_mbd,
+								'kode_dpt' => $r['options']['kode_departemen'],
+								'kode_bagian' => $r['options']['plh_bagian'],
+								'p_satuan' => $barang->p_satuan,
+								'dsatuan' => $r['options']['plh_satuan'],
+								'dqty1' => $qty1,
+								'dsatuan1' => $satuan1,
+								'dqty2' => $qty2,
+								'dsatuan2' => $satuan2,
+								'dqty3' => $qty3,
+								'dsatuan3' => $satuan3,
+								'ket_pengadaan' => $r['options']['ket_pengadaan'],
+								'creat_by' => $this->username,
+								'creat_at' => date('Y-m-d H:i:s'),
+							];
+							$i_detail = $this->db->insert('trs_opb_detail', $dDetail);
+						}
+					}else{
+						$i_detail = false;
+					}
 				}
+				$data = true; $msg = 'OK!';
 			}
-			$data = true; $msg = 'OK!';
+			if($jenis_opb == 'STOK'){
+				$data = false; $i_header = false; $i_detail = false; $msg = false;
+			}
 		}
 		return ([
 			'data' => $data,
