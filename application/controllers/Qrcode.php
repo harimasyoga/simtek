@@ -168,7 +168,16 @@ class Qrcode extends CI_Controller
 				<td style="padding:6px;text-align:right">'.$to2.'</td>
 				<td style="padding:6px">'.$to3.'</td>
 			</tr>
-		';
+			<tr>
+				<td colspan="6"></td>
+				<td style="border:1px solid #dee2e6;padding:2px" colspan="11"></td>
+			</tr>
+			<tr>
+				<td style="padding:6px" colspan="6"></td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;border-width:1px 0 1px 1px;padding:6px;font-weight:bold">KETERANGAN</td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;border-width:1px 0;padding:6px 0;font-weight:bold">:</td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;border-width:1px 1px 1px 0;padding:6px" colspan="3">'.$opbd->ket_pengadaan.'</td>
+			</tr>';
 		$htmlOpb .= '</table>';
 
 		// GET DATA BARANG BAPB
@@ -268,17 +277,23 @@ class Qrcode extends CI_Controller
 			if($bapb->b_satuan == 1){
 				$bp1 = 'TERKECIL';
 				$bp2 = number_format($bapb->bqty3,0,',','.');
+				$bp22 = '0';
 				$bp3 = $bapb->bsatuan3;
+				$st = array('TERKECIL');
 			}
 			if($bapb->b_satuan == 2){
 				$bp1 = 'TERBESAR<br>TERKECIL';
 				$bp2 = number_format($bapb->bqty1,0,',','.').'<br>'.number_format($bapb->bqty3,0,',','.');
+				$bp22 = '0<br>0';
 				$bp3 = $bapb->bsatuan1.'<br>'.$bapb->bsatuan3;
+				$st = array('TERKECIL', 'TERBESAR');
 			}
 			if($bapb->b_satuan == 3){
 				$bp1 = 'TERBESAR<br>TENGAH<br>TERKECIL';
 				$bp2 = number_format($bapb->bqty1,0,',','.').'<br>'.number_format($bapb->bqty2,0,',','.').'<br>'.number_format($bapb->bqty3,0,',','.');
+				$bp22 = '0<br>0<br>0';
 				$bp3 = $bapb->bsatuan1.'<br>'.$bapb->bsatuan2.'<br>'.$bapb->bsatuan3.'';
+				$st = array('TERKECIL', 'TENGAH', 'TERBESAR');
 			}
 			$htmlBapb .='<tr style="background:#f2f2f2;border:1px solid #dee2e6;vertical-align:top">
 				<td style="padding:6px;font-weight:bold">SATUAN</td>
@@ -292,18 +307,73 @@ class Qrcode extends CI_Controller
 				<td style="padding:6px;text-align:right">'.$bp2.'</td>
 				<td style="padding:6px">'.$bp3.'</td>
 			</tr>
-		';
+			<tr>
+				<td colspan="6"></td>
+				<td style="border:1px solid #dee2e6;padding:2px" colspan="11"></td>
+			</tr>
+			<tr>
+				<td style="padding:6px" colspan="6"></td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;border-width:1px 0 1px 1px;padding:6px;font-weight:bold">KETERANGAN</td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;border-width:1px 0;padding:6px 0;font-weight:bold">:</td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;border-width:1px 1px 1px 0;padding:6px" colspan="3">'.$bapb->bket_pengadaan.'</td>
+			</tr>';
 		$htmlBapb .= '</table>';
 
 		$htmlSpb = '';
-		$htmlSpb .= '<table class="table table-bordered table-striped" style="margin:0">
-			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">PILIH SATUAN</th>
-			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">QTY</th>
-			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px" colspan="3">PENGAMBILAN</th>
-			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KETERANGAN</th>
-			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">BAGIAN</th>
-			<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">AKSI</th>
-		';
+		$htmlSpb .= '<table style="margin:0;padding:0;border:0">
+			<tr>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 12px">PILIH SATUAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">QTY</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px" colspan="3">PENGAMBILAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 80px">KETERANGAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px 100px">BAGIAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">AKSI</th>
+			</tr>';
+			// PILIH SATUAN DAN QTY
+			$htmlPlhSatuan = '';
+			foreach($st as $t){
+				($bapb->bsatuan == $t) ? $slt = ' selected' : $slt = '';
+				$htmlPlhSatuan .= '<option value="'.$t.'"'.$slt.'>'.$t.'</option>';
+			}
+			// BAGIAN
+			$bspb = $this->db->query("SELECT*FROM m_departemen WHERE lev!='0'");
+			$optBagian = '';
+			$optBagian .= '<option value="">PILIH</option>';
+			foreach($bspb->result() as $b){
+				$optBagian .= '<option value="'.$b->kode.'">'.$b->nama.'</option>';
+			}
+			$tdBagian = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">
+				<select id="plh_bagian" class="form-control select2" style="padding:3px;width:100%">
+					'.$optBagian.'
+				</select>
+			</td>';
+			$htmlSpb .= '<tr style="vertical-align:top">
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">
+					<select id="plh_satuan" class="form-control" style="padding:3px;width:100%" onchange="pilihSatuan()">
+						'.$htmlPlhSatuan.'
+					</select>
+				</td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:center">
+					<input type="number" id="qty" class="form-control" style="width:60px;padding:3px 4px;text-align:right" value="0" onkeyup="pengadaaan()">
+				</td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold"><div class="txtsatuan">'.$bp1.'</div></td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold;text-align:right"><div class="hitungqty">'.$bp22.'</div></td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold"><div class="ketsatuan">'.$bp3.'</div></td>
+				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">
+					<input type="hidden" id="h_satuan" value="'.$bapb->b_satuan.'">
+					<input type="hidden" id="h_qty1_" value="'.round($bapb->bqty1,2).'">
+					<input type="hidden" id="h_qty2_" value="'.round($bapb->bqty2,2).'">
+					<input type="hidden" id="h_qty3_" value="'.round($bapb->bqty3,2).'">
+					<input type="hidden" id="h_satuan1_" value="'.$bapb->bsatuan1.'">
+					<input type="hidden" id="h_satuan2_" value="'.$bapb->bsatuan2.'">
+					<input type="hidden" id="h_satuan3_" value="'.$bapb->bsatuan3.'">
+					<textarea id="ket_pengadaan" class="form-control" style="padding:3px 4px;resize:none" rows="2" placeholder="-" oninput="this.value=this.value.toUpperCase()"></textarea>
+				</td>
+				'.$tdBagian.'
+				<td style="padding:6px;background:#f2f2f2;border:1px solid #dee2e6">
+					<button type="button" class="btn btn-xs btn-success" onclick="prosesSPB()">proses</button>
+				</td>
+			</tr>';
 		$htmlSpb .= '</table>';
 
 		echo json_encode([
