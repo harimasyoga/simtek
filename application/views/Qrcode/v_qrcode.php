@@ -52,6 +52,21 @@
 			</div>
 		</div>
 
+		<div class="row row-stok">
+			<div class="col-md-12">
+				<div class="card card-secondary card-outline">
+					<div class="card-header" style="padding:12px">
+						<h3 class="card-title" style="font-weight:bold;font-size:18px">STOK</h3>
+					</div>
+					<div class="card-body" style="padding:6px">
+						<div class="ldopb" style="padding:0;overflow:auto;white-space:nowrap">
+							<div class="list-stok"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<?php if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE', 'GUDANG'])) { ?>
 			<div class="row row-input">
 				<div class="col-md-12">
@@ -99,20 +114,23 @@
 	{
 		$('.list-opb').html('')
 		$('.list-bapb').html('')
+		$('.list-stok').html('')
 		$('.list-input-spb').html('')
+		$('.list-detail-spb').html('')
 		$.ajax({
 			url: '<?php echo base_url('Qrcode/loadBarang')?>',
 			type: "POST",
 			data: ({ qrcode }),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(urlAppv == 'ALL'){
 					$('.list-opb').html(data.htmlOpb)
 				}
+				$('.list-stok').html(data.htmlStok)
 				$('.list-bapb').html(data.htmlBapb)
 				if(urlAppv == 'ALL' || urlAppv == 'OFFICE' || urlAppv == 'GUDANG'){
 					$('.list-input-spb').html(data.htmlSpb)
+					$('.list-detail-spb').html(data.htmlLSpb)
 				}
 				$(".select2").select2()
 			}
@@ -140,11 +158,12 @@
 			$(".hitungqty").html(`<span>0</span><br><span>0</span><br><span>0</span>`)
 			$(".ketsatuan").html(`<span>${satuan1}</span><br><span>${satuan2}</span><br><span>${satuan3}</span>`)
 		}
-		$("#qty").val('')
+		$("#qty").val(0)
 		$("#i_qty1_").val('')
 		$("#i_qty2_").val('')
 		$("#i_qty3_").val('')
-		$("#plh_bagian").val('')
+		$("#plh_departemen").val('')
+		$("#plh_bagian").html('<option value="">PILIH</option>')
 		$("#ket_pengadaan").val('')
 	}
 
@@ -153,9 +172,9 @@
 		const rupiah = new Intl.NumberFormat('id-ID', {styles: 'currency', currency: 'IDR'})
 		let h_satuan = parseInt($("#h_satuan").val())
 		let plh_satuan = $("#plh_satuan").val()
-		let i_qty = parseInt($("#qty").val().split('.').join(''));
+		let i_qty = parseFloat($("#qty").val()).toFixed(2).split('.00').join('');
 		(isNaN(i_qty) || i_qty == 0 || i_qty < 0 || i_qty.toString().length >= 7) ? i_qty = 0 : i_qty = i_qty;
-		$("#qty").val(rupiah.format(i_qty));
+		$("#qty").val(parseFloat(i_qty));
 		let qty1 = parseInt($("#h_qty1_").val())
 		let qty2 = parseInt($("#h_qty2_").val())
 		let qty3 = parseInt($("#h_qty3_").val())
@@ -167,7 +186,7 @@
 		if(h_satuan == 1){
 			x_kecil = i_qty
 			$(".txtsatuan").html(`<span style="color:#f00">TERKECIL</span>`)
-			$(".hitungqty").html(`<span style="color:#f00">${rupiah.format(i_qty)}</span>`)
+			$(".hitungqty").html(`<span style="color:#f00">${i_qty}</span>`)
 			$(".ketsatuan").html(`<span style="color:#f00">${satuan3}</span>`)
 		}
 		if(h_satuan == 2){
@@ -184,7 +203,7 @@
 				style1 = ''; style3 = 'style="color:#f00"'
 			}
 			$(".txtsatuan").html(`<span ${style1}>TERBESAR</span><br><span ${style3}>TERKECIL</span>`)
-			$(".hitungqty").html(`<span ${style1}>${rupiah.format(x_besar)}</span><br><span ${style3}>${rupiah.format(x_kecil)}</span>`)
+			$(".hitungqty").html(`<span ${style1}>${x_besar}</span><br><span ${style3}>${x_kecil}</span>`)
 			$(".ketsatuan").html(`<span ${style1}>${satuan1}</span><br><span ${style3}>${satuan3}</span>`)
 		}
 		if(h_satuan == 3){
@@ -211,17 +230,55 @@
 				style1 = ''; style2 = ''; style3 = 'style="color:#f00"'
 			}
 			$(".txtsatuan").html(`<span ${style1}>TERBESAR</span><br><span ${style2}>TENGAH</span><br><span ${style3}>TERKECIL</span>`)
-			$(".hitungqty").html(`<span ${style1}>${rupiah.format(x_besar)}</span><br><span ${style2}>${rupiah.format(x_tengah)}</span><br><span ${style3}>${rupiah.format(x_kecil)}</span>`)
+			$(".hitungqty").html(`<span ${style1}>${x_besar}</span><br><span ${style2}>${x_tengah}</span><br><span ${style3}>${x_kecil}</span>`)
 			$(".ketsatuan").html(`<span ${style1}>${satuan1}</span><br><span ${style2}>${satuan2}</span><br><span ${style3}>${satuan3}</span>`)
 		}
+		$("#i_qty1_").val(x_besar)
+		$("#i_qty2_").val(x_tengah)
+		$("#i_qty3_").val(x_kecil)
+	}
+
+	function plhDepartemen()
+	{
+		let plh_departemen = $("#plh_departemen").val()
+		$("#plh_bagian").html('<option value="">-</option>')
+		$.ajax({
+			url: '<?php echo base_url('Qrcode/plhDepartemen')?>',
+			type: "POST",
+			data: ({ plh_departemen }),
+			success: function(res){
+				data = JSON.parse(res)
+				$("#plh_bagian").html(data.htmlBagian)
+			}
+		})
 	}
 
 	function prosesSPB()
 	{
-		let b_satuan = parseInt($("#h_satuan").val())
+		let id_stok = $("#id_stok").val()
 		let plh_satuan = $("#plh_satuan").val()
-		let i_qty = parseInt($("#qty").val().split('.').join(''));
+		let qty = $("#qty").val()
+		let i_qty1 = $("#i_qty1_").val()
+		let i_qty2 = $("#i_qty2_").val()
+		let i_qty3 = $("#i_qty3_").val()
 		let ket_pengadaan = $("#ket_pengadaan").val()
+		let plh_departemen = $("#plh_departemen").val()
 		let plh_bagian = $("#plh_bagian").val()
+		$.ajax({
+			url: '<?php echo base_url('Qrcode/prosesSPB')?>',
+			type: "POST",
+			data: ({
+				id_stok, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, plh_departemen, plh_bagian
+			}),
+			success: function(res){
+				data = JSON.parse(res)
+				console.log(data)
+			}
+		})
+	}
+
+	function hapusdSPB(id_spbd)
+	{
+		console.log(id_spbd)
 	}
 </script>

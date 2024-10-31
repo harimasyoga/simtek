@@ -1581,7 +1581,17 @@ class M_transaksi extends CI_Model
 		$code = substr($shuffledString, 1, 11);
 		$cek_data = $this->db->query("SELECT*FROM m_qrcode WHERE qrcode_data='$code'");
 		if($cek_data->num_rows() != 0){
-			$code = substr_replace($code, count($cek_data) + 1, 11);
+			$stringLength2 = strlen($stringSpace);
+			$string2 = str_repeat($stringSpace, ceil(12 / $stringLength2));
+			$shuffledString2 = str_shuffle($string2);
+			$code = substr($shuffledString2, 1, 12);
+			$cek_data2 = $this->db->query("SELECT*FROM m_qrcode WHERE qrcode_data='$code'");
+			if($cek_data2->num_rows() != 0){
+				$stringLength3 = strlen($stringSpace);
+				$string3 = str_repeat($stringSpace, ceil(13 / $stringLength3));
+				$shuffledString3 = str_shuffle($string3);
+				$code = substr($shuffledString3, 1, 13);
+			}
 		}
 		return $code;
 	}

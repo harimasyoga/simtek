@@ -728,19 +728,19 @@ class Transaksi extends CI_Controller
 						// SATUAN
 						if($r->p_satuan == 1){
 							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERKECIL</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.number_format($r->qty3,0,',','.').'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.round($r->qty3,2).'</td>
 							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan3.'</td>';
 							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option>';
 						}
 						if($r->p_satuan == 2){
 							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERBESAR<br>TERKECIL</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.round($r->qty1,2).'<br>'.round($r->qty3,2).'</td>
 							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan1.'<br>'.$r->satuan3.'</td>';
 							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option><option value="TERBESAR">TERBESAR</option>';
 						}
 						if($r->p_satuan == 3){
 							$htmlSat = '<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">TERBESAR<br>TENGAH<br>TERKECIL</td>
-							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty2,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:right">'.round($r->qty1,2).'<br>'.round($r->qty2,2).'<br>'.round($r->qty3,2).'</td>
 							<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px">'.$r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'</td>';
 							$htmlPlhSatuan = '<option value="TERKECIL">TERKECIL</option><option value="TENGAH">TENGAH</option><option value="TERBESAR">TERBESAR</option>';
 						}
@@ -986,7 +986,7 @@ class Transaksi extends CI_Controller
 					// SATUAN
 					if($b->p_satuan == 1){
 						$htmlPgd = '<td style="padding:6px;font-weight:bold;color:#f00">TERKECIL</td>
-						<td style="padding:6px;text-align:right;font-weight:bold;color:#f00">'.number_format($i_qty3,0,',','.').'</td>
+						<td style="padding:6px;text-align:right;font-weight:bold;color:#f00">'.round($i_qty3,2).'</td>
 						<td style="padding:6px;font-weight:bold;color:#f00">'.$b->satuan3.'</td>';
 					}
 					if($b->p_satuan == 2){
@@ -997,7 +997,7 @@ class Transaksi extends CI_Controller
 							$s1 = ''; $s3 = 'style="color:#f00"';
 						}
 						$htmlPgd = '<td style="padding:6px;font-weight:bold"><div '.$s1.'>TERBESAR</div><div '.$s3.'>TERKECIL</div></td>
-						<td style="padding:6px;text-align:right;font-weight:bold"><div '.$s1.'>'.round($i_qty1,2).'</div><div '.$s3.'>'.number_format($i_qty3,0,',','.').'</div></td>
+						<td style="padding:6px;text-align:right;font-weight:bold"><div '.$s1.'>'.round($i_qty1,2).'</div><div '.$s3.'>'.round($i_qty3,2).'</div></td>
 						<td style="padding:6px;font-weight:bold"><div '.$s1.'>'.$b->satuan1.'</div><div '.$s3.'>'.$b->satuan3.'</div></td>';
 					}
 					if($b->p_satuan == 3){
@@ -1011,7 +1011,7 @@ class Transaksi extends CI_Controller
 							$s1 = ''; $s2 = ''; $s3 = 'style="color:#f00"';
 						}
 						$htmlPgd = '<td style="padding:6px;font-weight:bold"><div '.$s1.'>TERBESAR</div><div '.$s2.'>TENGAH</div><div '.$s3.'>TERKECIL</div></td>
-						<td style="padding:6px;text-align:right;font-weight:bold"><div '.$s1.'>'.round($i_qty1,2).'</div><div '.$s2.'>'.round($i_qty2,2).'</div><div '.$s3.'>'.number_format($i_qty3,0,',','.').'</div></td>
+						<td style="padding:6px;text-align:right;font-weight:bold"><div '.$s1.'>'.round($i_qty1,2).'</div><div '.$s2.'>'.round($i_qty2,2).'</div><div '.$s3.'>'.round($i_qty3,2).'</div></td>
 						<td style="padding:6px;font-weight:bold"><div '.$s1.'>'.$b->satuan1.'</div><div '.$s2.'>'.$b->satuan2.'</div><div '.$s3.'>'.$b->satuan3.'</div></td>';
 					}
 					// KETERANGAN
@@ -1022,7 +1022,7 @@ class Transaksi extends CI_Controller
 					if($jenis_opb == 'STOK'){
 						// $harga_opb $plh_supplier
 						$sup = $this->db->query("SELECT*FROM m_supplier WHERE id_supp='$plh_supplier'")->row();
-						$tdOPB = '<td style="padding:6px;text-align:right">'.number_format($harga_opb,0,',','.').'</td>
+						$tdOPB = '<td style="padding:6px;text-align:right">'.round($harga_opb,2).'</td>
 						<td style="padding:6px">'.$sup->nm_supp.'</td>';
 					}else{
 						$tdOPB = '';
@@ -1412,19 +1412,19 @@ class Transaksi extends CI_Controller
 							// SATUAN
 							if($r->p_satuan == 1){
 								$tdSat = '<td style="padding:6px">TERKECIL</td>
-								<td style="padding:6px;text-align:right">'.number_format($r->qty3,0,',','.').'</td>
+								<td style="padding:6px;text-align:right">'.round($r->qty3,2).'</td>
 								<td style="padding:6px">'.$r->satuan3.'</td>';
 								$st = array('TERKECIL');
 							}
 							if($r->p_satuan == 2){
 								$tdSat = '<td style="padding:6px">TERBESAR<br>TERKECIL</td>
-								<td style="padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+								<td style="padding:6px;text-align:right">'.round($r->qty1,2).'<br>'.round($r->qty3,2).'</td>
 								<td style="padding:6px">'.$r->satuan1.'<br>'.$r->satuan3.'</td>';
 								$st = array('TERKECIL', 'TERBESAR');
 							}
 							if($r->p_satuan == 3){
 								$tdSat = '<td style="padding:6px">TERBESAR<br>TENGAH<br>TERKECIL</td>
-								<td style="padding:6px;text-align:right">'.number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty2,0,',','.').'<br>'.number_format($r->qty3,0,',','.').'</td>
+								<td style="padding:6px;text-align:right">'.round($r->qty1,2).'<br>'.round($r->qty2,2).'<br>'.round($r->qty3,2).'</td>
 								<td style="padding:6px">'.$r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'</td>';
 								$st = array('TERKECIL', 'TENGAH', 'TERBESAR');
 							}
@@ -1801,19 +1801,19 @@ class Transaksi extends CI_Controller
 		$r = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND id_mbd='$id_mbd'")->row();
 		if($r->p_satuan == 1){
 			$td1 = 'TERKECIL';
-			$td2 = number_format($r->qty3,0,',','.');
+			$td2 = round($r->qty3,2);
 			$td3 = $r->satuan3;
 			$st = array('TERKECIL');
 		}
 		if($r->p_satuan == 2){
 			$td1 = 'TERBESAR<br>TERKECIL';
-			$td2 = number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty3,0,',','.');
+			$td2 = round($r->qty1,2).'<br>'.round($r->qty3,2);
 			$td3 = $r->satuan1.'<br>'.$r->satuan3;
 			$st = array('TERKECIL', 'TERBESAR');
 		}
 		if($r->p_satuan == 3){
 			$td1 = 'TERBESAR<br>TENGAH<br>TERKECIL';
-			$td2 = number_format($r->qty1,0,',','.').'<br>'.number_format($r->qty2,0,',','.').'<br>'.number_format($r->qty3,0,',','.');
+			$td2 = round($r->qty1,2).'<br>'.round($r->qty2,2).'<br>'.round($r->qty3,2);
 			$td3 = $r->satuan1.'<br>'.$r->satuan2.'<br>'.$r->satuan3.'';
 			$st = array('TERKECIL', 'TENGAH', 'TERBESAR');
 		}
