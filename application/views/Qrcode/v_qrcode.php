@@ -39,7 +39,7 @@
 
 		<div class="row row-bapb">
 			<div class="col-md-12">
-				<div class="card card-secondary card-outline">
+				<div class="card card-info card-outline">
 					<div class="card-header" style="padding:12px">
 						<h3 class="card-title" style="font-weight:bold;font-size:18px">RINCIAN DATA BAPB</h3>
 					</div>
@@ -70,7 +70,7 @@
 		<?php if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE', 'GUDANG'])) { ?>
 			<div class="row row-input">
 				<div class="col-md-12">
-					<div class="card card-secondary card-outline">
+					<div class="card card-success card-outline">
 						<div class="card-header" style="padding:12px">
 							<h3 class="card-title" style="font-weight:bold;font-size:18px">INPUT SPB</h3>
 						</div>
@@ -121,6 +121,16 @@
 			url: '<?php echo base_url('Qrcode/loadBarang')?>',
 			type: "POST",
 			data: ({ qrcode }),
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			success: function(res){
 				data = JSON.parse(res)
 				if(urlAppv == 'ALL'){
@@ -133,6 +143,7 @@
 					$('.list-detail-spb').html(data.htmlLSpb)
 				}
 				$(".select2").select2()
+				swal.close()
 			}
 		})
 	}
@@ -158,7 +169,7 @@
 			$(".hitungqty").html(`<span>0</span><br><span>0</span><br><span>0</span>`)
 			$(".ketsatuan").html(`<span>${satuan1}</span><br><span>${satuan2}</span><br><span>${satuan3}</span>`)
 		}
-		$("#qty").val(0)
+		$("#qty").val('')
 		$("#i_qty1_").val('')
 		$("#i_qty2_").val('')
 		$("#i_qty3_").val('')
@@ -172,9 +183,9 @@
 		const rupiah = new Intl.NumberFormat('id-ID', {styles: 'currency', currency: 'IDR'})
 		let h_satuan = parseInt($("#h_satuan").val())
 		let plh_satuan = $("#plh_satuan").val()
-		let i_qty = parseFloat($("#qty").val()).toFixed(2).split('.00').join('');
+		let i_qty = $("#qty").val();
 		(isNaN(i_qty) || i_qty == 0 || i_qty < 0 || i_qty.toString().length >= 7) ? i_qty = 0 : i_qty = i_qty;
-		$("#qty").val(parseFloat(i_qty));
+		$("#qty").val(parseFloat(i_qty).toFixed(2).split('.00').join(''));
 		let qty1 = parseInt($("#h_qty1_").val())
 		let qty2 = parseInt($("#h_qty2_").val())
 		let qty3 = parseInt($("#h_qty3_").val())
@@ -245,10 +256,21 @@
 		$.ajax({
 			url: '<?php echo base_url('Qrcode/plhDepartemen')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({ plh_departemen }),
 			success: function(res){
 				data = JSON.parse(res)
 				$("#plh_bagian").html(data.htmlBagian)
+				swal.close()
 			}
 		})
 	}
@@ -267,18 +289,95 @@
 		$.ajax({
 			url: '<?php echo base_url('Qrcode/prosesSPB')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({
 				id_stok, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, plh_departemen, plh_bagian
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
+				if(data.data){
+					loadBarang()
+				}else{
+					toastr.error(`<b>${data.msg}</b>`)
+					swal.close()
+				}
 			}
 		})
 	}
 
 	function hapusdSPB(id_spbd)
 	{
-		console.log(id_spbd)
+		swal({
+			title: "Apakah Kamu Yakin?",
+			text: "",
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#C00",
+			confirmButtonText: "Delete"
+		}).then(function(result) {
+			$.ajax({
+				url: '<?php echo base_url('Qrcode/hapusdSPB')?>',
+				type: "POST",
+				beforeSend: function() {
+					swal({
+						title: 'Loading',
+						allowEscapeKey: false,
+						allowOutsideClick: false,
+						onOpen: () => {
+							swal.showLoading();
+						}
+					});
+				},
+				data: ({ id_spbd }),
+				success: function(res){
+					data = JSON.parse(res)
+					if(data.data){
+						loadBarang()
+					}else{
+						toastr.error(`<b>${data.msg}</b>`)
+						swal.close()
+					}
+				}
+			})
+		});
+	}
+
+	function simpandSPB()
+	{
+		let h_urut = $("#h_urut").val()
+		let pemohon_spb = $("#pemohon_spb").val()
+		$.ajax({
+			url: '<?php echo base_url('Qrcode/simpandSPB')?>',
+			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
+			data: ({ h_urut, pemohon_spb }),
+			success: function(res){
+				data = JSON.parse(res)
+				if(data.header && data.detail){
+						loadBarang()
+					}else{
+						toastr.error(`<b>${data.msg}</b>`)
+						swal.close()
+					}
+			}
+		})
 	}
 </script>

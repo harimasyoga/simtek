@@ -36,6 +36,18 @@ class Qrcode extends CI_Controller
 		echo json_encode($result);
 	}
 
+	function hapusdSPB()
+	{
+		$result = $this->m_qrcode->hapusdSPB();
+		echo json_encode($result);
+	}
+
+	function simpandSPB()
+	{
+		$result = $this->m_qrcode->simpandSPB();
+		echo json_encode($result);
+	}
+
 	function loadBarang()
 	{
 		// GET DATA QRCODE
@@ -282,9 +294,9 @@ class Qrcode extends CI_Controller
 			}
 			// SATUAN PENERIMAAN BAPB BARANG
 			if($bapb->b_satuan == 1){
-				$bp1 = '<span style="color:#f00">TERKECIL</span>';
-				$bp2 = '<span style="color:#f00">'.round($bapb->bqty3,2).'</span>';
-				$bp3 = '<span style="color:#f00">'.$bapb->bsatuan3.'</span>';
+				$bp1 = '<span>TERKECIL</span>';
+				$bp2 = '<span>'.round($bapb->bqty3,2).'</span>';
+				$bp3 = '<span>'.$bapb->bsatuan3.'</span>';
 				$st = array('TERKECIL');
 			}
 			if($bapb->b_satuan == 2){
@@ -360,20 +372,140 @@ class Qrcode extends CI_Controller
 			$ss22 = '0<br>0<br>0';
 			$ss3 = $stok->ssatuan1.'<br>'.$stok->ssatuan2.'<br>'.$stok->ssatuan3;
 		}
+		// PENGAMBILAN
+		$ambil = $this->db->query("SELECT*FROM trs_spb_detail
+		WHERE id_mbh='$stok->id_mbh' AND id_mbd='$stok->id_mbd'
+		GROUP BY status_spd,tgl_spb,no_spb,creat_by");
 		$htmlStok = '';
-		$htmlStok .= '<table style="margin:0;padding:0;border:0">
+		$htmlStok .= '<table class="table table-bordered table-striped" style="margin:0">
 			<tr>
 				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px" colspan="3">
 					<input type="hidden" id="id_stok" value="'.$stok->id_stok.'">
 					STOK AWAL
 				</th>
 				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px" colspan="3">PENGAMBILAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">HARI, TGL</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">NO. SPB</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KETERANGAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">DEPARTEMEN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">BAGIAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">PEMOHON</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">PEMBUAT</th>
 			</tr>
 			<tr>
-				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold">'.$ss1.'</td>
-				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold;text-align:right">'.$ss2.'</td>
-				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold">'.$ss3.'</td>
-			</tr>';
+				<td style="padding:0"></td>
+			</tr>
+			<tr style="vertical-align:top">
+				<td style="padding:6px;font-weight:bold">'.$ss1.'</td>
+				<td style="padding:6px;font-weight:bold;text-align:right">'.$ss2.'</td>
+				<td style="padding:6px;font-weight:bold">'.$ss3.'</td>
+			';
+			if($ambil->num_rows() != 0){
+				$n = 0;
+				$sum1 = 0; $sum2 = 0; $sum3 = 0;
+				foreach($ambil->result() as $a){
+					$n++;
+					if($n != 1){
+						$htmlStok .= '<tr style="vertical-align:top"><td style="padding:6px" colspan="3"></td>';
+					}
+					// SATUAN PENERIMAAN BAPB BARANG
+					if($a->x_satuan == 1){
+						$xp1 = '<span>TERKECIL</span>';
+						$xp2 = '<span>'.round($a->xqty3,2).'</span>';
+						$xp3 = '<span>'.$a->xsatuan3.'</span>';
+					}
+					if($a->x_satuan == 2){
+						if($a->xsatuan == 'TERBESAR'){
+							$p1 = 'style="color:#f00"'; $p3 = '';
+						}
+						if($a->xsatuan == 'TERKECIL'){
+							$p1 = ''; $p3 = 'style="color:#f00"';
+						}
+						$xp1 = '<span '.$p1.'>TERBESAR</span><br><span '.$p3.'>TERKECIL</span>';
+						$xp2 = '<span '.$p1.'>'.round($a->xqty1,2).'</span><br><span '.$p3.'>'.round($a->xqty3,2).'</span>';
+						$xp3 = '<span '.$p1.'>'.$a->xsatuan1.'</span><br><span '.$p3.'>'.$a->xsatuan3.'</span>';
+					}
+					if($a->x_satuan == 3){
+						if($a->xsatuan == 'TERBESAR'){
+							$p1 = 'style="color:#f00"'; $p2 = ''; $p3 = '';
+						}
+						if($a->xsatuan == 'TENGAH'){
+							$p1 = ''; $p2 = 'style="color:#f00"'; $p3 = '';
+						}
+						if($a->xsatuan == 'TERKECIL'){
+							$p1 = ''; $p2 = ''; $p3 = 'style="color:#f00"';
+						}
+						$xp1 = '<span '.$p1.'>TERBESAR</span><br><span '.$p2.'>TENGAH</span><br><span '.$p3.'>TERKECIL</span>';
+						$xp2 = '<span '.$p1.'>'.round($a->xqty1,2).'</span><br><span '.$p2.'>'.round($a->xqty2,2).'</span><br><span '.$p3.'>'.round($a->xqty3,2).'</span>';
+						$xp3 = '<span '.$p1.'>'.$a->xsatuan1.'</span><br><span '.$p2.'>'.$a->xsatuan2.'</span><br><span '.$p3.'>'.$a->xsatuan3.'</span>';
+					}
+					($a->no_spb == null) ? $no_opb = '-' : $no_opb = $a->no_spb;
+					// DEPARTEMEN, BAGIAN
+					$xkd_dpt = $this->db->query("SELECT*FROM m_departemen WHERE kode='$a->xkode_dpt'")->row();
+					$xkd_bagian = $this->db->query("SELECT*FROM m_departemen WHERE kode='$a->xkode_bagian'")->row();
+					// PEMOHON
+					$spbh = $this->db->query("SELECT*FROM trs_spb_header WHERE no_spb='$a->no_spb'");
+					($spbh->num_rows() == 0) ? $suhu = '-' : $suhu = $spbh->row()->pemohon_spb ;
+					$htmlStok .= '<td style="padding:6px">'.$xp1.'</td>
+						<td style="padding:6px;text-align:right">'.$xp2.'</td>
+						<td style="padding:6px">'.$xp3.'</td>
+						<td style="padding:6px">'.$this->m_fungsi->haru($a->tgl_spb).', '.$this->m_fungsi->tglIndSkt($a->tgl_spb).'</td>
+						<td style="padding:6px">'.$no_opb.'</td>
+						<td style="padding:6px">'.$a->xket.'</td>
+						<td style="padding:6px">'.$xkd_dpt->nama.'</td>
+						<td style="padding:6px">'.$xkd_bagian->nama.'</td>
+						<td style="padding:6px">'.$suhu.'</td>
+						<td style="padding:6px">'.$a->creat_by.'</td>
+					</tr>
+					<tr>
+						<td style="padding:2px" colspan="13"></td>
+					</tr>';
+					$sum1 += ($a->xqty1 == null) ? 0 : round($a->xqty1,2);
+					$sum2 += ($a->xqty2 == null) ? 0 : round($a->xqty2,2);
+					$sum3 += ($a->xqty3 == null) ? 0 : round($a->xqty3,2);
+				}
+				// TOTAL
+				$htmlStok .= '<tr>';
+				if($stok->s_satuan == 1){
+					$hitSum3 = round($sum3,2) - round($stok->sqty3,2);
+					($hitSum3 > 0) ? $thitSum3 = '+'.round($hitSum3,2) : $thitSum3 = round($hitSum3,2);
+					$htmlStok .= '<td style="padding:6px;font-weight:bold"></td>
+						<td style="padding:6px;font-weight:bold;text-align:right">'.$thitSum3.'</td>
+						<td style="padding:6px;font-weight:bold">'.$stok->ssatuan3.'</td>
+						<td style="padding:6px;font-weight:bold">TERKECIL</td>
+						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.round($sum3,2).'</div></td>
+						<td style="padding:6px;font-weight:bold">'.$stok->ssatuan3.'</td>';
+				}
+				if($stok->s_satuan == 2){
+					$hitSum1 = round($sum1,2) - round($stok->sqty1,2);
+					$hitSum3 = round($sum3,2) - round($stok->sqty3,2);
+					($hitSum1 > 0) ? $thitSum1 = '+'.round($hitSum1,2) : $thitSum1 = round($hitSum1,2);
+					($hitSum3 > 0) ? $thitSum3 = '+'.round($hitSum3,2) : $thitSum3 = round($hitSum3,2);
+					$htmlStok .= '<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TERKECIL</div></td>
+						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.$thitSum1.'</div><div>'.$thitSum3.'</div></td>
+						<td style="padding:6px;font-weight:bold"><div>'.$stok->ssatuan1.'</div><div>'.$stok->ssatuan3.'</div></td>
+						<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TERKECIL</div></td>
+						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.round($sum1,2).'</div><div>'.round($sum3,2).'</div></td>
+						<td style="padding:6px;font-weight:bold"><div>'.$stok->ssatuan1.'</div><div>'.$stok->ssatuan3.'</div></td>';
+				}
+				if($stok->s_satuan == 3){
+					$hitSum1 = round($sum1,2) - round($stok->sqty1,2);
+					$hitSum2 = round($sum2,2) - round($stok->sqty2,2);
+					$hitSum3 = round($sum3,2) - round($stok->sqty3,2);
+					($hitSum1 > 0) ? $thitSum1 = '+'.round($hitSum1,2) : $thitSum1 = round($hitSum1,2);
+					($hitSum2 > 0) ? $thitSum2 = '+'.round($hitSum2,2) : $thitSum2 = round($hitSum2,2);
+					($hitSum3 > 0) ? $thitSum3 = '+'.round($hitSum3,2) : $thitSum3 = round($hitSum3,2);
+					$htmlStok .= '<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TENGAH</div><div>TERKECIL</div></td>
+						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.$thitSum1.'</div><div>'.$thitSum2.'</div><div>'.$thitSum3.'</div></td>
+						<td style="padding:6px;font-weight:bold"><div>'.$stok->ssatuan1.'</div><div>'.$stok->ssatuan2.'</div><div>'.$stok->ssatuan3.'</div></td>
+						<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TENGAH</div><div>TERKECIL</div></td>
+						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.round($sum1,2).'</div><div>'.round($sum2,2).'</div><div>'.round($sum3,2).'</div></td>
+						<td style="padding:6px;font-weight:bold"><div>'.$stok->ssatuan1.'</div><div>'.$stok->ssatuan2.'</div><div>'.$stok->ssatuan3.'</div></td>';
+				}
+				$htmlStok .= '<td style="padding:6px" colspan="7"></td></tr>';
+			}else{
+				$htmlStok .= '<td style="padding:6px" colspan="10"></td></tr>';
+			}
 		$htmlStok .= '</table>';
 
 		// INPUT SPB
@@ -437,7 +569,7 @@ class Qrcode extends CI_Controller
 					</select>
 				</td>
 				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:center">
-					<input type="number" id="qty" class="form-control" style="width:60px;padding:3px 4px;text-align:right" value="0" onkeyup="pengadaaan()">
+					<input type="number" id="qty" class="form-control" style="width:60px;padding:3px 4px;text-align:right" placeholder="0" onkeyup="pengadaaan()">
 				</td>
 				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold"><div class="txtsatuan">'.$ss1.'</div></td>
 				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold;text-align:right"><div class="hitungqty">'.$ss22.'</div></td>
@@ -460,7 +592,7 @@ class Qrcode extends CI_Controller
 		$spd = $this->db->query("SELECT h.nm_barang,d.*,s.* FROM trs_spb_detail s
 		INNER JOIN m_barang_detail d ON s.id_mbh=d.id_mbh AND s.id_mbd=d.id_mbd
 		INNER JOIN m_barang_header h ON s.id_mbh=h.id_mbh
-		WHERE s.no_spb IS NULL AND s.id_spb IS NULL AND s.status_spd='Open' AND s.tgl_spb='$tgl' AND s.creat_by='$username'
+		WHERE s.no_spb IS NULL AND s.id_spbh IS NULL AND s.status_spd='Open' AND s.tgl_spb='$tgl' AND s.creat_by='$username'
 		ORDER BY d.kode_barang");
 		if($spd->num_rows() != 0){
 			$htmlLSpb .= '<table style="margin:0 0 12px;padding:0;border:0;font-weight:bold">
@@ -482,13 +614,16 @@ class Qrcode extends CI_Controller
 					<td style="padding:6px">PEMOHON</td>
 					<td style="padding:6px">:</td>
 					<td style="padding:6px">
-						<input type="text" class="form-control" placeholder="NAMA PEMOHON" oninput="this.value=this.value.toUpperCase()">
+						<input type="text" id="pemohon_spb" class="form-control" placeholder="NAMA PEMOHON" oninput="this.value=this.value.toUpperCase()">
 					</td>
 				</tr>
 			</table>';
+			$urut = $this->db->query("SELECT*FROM trs_spb_detail WHERE no_spb IS NULL AND id_spbh IS NULL AND status_spd='Open' AND tgl_spb='$tgl' AND creat_by='$username' GROUP BY xurut DESC LIMIT 1")->row();
 			$htmlLSpb .= '<table class="table table-bordered table-striped">
 				<tr>
-					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">#</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">
+						<input type="hidden" id="h_urut" value="'.$urut->xurut.'">#
+					</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KODE BARANG</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">NAMA BARANG</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">JENIS / TIPE</th>
@@ -499,7 +634,7 @@ class Qrcode extends CI_Controller
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KETERANGAN</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">DEPARTEMEN</th>
 					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">BAGIAN</th>
-					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">AKSI</th>
+					<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">AKSI</th>
 				</tr>
 				<tr>
 					<td style="padding:0" colspan="14"></td>
@@ -567,10 +702,12 @@ class Qrcode extends CI_Controller
 				}
 				$htmlLSpb .= '<tr>
 					<td style="padding:6px;text-align:right" colspan="14">
-						<button type="button" class="btn btn-sm btn-primary" style="font-weight:bold" onclick=""><i class="fas fa-save"></i> SIMPAN</button>
+						<button type="button" class="btn btn-sm btn-primary" style="font-weight:bold" onclick="simpandSPB()"><i class="fas fa-save"></i> SIMPAN</button>
 					</td>
 				</tr>';
 			$htmlLSpb .= '</table>';
+		}else{
+			$htmlLSpb .= 'LIST OPB KOSONG!';
 		}
 
 		echo json_encode([
