@@ -51,7 +51,11 @@ class Master extends CI_Controller
 			'judul' => "Master Barang"
 		);
 		$this->load->view('header', $data);
-		$this->load->view('Master/v_barang', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE'])) {
+			$this->load->view('Master/v_barang', $data);
+		}else{
+			$this->load->view('home');
+		}
 		$this->load->view('footer');
 	}
 
@@ -61,7 +65,11 @@ class Master extends CI_Controller
 			'judul' => "Master Satuan"
 		);
 		$this->load->view('header', $data);
-		$this->load->view('Master/v_satuan', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE'])) {
+			$this->load->view('Master/v_satuan', $data);
+		}else{
+			$this->load->view('home');
+		}
 		$this->load->view('footer');
 	}
 
@@ -70,7 +78,7 @@ class Master extends CI_Controller
 	function loadDataBarang()
 	{
 		$data = array();
-		$query = $this->m_master->query("SELECT*FROM m_barang_header ORDER BY nm_barang ASC")->result();
+		$query = $this->db->query("SELECT*FROM m_barang_header ORDER BY nm_barang ASC")->result();
 			$i = 0;
 			foreach ($query as $r) {
 				$i++;
@@ -872,7 +880,11 @@ class Master extends CI_Controller
 		);
 
 		$this->load->view('header', $data);
-		$this->load->view('Master/v_user', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL'])) {
+			$this->load->view('Master/v_user', $data);
+		}else{
+			$this->load->view('home');
+		}
 		$this->load->view('footer');
 	}
 
@@ -883,7 +895,11 @@ class Master extends CI_Controller
 		);
 
 		$this->load->view('header', $data);
-		$this->load->view('Master/v_user_level', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL'])) {
+			$this->load->view('Master/v_user_level', $data);
+		}else{
+			$this->load->view('home');
+		}
 		$this->load->view('footer');
 	}
 	
@@ -1014,7 +1030,7 @@ class Master extends CI_Controller
 				$row[] = $r->alamat;
 				$row[] = $r->no_hp;
 				$row[] = $r->jt;
-				if (in_array($this->session->userdata('approve'), ['ALL','OFFICE', 'FINANCE']))
+				if (in_array($this->session->userdata('approve'), ['ALL','OFFICE']))
 				{
 					$btnEdit = '<button type="button" class="btn btn-warning btn-sm" onclick="tampil_edit('."'".$r->id_supp."'".','."'edit'".')"><i class="fas fa-pen"></i></button>';
 					$btnHapus = '<button type="button" class="btn btn-danger btn-sm" onclick="deleteData('."'".$r->id_supp."'".')"><i class="fa fa-trash-alt"></i></i></button>';

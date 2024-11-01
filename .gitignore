@@ -30,6 +30,7 @@ user_guide_src/cilexer/pycilexer.egg-info/*
 /tests/tests/
 /tests/results/
 /assets/gambar_po/
+/assets/qrcode/
 db_penjualan.sql
 application/config/database.php
 .vscode

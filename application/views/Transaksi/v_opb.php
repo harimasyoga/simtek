@@ -24,10 +24,10 @@
 			<div class="col-md-12">
 				<div class="card card-secondary card-outline">
 					<div class="card-header" style="padding:12px">
-						<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST OPB</h3>
+						<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST ORDER PEMBELIAN BARANG</h3>
 					</div>
 					<div class="card-body" style="padding:0">
-						<?php if(in_array($this->session->userdata('approve'), ['ALL','ADMIN', 'OFFICE', 'GUDANG'])) { ?>
+						<?php if(in_array($this->session->userdata('approve'), ['ALL', 'ADMIN', 'OFFICE'])) { ?>
 							<div style="padding:5px">
 								<button type="button" class="btn btn-primary btn-sm" onclick="tambah('tambah')">Tambah Data</button>
 							</div>
@@ -41,7 +41,7 @@
 								<div style="position:sticky;top:12px">
 									<div class="list-opb-detail"></div>
 									<div class="list-opb-verif" style="display:none;">
-										<div class="row">
+										<div class="row" style="margin-top:12px">
 											<div class="col-md-7"></div>
 											<div class="col-md-5">
 												<div class="card card-success card-outline">
@@ -102,13 +102,17 @@
 							<div class="col-md-5"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
-							<div class="col-md-2">NO. OPB <span style="color:#f00">*</span></div>
+							<div class="col-md-2">OPB <span style="color:#f00">*</span></div>
 							<div class="col-md-5">
-								<input type="number" id="no_opb" class="form-control" placeholder="NO. OPB">
+								<select id="jenis_opb" class="form-control select2" onchange="pilihBarang()">
+									<option value="">PILIH</option>
+									<option value="PEMBELIAN">PEMBELIAN</option>
+									<option value="STOK">STOK</option>
+								</select>
 							</div>
 							<div class="col-md-5"></div>
 						</div>
-						<div class="card-body row" style="font-weight:bold;padding:0 0 20px">
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
 							<div class="col-md-2">DEPARTEMEN <span style="color:#f00">*</span></div>
 							<div class="col-md-5">
 								<select id="plh_departemen" class="form-control select2" onchange="pilihBarang()">
@@ -127,6 +131,13 @@
 										echo $html1
 									?>
 								</select>
+							</div>
+							<div class="col-md-5"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 20px">
+							<div class="col-md-2">NO. OPB <span style="color:#f00">*</span></div>
+							<div class="col-md-5">
+								<input type="number" id="no_opb" class="form-control" placeholder="NO. OPB">
 							</div>
 							<div class="col-md-5"></div>
 						</div>
@@ -221,6 +232,7 @@
 		$("#id_opbh").val('')
 		$("#id_mbh").val('')
 		$("#h_ii").val('')
+		$("#jenis_opb").val('').trigger('change').prop('disabled', false)
 		$("#plh_departemen").val('').trigger('change').prop('disabled', false)
 		$(".lil").html('')
 		if(opsi == 'tambah'){
@@ -232,6 +244,7 @@
 		}
 		if(opsi == 'kembali'){
 			loadHeader()
+			swal.close()
 		}
 		status = 'insert'
 	}
@@ -257,6 +270,7 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadHeader')?>',
 			type: "POST",
+			data: ({ opsi: 'opb' }),
 			success: function(res){
 				data = JSON.parse(res)
 				$(".list-header").html(data.html)
@@ -283,7 +297,7 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadList')?>',
 			type: "POST",
-			data: ({ kode_dpt }),
+			data: ({ opsi: 'opb', kode_dpt }),
 			success: function(res){
 				data = JSON.parse(res)
 				$(".list-opb").html(data.html)
@@ -298,15 +312,15 @@
 		$(".toh").removeClass('tr-opbh-klik').addClass('tr-opbh-all')
 		$("#bth_"+i).prop('disabled', true)
 		$(".list-opb-detail").html('')
+		$(".lil").html('')
 		$(".vvff").html('')
 		$(".list-opb-verif").hide()
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadDetail')?>',
 			type: "POST",
-			data: ({ id_opbh, plh_departemen, opsi }),
+			data: ({ id_opbh, plh_departemen, opsi, jenis: 'opb' }),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(opsi == 'view'){
 					$("#toh_"+i).removeClass('tr-opbh-all').addClass('tr-opbh-klik')
 					$("#id_opbh").val(data.opbh.id_opbh)
@@ -472,9 +486,12 @@
 					// END VERIF OWNER
 				}
 				if(opsi == 'edit'){
+					$(".list-detail").html('')
+					$(".list-cart").html('')
 					$(".list-edit-cart").html(data.htmlDetail)
 				}
 				$(".select2").select2()
+				swal.close()
 			}
 		})
 	}
@@ -521,24 +538,34 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/btnVerifOpb')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({
 				id_opbh, ket_laminasi, aksi, status_verif
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(data.result){
-					btnHeader(0)
+					loadHeader()
 				}else{
 					toastr.error(`<b>KETERANGAN TIDAK BOLEH KOSONG!</b>`)
-					swal.close()
 				}
+				swal.close()
 			}
 		})
 	}
 
 	function loadBarang()
 	{
+		$("#plh_barang").html('<option value="">PILIH</option>')
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/loadBarang')?>',
 			type: "POST",
@@ -559,6 +586,12 @@
 
 	function pilihBarang()
 	{
+		let jenis_opb = $("#jenis_opb").val()
+		if(jenis_opb == 'STOK'){
+			$("#no_opb").val('').attr('placeholder', 'AUTO').prop('disabled', true)
+		}else{
+			$("#no_opb").attr('placeholder', 'NO. OPB').prop('disabled', false)
+		}
 		let plh_departemen = $("#plh_departemen").val()
 		let id_mbh = $("#plh_barang").val()
 		let id_mbh_lama = $("#id_mbh").val()
@@ -566,6 +599,7 @@
 		let material = $("#material").val()
 		let ukuran = $("#ukuran").val()
 		let merk = $("#merk").val()
+		// $("#no_opb").val('')
 		$("#jenistipe").html('<option value="">PILIH</option>')
 		$("#material").html('<option value="">PILIH</option>')
 		$("#ukuran").html('<option value="">PILIH</option>')
@@ -573,13 +607,25 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/detailBarang')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({
-				plh_departemen, id_mbh, id_mbh_lama, jenistipe, material, ukuran, merk
+				jenis_opb, plh_departemen, id_mbh, id_mbh_lama, jenistipe, material, ukuran, merk
 			}),
 			success: function(res){
 				data = JSON.parse(res);
+				(jenis_opb != '') ? jprop = true : jprop = false;
+				$("#jenis_opb").prop('disabled', jprop);
 				(plh_departemen != '') ? prop = true : prop = false;
-				$("#plh_departemen").prop('disabled', prop)
+				$("#plh_departemen").prop('disabled', prop);
 				$("#id_mbh").val(id_mbh)
 				$(".list-detail").html(data.html)
 				$("#jenistipe").html(data.htmlJT).val((id_mbh == id_mbh_lama) ? jenistipe : '')
@@ -587,8 +633,15 @@
 				$("#ukuran").html(data.htmlS).val((id_mbh == id_mbh_lama) ? ukuran : '')
 				$("#merk").html(data.htmlMr).val((id_mbh == id_mbh_lama) ? merk : '')
 				$(".select2").select2()
+				swal.close()
 			}
 		})
+	}
+
+	function hargaOPB(i)
+	{
+		let harga = ($("#harga_opb"+i).val() == undefined) ? 0 : $("#harga_opb"+i).val().split('.').join('');
+		$("#harga_opb"+i).val(format_angka(harga))
 	}
 
 	function pilihSatuan(i)
@@ -600,6 +653,9 @@
 		$("#i_qty1_"+i).val('')
 		$("#i_qty2_"+i).val('')
 		$("#i_qty3_"+i).val('')
+		$("#harga_opb"+i).val('')
+		$("#jumlah_opb"+i).val('')
+		$("#plh_supplier"+i).val('').trigger('change')
 		$("#plh_bagian"+i).val('')
 		$("#ket_pengadaan"+i).val('')
 	}
@@ -673,12 +729,20 @@
 		$("#i_qty1_"+i).val(x_besar)
 		$("#i_qty2_"+i).val(x_tengah)
 		$("#i_qty3_"+i).val(x_kecil)
+
+		if(urlAppv == 'ALL' || urlAppv == 'OFFICE'){
+			hargaOPB(i)
+		}
 	}
 
 	function hargaOPB(i)
 	{
-		let harga = $("#harga_opb"+i).val().split('.').join('')
+		let qty = ($("#qty"+i).val() == undefined) ? 0 : $("#qty"+i).val().split('.').join('');
+		let harga = ($("#harga_opb"+i).val() == undefined) ? 0 : $("#harga_opb"+i).val().split('.').join('');
 		$("#harga_opb"+i).val(format_angka(harga))
+		let jumlah = parseInt(qty) * parseInt(harga);
+		(isNaN(jumlah)) ? jumlah = 0 : jumlah = jumlah;
+		$("#jumlah_opb"+i).val(format_angka(jumlah))
 	}
 
 	function addCartOPB(i)
@@ -686,6 +750,7 @@
 		let id_cart = parseInt($("#id_cart").val()) + 1;
 		$("#id_cart").val(id_cart)
 		let id_opbh = $("#id_opbh").val()
+		let jenis_opb = $("#jenis_opb").val()
 		let tgl_opb = $("#tgl_opb").val()
 		let no_opb = $("#no_opb").val()
 		let id_mbh = $("#h_id_mbh"+i).val()
@@ -698,19 +763,31 @@
 		let i_qty2 = $("#i_qty2_"+i).val()
 		let i_qty3 = $("#i_qty3_"+i).val()
 		let ket_pengadaan = $("#ket_pengadaan"+i).val()
+		let harga_opb = $("#harga_opb"+i).val().split('.').join('')
+		let plh_supplier = $("#plh_supplier"+i).val()
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/addCartOPB')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data : ({
-				id_cart, id_opbh, tgl_opb, no_opb, plh_departemen, id_mbh, id_mbd, plh_bagian, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, status
+				id_cart, id_opbh, jenis_opb, tgl_opb, no_opb, plh_departemen, id_mbh, id_mbd, plh_bagian, plh_satuan, qty, i_qty1, i_qty2, i_qty3, ket_pengadaan, harga_opb, plh_supplier, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(data.data){
 					cartOPB()
 				}else{
 					toastr.error(`<b>${data.msg}</b>`)
+					swal.close()
 				}
 			}
 		})
@@ -718,13 +795,16 @@
 
 	function cartOPB()
 	{
+		let jenis_opb = $("#jenis_opb").val()
 		$(".list-cart").html('')
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/cartOPB')?>',
 			type: "POST",
+			data: ({ jenis_opb }),
 			success: function(res){
 				data = JSON.parse(res)
 				$(".list-cart").html(data.html)
+				swal.close()
 			}
 		})
 	}
@@ -734,6 +814,16 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/hapusCart')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({ rowid }),
 			success: function(res){
 				cartOPB()
@@ -745,18 +835,28 @@
 	{
 		let id_opbh = $("#id_opbh").val()
 		let h_ii = $("#h_ii").val()
+		let jenis_opb = $("#jenis_opb").val()
 		let tgl_opb = $("#tgl_opb").val()
 		let no_opb = $("#no_opb").val()
 		let plh_departemen = $("#plh_departemen").val()
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/simpanOPB')?>',
 			type: "POST",
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({
-				id_opbh, tgl_opb, no_opb, plh_departemen, status
+				id_opbh, jenis_opb, tgl_opb, no_opb, plh_departemen, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(data.data && status == 'insert'){
 					tambah('kembali')
 				}else if(data.data && status == 'update'){
@@ -772,6 +872,7 @@
 	{
 		let id_opbh = $("#id_opbh").val()
 		let h_ii = $("#h_ii").val()
+		$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
 		$(".row-list").hide()
 		$(".row-input").show()
 		$("#id_mbh").val('')
@@ -783,10 +884,20 @@
 			url: '<?php echo base_url('Transaksi/editOPB')?>',
 			type: "POST",
 			data: ({ id_opbh }),
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
-				$("#destroy").load("<?php echo base_url('Transaksi/destroy') ?>")
+				console.log(data.opbh.no_opb)
+				$("#jenis_opb").val(data.opbh.jenis_opb).prop('disabled', true)
 				$("#tgl_opb").val(data.opbh.tgl_opb)
 				$("#no_opb").val(data.opbh.no_opb).prop('disabled', true)
 				$("#plh_departemen").val(data.opbh.kode_dpt).trigger('change')
@@ -818,11 +929,19 @@
 		$.ajax({
 			url: '<?php echo base_url('Transaksi/editListOPB')?>',
 			type: "POST",
-			async: false,
+			beforeSend: function() {
+				swal({
+					title: 'Loading',
+					allowEscapeKey: false,
+					allowOutsideClick: false,
+					onOpen: () => {
+						swal.showLoading();
+					}
+				});
+			},
 			data: ({ id_opbh, id_opbd, id_mbh, id_mbd, plh_satuan, qty, i_qty1, i_qty2, i_qty3, harga, plh_supplier, ket_pengadaan, plh_bagian }),
 			success: function(res){
 				data = JSON.parse(res)
-				console.log(data)
 				if(data.data){
 					editOPB()
 					loadList(kode_dpt)
@@ -859,12 +978,22 @@
 			$.ajax({
 				url: '<?php echo base_url('Transaksi/hapusOPB')?>',
 				type: "POST",
+				beforeSend: function() {
+					swal({
+						title: 'Loading',
+						allowEscapeKey: false,
+						allowOutsideClick: false,
+						onOpen: () => {
+							swal.showLoading();
+						}
+					});
+				},
 				data : ({ id_opbh, id_opbd, opsi }),
 				success: function(res){
 					data = JSON.parse(res)
-					console.log(data)
 					if(opsi == 'header' && data.opbh && data.opbd){
 						loadHeader()
+						swal.close()
 					}
 					if(opsi == 'detail' && data.opbd){
 						btnDetail(id_opbh, h_ii, 'edit')
