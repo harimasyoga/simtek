@@ -467,36 +467,30 @@ class Qrcode extends CI_Controller
 				// TOTAL
 				$htmlStok .= '<tr>';
 				if($stok->s_satuan == 1){
-					$hitSum3 = round($sum3,2) - round($stok->sqty3,2);
-					($hitSum3 > 0) ? $thitSum3 = '+'.round($hitSum3,2) : $thitSum3 = round($hitSum3,2);
+					$hitSum3 = round($stok->sqty3,2) - round($sum3,2);
 					$htmlStok .= '<td style="padding:6px;font-weight:bold"></td>
-						<td style="padding:6px;font-weight:bold;text-align:right">'.$thitSum3.'</td>
+						<td style="padding:6px;font-weight:bold;text-align:right">'.$hitSum3.'</td>
 						<td style="padding:6px;font-weight:bold">'.$stok->ssatuan3.'</td>
 						<td style="padding:6px;font-weight:bold">TERKECIL</td>
 						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.round($sum3,2).'</div></td>
 						<td style="padding:6px;font-weight:bold">'.$stok->ssatuan3.'</td>';
 				}
 				if($stok->s_satuan == 2){
-					$hitSum1 = round($sum1,2) - round($stok->sqty1,2);
-					$hitSum3 = round($sum3,2) - round($stok->sqty3,2);
-					($hitSum1 > 0) ? $thitSum1 = '+'.round($hitSum1,2) : $thitSum1 = round($hitSum1,2);
-					($hitSum3 > 0) ? $thitSum3 = '+'.round($hitSum3,2) : $thitSum3 = round($hitSum3,2);
+					$hitSum1 = round($stok->sqty1,2) - round($sum1,2);
+					$hitSum3 = round($stok->sqty3,2) - round($sum3,2);
 					$htmlStok .= '<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TERKECIL</div></td>
-						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.$thitSum1.'</div><div>'.$thitSum3.'</div></td>
+						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.$hitSum1.'</div><div>'.$hitSum3.'</div></td>
 						<td style="padding:6px;font-weight:bold"><div>'.$stok->ssatuan1.'</div><div>'.$stok->ssatuan3.'</div></td>
 						<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TERKECIL</div></td>
 						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.round($sum1,2).'</div><div>'.round($sum3,2).'</div></td>
 						<td style="padding:6px;font-weight:bold"><div>'.$stok->ssatuan1.'</div><div>'.$stok->ssatuan3.'</div></td>';
 				}
 				if($stok->s_satuan == 3){
-					$hitSum1 = round($sum1,2) - round($stok->sqty1,2);
-					$hitSum2 = round($sum2,2) - round($stok->sqty2,2);
-					$hitSum3 = round($sum3,2) - round($stok->sqty3,2);
-					($hitSum1 > 0) ? $thitSum1 = '+'.round($hitSum1,2) : $thitSum1 = round($hitSum1,2);
-					($hitSum2 > 0) ? $thitSum2 = '+'.round($hitSum2,2) : $thitSum2 = round($hitSum2,2);
-					($hitSum3 > 0) ? $thitSum3 = '+'.round($hitSum3,2) : $thitSum3 = round($hitSum3,2);
+					$hitSum1 = round($stok->sqty1,2) - round($sum1,2);
+					$hitSum2 = round($stok->sqty2,2) - round($sum2,2);
+					$hitSum3 = round($stok->sqty3,2) - round($sum3,2);
 					$htmlStok .= '<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TENGAH</div><div>TERKECIL</div></td>
-						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.$thitSum1.'</div><div>'.$thitSum2.'</div><div>'.$thitSum3.'</div></td>
+						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.$hitSum1.'</div><div>'.$hitSum2.'</div><div>'.$hitSum3.'</div></td>
 						<td style="padding:6px;font-weight:bold"><div>'.$stok->ssatuan1.'</div><div>'.$stok->ssatuan2.'</div><div>'.$stok->ssatuan3.'</div></td>
 						<td style="padding:6px;font-weight:bold"><div>TERBESAR</div><div>TENGAH</div><div>TERKECIL</div></td>
 						<td style="padding:6px;font-weight:bold;text-align:right"><div>'.round($sum1,2).'</div><div>'.round($sum2,2).'</div><div>'.round($sum3,2).'</div></td>
@@ -569,7 +563,7 @@ class Qrcode extends CI_Controller
 					</select>
 				</td>
 				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;text-align:center">
-					<input type="number" id="qty" class="form-control" style="width:60px;padding:3px 4px;text-align:right" placeholder="0" onkeyup="pengadaaan()">
+					<input type="number" id="qty" class="form-control" style="width:60px;padding:3px 4px;text-align:right" placeholder="0" autocomplete="off" onkeyup="pengadaaan()">
 				</td>
 				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold"><div class="txtsatuan">'.$ss1.'</div></td>
 				<td style="background:#f2f2f2;border:1px solid #dee2e6;padding:6px;font-weight:bold;text-align:right"><div class="hitungqty">'.$ss22.'</div></td>
@@ -614,7 +608,7 @@ class Qrcode extends CI_Controller
 					<td style="padding:6px">PEMOHON</td>
 					<td style="padding:6px">:</td>
 					<td style="padding:6px">
-						<input type="text" id="pemohon_spb" class="form-control" placeholder="NAMA PEMOHON" oninput="this.value=this.value.toUpperCase()">
+						<input type="text" id="pemohon_spb" class="form-control" placeholder="NAMA PEMOHON" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
 					</td>
 				</tr>
 			</table>';

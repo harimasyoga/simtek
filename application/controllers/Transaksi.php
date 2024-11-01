@@ -1642,7 +1642,7 @@ class Transaksi extends CI_Controller
 										$htmlBarangBeda = '<td style="padding:6px;text-align:right" colspan="'.$cz.'">'.$btnQrc.'</td>';
 									}
 								}
-								// TES QR CODE
+								// QR CODE
 								$htmlQrCode = '';
 								if($opsi == 'edit' && $jenis == 'bapb'){
 									$qr = $this->db->query("SELECT*FROM m_qrcode WHERE id_bapb='$p->id_bapb'");
@@ -1653,7 +1653,9 @@ class Transaksi extends CI_Controller
 										<tr class="qrqr trqr2-'.$x.'" style="display:none">
 											<td style="padding:0;text-align:right" colspan="9">
 												<input type="hidden" id="h_tr" value="">
-												<img src="'.base_url('/assets/qrcode/'.$qr->row()->qrcode_path).'" alt="'.$qr->row()->qrcode_data.'" width="200" height="200">
+												<a href="'.base_url('/Qrcode?v='.$qr->row()->qrcode_data).'" target="_blank">
+													<img src="'.base_url('/assets/qrcode/'.$qr->row()->qrcode_path).'" alt="'.$qr->row()->qrcode_data.'" width="200" height="200">
+												</a>
 											</td>
 											<td style="padding:6px" colspan="14"></td>
 										</tr>';
