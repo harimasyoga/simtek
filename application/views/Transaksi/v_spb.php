@@ -22,7 +22,44 @@
 	<section class="content">
 		<div class="card card-info card-outline">
 			<div class="card-header" style="padding:12px">
-				<h3 class="card-title" style="font-weight:bold;font-size:18px">STOK</h3>
+				<h3 class="card-title" style="font-weight:bold;font-size:18px">LIST SPB</h3>
+			</div>
+			<div class="card-body row" style="padding:12px 6px;font-weight:bold">
+				<div class="col-md-2" style="padding-bottom:3px">
+					<select id="tahun" class="form-control select2" onchange="load_data()">
+						<?php 
+							$thang = date("Y");
+							$thang_maks = $thang + 2;
+							$thang_min = $thang - 2;
+							for($th = $thang_min; $th <= $thang_maks; $th++){ ?>
+								<?php if($th == $thang){ ?>
+									<option selected value="<?= $th ?>"> <?= $thang ?> </option>
+								<?php }else{ ?>
+									<option value="<?= $th ?>"> <?= $th ?> </option>
+								<?php }
+							}
+						?>
+					</select>
+				</div>
+				<div class="col-md-2" style="padding-bottom:3px">
+					<?php
+						$qbulan = $this->db->query("SELECT*FROM m_bulan");
+						$bln_now = date("m");
+					?>
+					<select id="bulan" class="form-control select2" onchange="load_data()">
+						<option value="">SEMUA</option>
+						<?php 									
+							foreach ($qbulan->result() as $bln_row) {
+								if($bln_row->id == $bln_now){
+									echo '<option value="'.$bln_row->id_bln.'" selected>'.$bln_row->bulan.'</option>';
+								}else{	
+									echo '<option value="'.$bln_row->id_bln.'">'.$bln_row->bulan.'</option>';
+								}
+							}		
+						?>  
+					</select>
+				</div>
+				<div class="col-md-8" style="padding-bottom:3px"></div>
 			</div>
 			<div class="card-body" style="padding:12px 6px">
 				<div class="ldopb" style="overflow:auto;white-space:nowrap">
@@ -30,12 +67,10 @@
 						<thead class="color-tabel">
 							<tr>
 								<th style="text-align:center">#</th>
-								<th style="text-align:left">KODE BARANG</th>
-								<th style="text-align:left">NAMA BARANG</th>
-								<th style="text-align:left">JENIS / TIPE</th>
-								<th style="text-align:left">MATERIAL</th>
-								<th style="text-align:left">SIZE</th>
-								<th style="text-align:left">MERK</th>
+								<th style="text-align:left">HARI, TANGGAL</th>
+								<th style="text-align:left">NO. SPB</th>
+								<th style="text-align:left">PEMOHON</th>
+								<th style="text-align:left">PEMBUAT</th>
 								<th style="text-align:left">AKSI</th>
 							</tr>
 						</thead>
@@ -71,8 +106,10 @@
 		tabel.ajax.reload(null, false);
 	}
 
-	function load_data() 
+	function load_data()
 	{
+		let tahun = $("#tahun").val()
+		let bulan = $("#bulan").val()
 		var table = $('#datatable').DataTable();
 		table.destroy();
 		tabel = $('#datatable').DataTable({
@@ -80,8 +117,11 @@
 			"pageLength": true,
 			"paging": true,
 			"ajax": {
-				"url": '<?php echo base_url(); ?>Logistik/loadDataStok',
+				"url": '<?php echo base_url(); ?>Transaksi/loadDataSPB',
 				"type": "POST",
+				"data": ({
+					tahun, bulan
+				}),
 			},
 			responsive: false,
 			"pageLength": 10,
@@ -89,37 +129,5 @@
 				"emptyTable": "Tidak ada data.."
 			}
 		});
-	}
-
-	function cariStok(i)
-	{
-		$(".list-stok").html('')
-		let id_mbh = $("#id_mbh_"+i).val()
-		let id_mbd = $("#id_mbd_"+i).val()
-		$.ajax({
-			url: '<?php echo base_url('Logistik/cariStok')?>',
-			type: "POST",
-			data: ({ id_mbh, id_mbd }),
-			success: function(res){
-				data = JSON.parse(res)
-				console.log(data)
-				$(".list-stok").html(data.html)
-			}
-		})
-	}
-
-	function btnQRCode(i)
-	{
-		$(".qrqr").hide()
-		$(".trqr2-"+i).show()
-		let h_tr = $("#h_tr").val()
-		if(parseInt(h_tr) == parseInt(i)){
-			$("#h_tr").val("")
-			$(".qrqr").hide()
-		}else{
-			$("#h_tr").val(i)
-			$(".qrqr").hide()
-			$(".trqr2-"+i).show()
-		}
 	}
 </script>

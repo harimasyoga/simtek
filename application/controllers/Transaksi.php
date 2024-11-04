@@ -42,6 +42,20 @@ class Transaksi extends CI_Controller
 		$this->load->view('footer');
 	}
 
+	function Spb()
+	{
+		$data = [
+			'judul' => "SPB",
+		];
+		$this->load->view('header',$data);
+		if(in_array($this->session->userdata('approve'), ['ALL', 'GUDANG', 'OFFICE'])) {
+			$this->load->view('Transaksi/v_spb', $data);
+		}else{
+			$this->load->view('home');
+		}
+		$this->load->view('footer');
+	}
+
 	public function PO()
 	{
 		$data = array(
@@ -1840,5 +1854,36 @@ class Transaksi extends CI_Controller
 		echo json_encode([
 			'opbh' => $opbh->row(),
 		]);
+	}
+
+	// SPB
+
+	function loadDataSPB()
+	{
+		$data = array();
+		$tahun = $_POST["tahun"];
+		$bulan = $_POST["bulan"];
+		($bulan == '') ? $wb = '' : $wb = '-'.$bulan;
+		$th_bln = $tahun.$wb;
+		$username = $this->session->userdata('username');
+		$query = $this->db->query("SELECT*FROM trs_spb_header WHERE creat_by='$username' AND tgl_spb LIKE '%$th_bln%' ORDER BY no_spb DESC")->result();
+			$i = 0;
+			foreach ($query as $r) {
+				$i++;
+				$row = array();
+				$row[] = '<div class="text-center">'.$i.'</div>';
+				$row[] = $this->m_fungsi->haru($r->tgl_spb).', '.$this->m_fungsi->tglIndSkt($r->tgl_spb);
+				$row[] = $r->no_spb;
+				$row[] = $r->pemohon_spb;
+				$row[] = $r->creat_by;
+				$row[] = '<div class="text-center">
+					<button type="button" class="btn btn-info btn-sm" onclick=""><i class="fas fa-search"></i></button>
+				</div>';
+				$data[] = $row;
+			}
+		$output = array(
+			"data" => $data,
+		);
+		echo json_encode($output);
 	}
 }
