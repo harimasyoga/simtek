@@ -970,10 +970,12 @@ class Logistik extends CI_Controller
 	function loadDataStok()
 	{
 		$data = array();
+		$kategori = $this->session->userdata('approve');
+		($kategori == 'ALL' || $kategori == 'OFFICE') ? $wKet = "" : $wKet = "AND h.kategori='$kategori'";
 		$query = $this->db->query("SELECT h.nm_barang,d.*,s.* FROM m_stok s
 		INNER JOIN m_barang_detail d ON s.id_mbh=d.id_mbh AND s.id_mbd=d.id_mbd
 		INNER JOIN m_barang_header h ON s.id_mbh=h.id_mbh
-		WHERE s.status_stok='Open'
+		WHERE s.status_stok='Open' $wKet
 		GROUP BY s.id_mbh,s.id_mbd,s.status_stok
 		ORDER BY h.nm_barang,d.kode_barang,d.jenis_tipe,d.material,d.size,d.merk")->result();
 			$i = 0;

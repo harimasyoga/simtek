@@ -357,6 +357,7 @@ class M_master extends CI_Model{
 				if($cekBarang->num_rows() == 0){
 					$header = [
 						'kode_header' => $r['options']['kode_header'],
+						'kategori' => $r['options']['i_kategori'],
 						'nm_barang' => $r['options']['nm_barang'],
 						'creat_by' => $this->username,
 						'creat_at' => date('Y-m-d H:i:s'),
@@ -384,6 +385,7 @@ class M_master extends CI_Model{
 						$detail = [
 							'id_mbh' => $cekHeader->row()->id_mbh,
 							'kode_barang' => $r['options']['kode_barang'].'-'.$r['options']['kode_urut'],
+							'kategori' => $r['options']['i_kategori'],
 							'jenis_tipe' => ($r['options']['jenis_tipe'] == '') ? '-' : $r['options']['jenis_tipe'],
 							'material' => ($r['options']['material'] == '') ? '-' : $r['options']['material'],
 							'size' => ($r['options']['size'] == '') ? '-' : $r['options']['size'],
