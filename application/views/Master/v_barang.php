@@ -67,7 +67,7 @@
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
 							<div class="col-md-2">KATEGORI <span style="color:#f00">*</span></div>
 							<div class="col-md-4">
-								<select id="i_kategori" class="form-control select2" disabled>
+								<select id="i_kategori" class="form-control select2">
 									<?php
 										if($approve == 'OFFICE'){
 											echo '<option value="OFFICE">OFFICE</option>';

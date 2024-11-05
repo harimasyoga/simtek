@@ -20,7 +20,7 @@ class Transaksi extends CI_Controller
 			'judul' => "OPB",
 		];
 		$this->load->view('header',$data);
-		if(in_array($this->session->userdata('approve'), ['ALL', 'ADMIN', 'ACC', 'OFFICE', 'FINANCE', 'OWNER'])) {
+		if(in_array($this->session->userdata('approve'), ['ALL', 'ADMIN', 'ACC', 'GUDANG', 'OFFICE', 'FINANCE', 'OWNER'])) {
 			$this->load->view('Transaksi/v_opb', $data);
 		}else{
 			$this->load->view('home');

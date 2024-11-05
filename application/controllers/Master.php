@@ -74,6 +74,90 @@ class Master extends CI_Controller
 		$this->load->view('footer');
 	}
 
+	// RAK
+
+	function Rak()
+	{
+		$data = array(
+			'judul' => "Master Rak",
+			'approve' => $this->session->userdata('approve'),
+		);
+		$this->load->view('header', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE', 'GUDANG'])) {
+			$this->load->view('Master/v_rak', $data);
+		}else{
+			$this->load->view('home');
+		}
+		$this->load->view('footer');
+	}
+
+	function loadDataRak()
+	{
+		$data = array();
+		$approve = $this->session->userdata('approve');
+		($approve == 'ALL') ? $ket = "" : $ket = "WHERE kategori_rak='$approve'";
+		$query = $this->db->query("SELECT*FROM m_rak $ket ORDER BY nm_rak")->result();
+			$i = 0;
+			foreach ($query as $r) {
+				$i++;
+				$row = array();
+				$row[] = $r->nm_rak;
+				$row[] = '<div class="text-center">
+					<button type="button" class="btn btn-sm btn-warning" onclick="editRak('."'".$r->id_rak."'".')"><i class="fas fa-edit"></i></button>
+					<button type="button" class="btn btn-sm btn-danger" onclick="hapusRak('."'".$r->id_rak."'".')"><i class="fas fa-trash-alt" style="color:#000"></i></button>
+				</div>';
+				$data[] = $row;
+			}
+		$output = array(
+			"data" => $data,
+		);
+		echo json_encode($output);
+	}
+
+	function cekNamaRak()
+	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori_rak='$kategori'";
+		$nm_rak = $_POST["nm_rak"];
+		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $nm_rak)));
+		$cekRak = $this->db->query("SELECT*FROM m_rak WHERE nm_rak='$cleanTxt' $wKet");
+		if($nm_rak == '' || $cleanTxt == ''){
+			$data = false; $msg = 'NAMA RAK BARU TIDAK BOLEH KOSONG!';
+		}else if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
+			$data = false; $msg = 'NAMA RAK HANYA BOLEH HURUF DAN ANGKA!';
+		}else if($cekRak->num_rows() != 0){
+			$data = false; $msg = 'NAMA RAK SUDAH ADA!';
+		}else{
+			$data = true; $msg = '';
+		}
+		echo json_encode([
+			'cleanTxt' => $cleanTxt,
+			'data' => $data,
+			'msg' => $msg,
+		]);
+	}
+
+	function simpanRak()
+	{
+		$result = $this->m_master->simpanRak();
+		echo json_encode($result);
+	}
+
+	function hapusRak()
+	{
+		$result = $this->m_master->hapusRak();
+		echo json_encode($result);
+	}
+
+	function editRak()
+	{
+		$id_rak = $_POST["id_rak"];
+		$rak = $this->db->query("SELECT*FROM m_rak WHERE id_rak='$id_rak'")->row();
+		echo json_encode([
+			'rak' => $rak,
+		]);
+	}
+
 	// BARANG
 
 	function loadDataBarang()

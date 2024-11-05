@@ -510,6 +510,57 @@ class M_master extends CI_Model{
 		];
 	}
 
+	function simpanRak()
+	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori_rak='$kategori'";
+		$id_rak = $_POST["h_id_rak"];
+		$h_nm_rak = $_POST["h_nm_rak"];
+		$nm_rak = $_POST["nm_rak"];
+		$status = $_POST["status"];
+
+		$cekRak = $this->db->query("SELECT*FROM m_rak WHERE nm_rak='$nm_rak' $wKet");
+
+		if($kategori == ''){
+			$data = false; $msg = 'KATEGORI TIDAK BOLEH KOSONG!';
+		}else if($nm_rak == ''){
+			$data = false; $msg = 'NAMA TIDAK BOLEH KOSONG!';
+		}else if(!preg_match("/^[A-Z0-9 ]*$/", $nm_rak)){
+			$data = false; $msg = 'NAMA RAK HANYA BOLEH HURUF DAN ANGKA!';
+		}else if($status == 'insert' && $cekRak->num_rows() != 0){
+			$data = false; $msg = 'NAMA RAK SUDAH TERPAKAI!';
+		}else if($status == 'update' && $h_nm_rak != $nm_rak && $cekRak->num_rows() != 0){
+			$data = false; $msg = 'NAMA RAK SUDAH TERPAKAI!';
+		}else{
+			if($status == 'insert'){
+				$rak = [
+					'nm_rak' => $nm_rak,
+					'kategori_rak' => $kategori,
+				];
+				$data = $this->db->insert('m_rak', $rak);
+			}
+			if($status == 'update'){
+				$this->db->set('nm_rak', $nm_rak);
+				$this->db->where('id_rak', $id_rak);
+				$data = $this->db->update('m_rak');
+			}
+			$msg = 'OK!';
+		}
+		return [
+			'data' => $data,
+			'msg' => $msg,
+		];
+	}
+
+	function hapusRak()
+	{
+		$this->db->where('id_rak', $_POST["id_rak"]);
+		$data = $this->db->delete('m_rak');
+		return [
+			'data' => $data,
+		];
+	}
+
     function m_setting($table,$status){
         $data = array(
             'nm_aplikasi'  => $this->input->post('nm_aplikasi'),
