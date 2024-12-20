@@ -65,6 +65,23 @@
 							<div class="btn-tambah"></div>
 						</div>
 						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
+							<div class="col-md-2">KATEGORI <span style="color:#f00">*</span></div>
+							<div class="col-md-4">
+								<select id="i_kategori" class="form-control select2">
+									<?php
+										if($approve == 'OFFICE'){
+											echo '<option value="OFFICE">OFFICE</option>';
+										}else if($approve == 'GUDANG'){
+											echo '<option value="GUDANG">GUDANG</option>';
+										}else{
+											echo '<option value="OFFICE">OFFICE</option><option value="GUDANG">GUDANG</option>';
+										}
+									?>
+								</select>
+							</div>
+							<div class="col-md-6"></div>
+						</div>
+						<div class="card-body row" style="font-weight:bold;padding:0 0 4px">
 							<div class="col-md-2">NAMA BARANG <span style="color:#f00">*</span></div>
 							<div class="col-md-4">
 								<select id="i_barang" class="form-control select2" onchange="namaBarang('lama')">
@@ -316,11 +333,12 @@
 		}
 		if(opsi == 'baru'){
 			$("#n_barang").removeClass('is-invalid').removeClass('is-valid')
+			let kategori = $("#i_kategori").val()
 			let n_barang = $("#n_barang").val()
 			$.ajax({
 				url: '<?php echo base_url('Master/cekNamaBarang')?>',
 				type: "POST",
-				data : ({ n_barang }),
+				data : ({ kategori, n_barang }),
 				success: function(res){
 					data = JSON.parse(res)
 					if(data.data){
@@ -340,6 +358,7 @@
 
 	function loadJenisTipe(opsi)
 	{
+		let kategori = $("#i_kategori").val()
 		let barang = $("#i_barang").val()
 		$("#p_jenis_tipe").attr('style', 'display:none')
 		if(opsi == 'lama' && barang != '+' && barang != ''){
@@ -348,7 +367,7 @@
 				url: '<?php echo base_url('Master/loadJenisTipe')?>',
 				type: "POST",
 				data : ({
-					barang, cari: '', status
+					kategori, barang, cari: '', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -364,7 +383,7 @@
 				url: '<?php echo base_url('Master/loadJenisTipe')?>',
 				type: "POST",
 				data : ({
-					barang, cari: 'jenis_tipe',
+					kategori, barang, cari: 'jenis_tipe',
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -394,12 +413,13 @@
 		if(opsi == 'baru'){
 			$("#n_jenis_tipe").removeClass('is-invalid').removeClass('is-valid')
 			let id_mbh = $("#i_barang").val()
+			let kategori = $("#i_kategori").val()
 			let n_jenis_tipe = $("#n_jenis_tipe").val()
 			$.ajax({
 				url: '<?php echo base_url('Master/cekJenisTipe')?>',
 				type: "POST",
 				data : ({
-					n_jenis_tipe, id_mbh
+					kategori, n_jenis_tipe, id_mbh
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -420,6 +440,7 @@
 
 	function loadMaterial(opsi)
 	{
+		let kategori = $("#i_kategori").val()
 		let barang = $("#i_barang").val()
 		let jenis_tipe = $("#i_jenis_tipe").val()
 		$("#p_material").attr('style', 'display:none')
@@ -429,7 +450,7 @@
 				url: '<?php echo base_url('Master/loadMaterial')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, cari: '', status
+					kategori, barang, jenis_tipe, cari: '', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -445,7 +466,7 @@
 				url: '<?php echo base_url('Master/loadMaterial')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, cari: 'material', status
+					kategori, barang, jenis_tipe, cari: 'material', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -474,13 +495,14 @@
 		if(opsi == 'baru'){
 			$("#n_material").removeClass('is-invalid').removeClass('is-valid')
 			let id_mbh = $("#i_barang").val()
+			let kategori = $("#i_kategori").val()
 			let i_jenis_tipe = $("#i_jenis_tipe").val()
 			let n_material = $("#n_material").val()
 			$.ajax({
 				url: '<?php echo base_url('Master/cekMaterial')?>',
 				type: "POST",
 				data : ({
-					id_mbh, i_jenis_tipe, n_material
+					id_mbh, kategori, i_jenis_tipe, n_material
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -501,6 +523,7 @@
 
 	function loadSize(opsi)
 	{
+		let kategori = $("#i_kategori").val()
 		let barang = $("#i_barang").val()
 		let jenis_tipe = $("#i_jenis_tipe").val()
 		let material = $("#i_material").val()
@@ -511,7 +534,7 @@
 				url: '<?php echo base_url('Master/loadSize')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, material, cari: '', status
+					kategori, barang, jenis_tipe, material, cari: '', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -527,7 +550,7 @@
 				url: '<?php echo base_url('Master/loadSize')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, material, cari: 'size', status
+					kategori, barang, jenis_tipe, material, cari: 'size', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -555,6 +578,7 @@
 		if(opsi == 'baru'){
 			$("#n_size").removeClass('is-invalid').removeClass('is-valid')
 			let id_mbh = $("#i_barang").val()
+			let kategori = $("#i_kategori").val()
 			let i_jenis_tipe = $("#i_jenis_tipe").val()
 			let i_material = $("#i_material").val()
 			let n_size = $("#n_size").val()
@@ -562,7 +586,7 @@
 				url: '<?php echo base_url('Master/cekSize')?>',
 				type: "POST",
 				data : ({
-					id_mbh, i_jenis_tipe, i_material, n_size
+					id_mbh, kategori, i_jenis_tipe, i_material, n_size
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -597,6 +621,7 @@
 	function loadMerk(opsi)
 	{
 		$("#pilih_satuan").val('').trigger('change').prop('disabled', true)
+		let kategori = $("#i_kategori").val()
 		let barang = $("#i_barang").val()
 		let jenis_tipe = $("#i_jenis_tipe").val()
 		let material = $("#i_material").val()
@@ -608,7 +633,7 @@
 				url: '<?php echo base_url('Master/loadMerk')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, material, size, cari: '', status
+					kategori, barang, jenis_tipe, material, size, cari: '', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -624,7 +649,7 @@
 				url: '<?php echo base_url('Master/loadMerk')?>',
 				type: "POST",
 				data : ({
-					barang, jenis_tipe, material, size, cari: 'merk', status
+					kategori, barang, jenis_tipe, material, size, cari: 'merk', status
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -649,6 +674,7 @@
 		if(opsi == 'baru'){
 			$("#n_merk").removeClass('is-invalid').removeClass('is-valid')
 			let id_mbh = $("#i_barang").val()
+			let kategori = $("#i_kategori").val()
 			let i_jenis_tipe = $("#i_jenis_tipe").val()
 			let i_material = $("#i_material").val()
 			let i_size = $("#i_size").val()
@@ -657,7 +683,7 @@
 				url: '<?php echo base_url('Master/cekMerk')?>',
 				type: "POST",
 				data : ({
-					id_mbh, i_jenis_tipe, i_material, i_size, n_merk
+					id_mbh, kategori, i_jenis_tipe, i_material, i_size, n_merk
 				}),
 				success: function(res){
 					data = JSON.parse(res)
@@ -728,6 +754,7 @@
 		let id_mbd = $("#id_mbd").val()
 		let id_cart = parseInt($("#id_cart").val()) + 1;
 		$("#id_cart").val(id_cart)
+		let i_kategori = $("#i_kategori").val()
 		let i_barang = $("#i_barang").val()
 		let n_barang = $("#n_barang").val()
 		let i_jenis_tipe = $("#i_jenis_tipe").val()
@@ -759,7 +786,7 @@
 				});
 			},
 			data : ({
-				id_mbh, id_mbd, id_cart, i_barang, n_barang, i_jenis_tipe, n_jenis_tipe, i_material, n_material, i_size, n_size, i_merk, n_merk, pilih_satuan, satuan_terbesar, p_satuan_terbesar, satuan_tengah, p_satuan_tengah, satuan_terkecil, p_satuan_terkecil, status
+				id_mbh, id_mbd, id_cart, i_kategori, i_barang, n_barang, i_jenis_tipe, n_jenis_tipe, i_material, n_material, i_size, n_size, i_merk, n_merk, pilih_satuan, satuan_terbesar, p_satuan_terbesar, satuan_tengah, p_satuan_tengah, satuan_terkecil, p_satuan_terkecil, status
 			}),
 			success: function(res){
 				data = JSON.parse(res)
@@ -851,6 +878,7 @@
 
 	function editBarang(id_mbd)
 	{
+		let kategori = $("#i_kategori").val()
 		let id_mbh = $("#id_mbh").val()
 		$("#id_mbd").val(id_mbd)
 		$("#destroy").load("<?php echo base_url('Master/destroy') ?>")
@@ -869,7 +897,7 @@
 					}
 				});
 			},
-			data: ({ id_mbh, id_mbd, status }),
+			data: ({ kategori, id_mbh, id_mbd, status }),
 			success: function(res){
 				data = JSON.parse(res)
 				if(id_mbd != ''){

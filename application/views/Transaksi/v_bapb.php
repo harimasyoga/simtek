@@ -448,8 +448,6 @@
 		$(".qrqr").hide()
 		$(".trqr1-"+i).show()
 		$(".trqr2-"+i).show()
-		$(".qrcode-"+i).html('test')
-
 		let h_tr = $("#h_tr").val()
 		if(parseInt(h_tr) == parseInt(i)){
 			$("#h_tr").val("")
@@ -459,7 +457,6 @@
 			$(".qrqr").hide()
 			$(".trqr1-"+i).show()
 			$(".trqr2-"+i).show()
-			$(".qrcode-"+i).html('test')
 		}
 	}
 </script>

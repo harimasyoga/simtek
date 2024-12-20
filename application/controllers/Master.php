@@ -48,10 +48,11 @@ class Master extends CI_Controller
 	function Barang()
 	{
 		$data = array(
-			'judul' => "Master Barang"
+			'judul' => "Master Barang",
+			'approve' => $this->session->userdata('approve'),
 		);
 		$this->load->view('header', $data);
-		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE'])) {
+		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE', 'GUDANG'])) {
 			$this->load->view('Master/v_barang', $data);
 		}else{
 			$this->load->view('home');
@@ -65,7 +66,7 @@ class Master extends CI_Controller
 			'judul' => "Master Satuan"
 		);
 		$this->load->view('header', $data);
-		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE'])) {
+		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE', 'GUDANG'])) {
 			$this->load->view('Master/v_satuan', $data);
 		}else{
 			$this->load->view('home');
@@ -73,12 +74,97 @@ class Master extends CI_Controller
 		$this->load->view('footer');
 	}
 
+	// RAK
+
+	function Rak()
+	{
+		$data = array(
+			'judul' => "Master Rak",
+			'approve' => $this->session->userdata('approve'),
+		);
+		$this->load->view('header', $data);
+		if(in_array($this->session->userdata('approve'), ['ALL', 'OFFICE', 'GUDANG'])) {
+			$this->load->view('Master/v_rak', $data);
+		}else{
+			$this->load->view('home');
+		}
+		$this->load->view('footer');
+	}
+
+	function loadDataRak()
+	{
+		$data = array();
+		$approve = $this->session->userdata('approve');
+		($approve == 'ALL') ? $ket = "" : $ket = "WHERE kategori_rak='$approve'";
+		$query = $this->db->query("SELECT*FROM m_rak $ket ORDER BY nm_rak")->result();
+			$i = 0;
+			foreach ($query as $r) {
+				$i++;
+				$row = array();
+				$row[] = $r->nm_rak;
+				$row[] = '<div class="text-center">
+					<button type="button" class="btn btn-sm btn-warning" onclick="editRak('."'".$r->id_rak."'".')"><i class="fas fa-edit"></i></button>
+					<button type="button" class="btn btn-sm btn-danger" onclick="hapusRak('."'".$r->id_rak."'".')"><i class="fas fa-trash-alt" style="color:#000"></i></button>
+				</div>';
+				$data[] = $row;
+			}
+		$output = array(
+			"data" => $data,
+		);
+		echo json_encode($output);
+	}
+
+	function cekNamaRak()
+	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori_rak='$kategori'";
+		$nm_rak = $_POST["nm_rak"];
+		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $nm_rak)));
+		$cekRak = $this->db->query("SELECT*FROM m_rak WHERE nm_rak='$cleanTxt' $wKet");
+		if($nm_rak == '' || $cleanTxt == ''){
+			$data = false; $msg = 'NAMA RAK BARU TIDAK BOLEH KOSONG!';
+		}else if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
+			$data = false; $msg = 'NAMA RAK HANYA BOLEH HURUF DAN ANGKA!';
+		}else if($cekRak->num_rows() != 0){
+			$data = false; $msg = 'NAMA RAK SUDAH ADA!';
+		}else{
+			$data = true; $msg = '';
+		}
+		echo json_encode([
+			'cleanTxt' => $cleanTxt,
+			'data' => $data,
+			'msg' => $msg,
+		]);
+	}
+
+	function simpanRak()
+	{
+		$result = $this->m_master->simpanRak();
+		echo json_encode($result);
+	}
+
+	function hapusRak()
+	{
+		$result = $this->m_master->hapusRak();
+		echo json_encode($result);
+	}
+
+	function editRak()
+	{
+		$id_rak = $_POST["id_rak"];
+		$rak = $this->db->query("SELECT*FROM m_rak WHERE id_rak='$id_rak'")->row();
+		echo json_encode([
+			'rak' => $rak,
+		]);
+	}
+
 	// BARANG
 
 	function loadDataBarang()
 	{
 		$data = array();
-		$query = $this->db->query("SELECT*FROM m_barang_header ORDER BY nm_barang ASC")->result();
+		$approve = $this->session->userdata('approve');
+		$query = $this->db->query("SELECT*FROM m_barang_header WHERE kategori='$approve' ORDER BY nm_barang ASC")->result();
 			$i = 0;
 			foreach ($query as $r) {
 				$i++;
@@ -180,6 +266,9 @@ class Master extends CI_Controller
 
 	function editBarang()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $cKet = "" : $cKet = "WHERE kategori='$kategori'";
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$id_mbd = $_POST["id_mbd"];
 		$html_h = '';
 		$html_jt = '';
@@ -188,7 +277,7 @@ class Master extends CI_Controller
 		$html_mr = '';
 		// HEADER
 		if($id_mbd == ''){
-			$header = $this->db->query("SELECT*FROM m_barang_header ORDER BY nm_barang");
+			$header = $this->db->query("SELECT*FROM m_barang_header $cKet ORDER BY nm_barang");
 			$html_h .= '<option value="">PILIH</option>';
 			foreach($header->result() as $h){
 				$html_h .= '<option value="'.$h->id_mbh.'">'.$h->nm_barang.'</option>';
@@ -196,31 +285,31 @@ class Master extends CI_Controller
 			$html_h .= '<option value="+">+</option>';
 		}
 		// DETAIL
-		$detail = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbd='$id_mbd'");
+		$detail = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbd='$id_mbd' $wKet");
 		if($id_mbd != ''){
 			// JENIS / TIPE
-			$jenis_tipe = $this->db->query("SELECT*FROM m_barang_detail GROUP BY jenis_tipe");
+			$jenis_tipe = $this->db->query("SELECT*FROM m_barang_detail $cKet GROUP BY jenis_tipe");
 			$html_jt .= '<option value="'.$detail->row()->jenis_tipe.'">'.$detail->row()->jenis_tipe.'</option><option value="">PILIH</option>';
 			foreach($jenis_tipe->result() as $jt){
 				$html_jt .= '<option value="'.$jt->jenis_tipe.'">'.$jt->jenis_tipe.'</option>';
 			}
 			$html_jt .= '<option value="+">+</option>';
 			// MATERIAL
-			$material = $this->db->query("SELECT*FROM m_barang_detail GROUP BY material");
+			$material = $this->db->query("SELECT*FROM m_barang_detail $cKet GROUP BY material");
 			$html_m .= '<option value="'.$detail->row()->material.'">'.$detail->row()->material.'</option><option value="">PILIH</option>';
 			foreach($material->result() as $m){
 				$html_m .= '<option value="'.$m->material.'">'.$m->material.'</option>';
 			}
 			$html_m .= '<option value="+">+</option>';
 			// SIZE
-			$size = $this->db->query("SELECT*FROM m_barang_detail d GROUP BY d.size");
+			$size = $this->db->query("SELECT*FROM m_barang_detail d $cKet GROUP BY d.size");
 			$html_s .= '<option value="'.$detail->row()->size.'">'.$detail->row()->size.'</option><option value="">PILIH</option>';
 			foreach($size->result() as $s){
 				$html_s .= '<option value="'.$s->size.'">'.$s->size.'</option>';
 			}
 			$html_s .= '<option value="+">+</option>';
 			// MERK
-			$merk = $this->db->query("SELECT*FROM m_barang_detail GROUP BY merk");
+			$merk = $this->db->query("SELECT*FROM m_barang_detail $cKet GROUP BY merk");
 			$html_mr .= '<option value="'.$detail->row()->merk.'">'.$detail->row()->merk.'</option><option value="">PILIH</option>';
 			foreach($merk->result() as $mr){
 				$html_mr .= '<option value="'.$mr->merk.'">'.$mr->merk.'</option>';
@@ -240,9 +329,11 @@ class Master extends CI_Controller
 
 	function cekNamaBarang()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$n_barang = $_POST["n_barang"];
 		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_barang)));
-		$cekBarang = $this->db->query("SELECT*FROM m_barang_header WHERE nm_barang='$cleanTxt'");
+		$cekBarang = $this->db->query("SELECT*FROM m_barang_header WHERE nm_barang='$cleanTxt' $wKet");
 		if($n_barang == '' || $cleanTxt == ''){
 			$data = false; $msg = 'NAMA BARANG BARU TIDAK BOLEH KOSONG!';
 		}else if(!preg_match("/^[A-Z ]*$/", $cleanTxt)){
@@ -261,12 +352,15 @@ class Master extends CI_Controller
 
 	function loadJenisTipe()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $cKet = "" : $cKet = "WHERE kategori='$kategori'";
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$cari = $_POST["cari"];
 		$id_mbh = $_POST["barang"];
 		if($cari == 'jenis_tipe'){
-			$cekJenisTipe = $this->db->query("SELECT*FROM m_barang_detail GROUP BY jenis_tipe");
+			$cekJenisTipe = $this->db->query("SELECT*FROM m_barang_detail $cKet GROUP BY jenis_tipe");
 		}else{
-			$cekJenisTipe = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' GROUP BY jenis_tipe");
+			$cekJenisTipe = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' $wKet GROUP BY jenis_tipe");
 		}
 		$html = '';
 		if($cekJenisTipe->num_rows() != 0){
@@ -289,13 +383,15 @@ class Master extends CI_Controller
 
 	function cekJenisTipe()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$id_mbh = $_POST["id_mbh"];
 		$n_jenis_tipe = $_POST["n_jenis_tipe"];
 		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_jenis_tipe)));
 		if($id_mbh == '+'){
-			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE jenis_tipe='$cleanTxt'");
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE jenis_tipe='$cleanTxt' $wKet");
 		}else{
-			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$cleanTxt'");
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$cleanTxt' $wKet");
 		}
 		if(!preg_match("/^[A-Z0-9 .-]*$/", $cleanTxt)){
 			$data = false; $msg = 'JENIS / TIPE BARU HANYA BOLEH HURUF ATAU ANGKA!';
@@ -313,14 +409,17 @@ class Master extends CI_Controller
 
 	function loadMaterial()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $cKet = "" : $cKet = "WHERE kategori='$kategori'";
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$status = $_POST["status"];
 		$cari = $_POST["cari"];
 		$id_mbh = $_POST["barang"];
 		$jenis_tipe = $_POST["jenis_tipe"];
 		if($cari == 'material' || $id_mbh == '+' || $jenis_tipe == '-' || $status == 'update'){
-			$cekMaterial = $this->db->query("SELECT*FROM m_barang_detail GROUP BY material");
+			$cekMaterial = $this->db->query("SELECT*FROM m_barang_detail $cKet GROUP BY material");
 		}else{
-			$cekMaterial = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' GROUP BY material");
+			$cekMaterial = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' $wKet GROUP BY material");
 		}
 		$html = '';
 		if($cekMaterial->num_rows() != 0){
@@ -343,14 +442,16 @@ class Master extends CI_Controller
 
 	function cekMaterial()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$id_mbh = $_POST["id_mbh"];
 		$i_jenis_tipe = $_POST["i_jenis_tipe"];
 		$n_material = $_POST["n_material"];
 		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_material)));
 		if($id_mbh == '+' || $i_jenis_tipe == '+'){
-			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE material='$cleanTxt'");
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE material='$cleanTxt' $wKet");
 		}else{
-			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$cleanTxt'");
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$cleanTxt' $wKet");
 		}
 		if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
 			$data = false; $msg = 'MATERIAL BARU HANYA BOLEH HURUF ATAU ANGKA!';
@@ -368,15 +469,18 @@ class Master extends CI_Controller
 
 	function loadSize()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $cKet = "" : $cKet = "WHERE kategori='$kategori'";
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$status = $_POST["status"];
 		$cari = $_POST["cari"];
 		$id_mbh = $_POST["barang"];
 		$jenis_tipe = $_POST["jenis_tipe"];
 		$material = $_POST["material"];
 		if($cari == 'size' || $id_mbh == '+' || $jenis_tipe == '+' || $material == '-' || $status == 'update'){
-			$cekSize = $this->db->query("SELECT*FROM m_barang_detail s GROUP BY s.size");
+			$cekSize = $this->db->query("SELECT*FROM m_barang_detail s $cKet GROUP BY s.size");
 		}else{
-			$cekSize = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' AND material='$material' GROUP BY s.size");
+			$cekSize = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' AND material='$material' $wKet GROUP BY s.size");
 		}
 		$html = '';
 		if($cekSize->num_rows() != 0){
@@ -399,15 +503,17 @@ class Master extends CI_Controller
 
 	function cekSize()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$id_mbh = $_POST["id_mbh"];
 		$i_jenis_tipe = $_POST["i_jenis_tipe"];
 		$i_material = $_POST["i_material"];
 		$n_size = $_POST["n_size"];
 		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_size)));
 		if($id_mbh == '+' || $i_jenis_tipe == '+' || $i_material == '+'){
-			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE s.size='$cleanTxt'");
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE s.size='$cleanTxt' $wKet");
 		}else{
-			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$i_material' AND s.size='$cleanTxt'");
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$i_material' AND s.size='$cleanTxt' $wKet");
 		}
 		if(!preg_match("/^[A-Z0-9 .-]*$/", $cleanTxt)){
 			$data = false; $msg = 'SIZE BARU HANYA BOLEH HURUF ATAU ANGKA!';
@@ -425,6 +531,9 @@ class Master extends CI_Controller
 
 	function loadMerk()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $cKet = "" : $cKet = "WHERE kategori='$kategori'";
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$status = $_POST["status"];
 		$cari = $_POST["cari"];
 		$id_mbh = $_POST["barang"];
@@ -432,9 +541,9 @@ class Master extends CI_Controller
 		$material = $_POST["material"];
 		$size = $_POST["size"];
 		if($cari == 'merk' || $id_mbh == '+' || $jenis_tipe == '+' || $material == '+' || $size == '-' || $status == 'update'){
-			$cekMerk = $this->db->query("SELECT*FROM m_barang_detail s GROUP BY merk");
+			$cekMerk = $this->db->query("SELECT*FROM m_barang_detail s $cKet GROUP BY merk");
 		}else{
-			$cekMerk = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' AND material='$material' AND s.size='$size' GROUP BY merk");
+			$cekMerk = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$jenis_tipe' AND material='$material' AND s.size='$size' $wKet GROUP BY merk");
 		}
 		$html = '';
 		if($cekMerk->num_rows() != 0){
@@ -457,6 +566,8 @@ class Master extends CI_Controller
 
 	function cekMerk()
 	{
+		$kategori = $_POST["kategori"];
+		($kategori == '') ? $wKet = "" : $wKet = "AND kategori='$kategori'";
 		$id_mbh = $_POST["id_mbh"];
 		$i_jenis_tipe = $_POST["i_jenis_tipe"];
 		$i_material = $_POST["i_material"];
@@ -464,9 +575,9 @@ class Master extends CI_Controller
 		$n_merk = $_POST["n_merk"];
 		$cleanTxt = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $n_merk)));
 		if($id_mbh == '+' || $i_jenis_tipe == '+' || $i_material == '+' || $i_size == '+'){
-			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE merk='$cleanTxt'");
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE merk='$cleanTxt' $wKet");
 		}else{
-			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$i_material' AND s.size='$i_size' AND merk='$cleanTxt'");
+			$cekBarang = $this->db->query("SELECT*FROM m_barang_detail s WHERE id_mbh='$id_mbh' AND jenis_tipe='$i_jenis_tipe' AND material='$i_material' AND s.size='$i_size' AND merk='$cleanTxt' $wKet");
 		}
 		if(!preg_match("/^[A-Z0-9 ]*$/", $cleanTxt)){
 			$data = false; $msg = 'SIZE BARU HANYA BOLEH HURUF ATAU ANGKA!';
@@ -485,6 +596,7 @@ class Master extends CI_Controller
 	function addBarang()
 	{
 		$id_mbd = $_POST["id_mbd"];
+		$i_kategori = $_POST["i_kategori"];
 		$i_barang = $_POST["i_barang"];
 		$n_barang = $_POST["n_barang"];
 		$i_jenis_tipe = $_POST["i_jenis_tipe"];
@@ -504,6 +616,9 @@ class Master extends CI_Controller
 		$p_satuan_terkecil = $_POST["p_satuan_terkecil"];
 		$status = $_POST["status"];
 
+		if($i_kategori == ''){
+			echo json_encode(['data' => false, 'isi' => 'HARAP PILIH KATEGORI!']); return;
+		}
 		if(($satuan_terkecil == 0 || $satuan_terkecil == '') && $pilih_satuan == 1){
 			echo json_encode(['data' => false, 'isi' => 'HARAP ISI SATUAN!']); return;
 		}
@@ -531,19 +646,25 @@ class Master extends CI_Controller
 
 		// HEADER
 		$kode_barang = '';
+		// KATEGORI
+		if($i_kategori == 'OFFICE'){
+			$kdKat = 'K.';
+		}else if($i_kategori == 'GUDANG'){
+			$kdKat = 'G.';
+		}
 		if($i_barang == '+'){
 			$nm_barang = $n_barang;
 			// KODE NAMA BARANG BARU
 			$arr = explode(' ', $n_barang);
 			$kode = '';
 			foreach($arr as $kata) { $kode .= substr($kata, 0, 1); }
-			$cek = $this->db->query("SELECT*FROM m_barang_header WHERE kode_header LIKE '$kode-%'");
+			$cek = $this->db->query("SELECT*FROM m_barang_header WHERE kode_header LIKE '$kdKat$kode-%'");
 			if($cek->num_rows() != 0){
-				$lastKode = $this->db->query("SELECT*FROM m_barang_header WHERE kode_header LIKE '$kode-%' ORDER BY kode_header DESC LIMIT 1")->row();
+				$lastKode = $this->db->query("SELECT*FROM m_barang_header WHERE kode_header LIKE '$kdKat$kode-%' ORDER BY kode_header DESC LIMIT 1")->row();
 				$plus = str_pad(preg_replace("/[^0-9]/", "", $lastKode->kode_header)+1, 2, "0", STR_PAD_LEFT);
-				$kode_barang .= preg_replace("/[^A-Z]/", "", $cek->row()->kode_header).'-'.$plus;
+				$kode_barang .= preg_replace("/[^A-Z.]/", "", $cek->row()->kode_header).'-'.$plus;
 			}else{
-				$kode_barang .= $kode.'-01';
+				$kode_barang .= $kdKat.$kode.'-01';
 			}
 		}else{
 			$nm = $this->db->query("SELECT*FROM m_barang_header WHERE id_mbh='$i_barang'")->row();
@@ -642,6 +763,7 @@ class Master extends CI_Controller
 				'no_urut' => $no_urut,
 				'id_mbh' => $i_barang,
 				'id_mbd' => $id_mbd,
+				'i_kategori' => $i_kategori,
 				'nm_barang' => $nm_barang,
 				'kode_header' => $kode_header,
 				'detail' => $detail,
@@ -805,10 +927,17 @@ class Master extends CI_Controller
 				($r->ket_satuan == '' || $r->ket_satuan == '-') ? $ket = '' : $ket = ' <span style="font-style:italic;font-size:12px;vertical-align:top">( '.$r->ket_satuan.' )</span>';
 				$row[] = '<div class="text-center">'.$i.'</div>';
 				$row[] = $r->kode_satuan.$ket;
-				$row[] = '<div class="text-center">
-					<button type="button" class="btn btn-warning btn-sm" onclick="editSatuan('."'".$r->id."'".')"><i class="fas fa-edit"></i></button>
-					<button type="button" class="btn btn-danger btn-sm" onclick="hapusSatuan('."'".$r->id."'".')"><i class="fas fa-trash-alt" style="color:#000"></i></button>
-				</div>';
+				// CEK BARANG
+				$cek1 = $this->db->query("SELECT*FROM m_barang_detail WHERE satuan1='$r->kode_satuan' GROUP BY satuan1");
+				$cek2 = $this->db->query("SELECT*FROM m_barang_detail WHERE satuan2='$r->kode_satuan' GROUP BY satuan2");
+				$cek3 = $this->db->query("SELECT*FROM m_barang_detail WHERE satuan3='$r->kode_satuan' GROUP BY satuan3");
+				if($cek1->num_rows() == 0 && $cek2->num_rows() == 0 && $cek3->num_rows() == 0){
+					$btnAksi = `<button type="button" class="btn btn-warning btn-sm" onclick="editSatuan('."'".$r->id."'".')"><i class="fas fa-edit"></i></button>
+					<button type="button" class="btn btn-danger btn-sm" onclick="hapusSatuan('."'".$r->id."'".')"><i class="fas fa-trash-alt" style="color:#000"></i></button>`;
+				}else{
+					$btnAksi = '';
+				}
+				$row[] = '<div class="text-center">'.$btnAksi.'</div>';
 				$data[] = $row;
 			}
 		$output = array(

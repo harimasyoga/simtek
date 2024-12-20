@@ -970,36 +970,31 @@ class Logistik extends CI_Controller
 	function loadDataStok()
 	{
 		$data = array();
-		$query = $this->db->query("SELECT h.nm_barang,d.kode_barang,d.jenis_tipe,d.material,d.size,d.merk,s.* FROM m_stok s
+		$kategori = $this->session->userdata('approve');
+		($kategori == 'ALL' || $kategori == 'OFFICE') ? $wKet = "" : $wKet = "AND h.kategori='$kategori'";
+		$query = $this->db->query("SELECT h.nm_barang,d.*,s.* FROM m_stok s
 		INNER JOIN m_barang_detail d ON s.id_mbh=d.id_mbh AND s.id_mbd=d.id_mbd
 		INNER JOIN m_barang_header h ON s.id_mbh=h.id_mbh
-		WHERE s.status_stok='Open'
+		WHERE s.status_stok='Open' $wKet
 		GROUP BY s.id_mbh,s.id_mbd,s.status_stok
 		ORDER BY h.nm_barang,d.kode_barang,d.jenis_tipe,d.material,d.size,d.merk")->result();
 			$i = 0;
 			foreach ($query as $r) {
 				$i++;
 				$row = array();
-				$row[] = '<div class="text-center">'.$i.'</div>';
+				$row[] = '<div class="text-center">
+					<input type="hidden" id="id_mbh_'.$i.'" value="'.$r->id_mbh.'">
+					<input type="hidden" id="id_mbd_'.$i.'" value="'.$r->id_mbd.'">
+					'.$i.'
+				</div>';
 				$row[] = $r->kode_barang;
 				$row[] = $r->nm_barang;
 				$row[] = $r->jenis_tipe;
 				$row[] = $r->material;
 				$row[] = $r->size;
 				$row[] = $r->merk;
-				// NO. OPB
-				$no_opb = $this->db->query("SELECT*FROM trs_opb_header h
-				INNER JOIN trs_opb_detail d ON h.id_opbh=d.id_opbh AND h.no_opb=d.no_opb
-				INNER JOIN trs_bapb b ON h.id_opbh=b.id_opbh AND b.no_opb=d.no_opb AND d.id_opbd=b.id_opbd
-				WHERE d.id_mbh='$r->id_mbh' AND d.id_mbd='$r->id_mbd' AND (h.status_opb='Approve' OR h.status_opb='Close')
-				GROUP BY h.no_opb");
-				$htmlNoOPB = '';
-				foreach($no_opb->result() as $o){
-					$htmlNoOPB .= '<div>'.$o->no_opb.'</div>';
-				}
-				$row[] = $htmlNoOPB;
 				$row[] = '<div class="text-center">
-					<button type="button" class="btn btn-info btn-sm" onclick=""><i class="fas fa-search"></i></button>
+					<button type="button" class="btn btn-info btn-sm" onclick="cariStok('."'".$i."'".')"><i class="fas fa-search"></i></button>
 				</div>';
 				$data[] = $row;
 			}
@@ -1007,6 +1002,188 @@ class Logistik extends CI_Controller
 			"data" => $data,
 		);
 		echo json_encode($output);
+	}
+
+	function cariStok()
+	{
+		$html = '';
+		$id_mbh = $_POST["id_mbh"];
+		$id_mbd = $_POST["id_mbd"];
+
+		$html .= '<table class="table table-bordered" style="margin:0">
+			<tr>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">HARI, TGL</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">NO. OPB / <span style="font-weight:normal;font-style:italic">SPB</span></th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">DEPARTEMEN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">BAGIAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">SUPPLIER</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">HARGA (Rp.)</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">KETERANGAN</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center">QR</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px;text-align:center" colspan="3">STOK AWAL</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">PEMOHON</th>
+				<th style="background:#e2e2e2;border:1px solid #828282;border-width:0 0 3px;padding:6px">PEMBUAT</th>
+			</tr>
+			<tr>
+				<td style="padding:0" colspan="12"></td>
+			</tr>';
+			$stok = $this->db->query("SELECT*FROM m_stok s
+			INNER JOIN trs_bapb b ON s.id_bapb=b.id_bapb
+			WHERE s.id_mbh='$id_mbh' AND s.id_mbd='$id_mbd'
+			GROUP BY b.tgl_bapb,s.no_opb");
+			foreach($stok->result() as $r){
+				// DEPARTEMEN, BAGIAN, SUPPLIER
+				$kd_dpt = $this->db->query("SELECT*FROM m_departemen WHERE kode='$r->skode_dpt'")->row();
+				$kd_bagian = $this->db->query("SELECT*FROM m_departemen WHERE kode='$r->skode_bagian'")->row();
+				$sup = $this->db->query("SELECT*FROM m_supplier WHERE id_supp='$r->sid_supplier'")->row();
+				($r->bket_pengadaan == '' || $r->bket_pengadaan == null) ? $ket = '-' : $ket = $r->bket_pengadaan;
+				// SATUAN
+				if($r->s_satuan == 1){
+					$s1 = 'TERKECIL';
+					$s2 = round($r->sqty3,2);
+					$s3 = $r->ssatuan3;
+				}
+				if($r->s_satuan == 2){
+					$s1 = 'TERBESAR<br>TERKECIL';
+					$s2 = round($r->sqty1,2).'<br>'.round($r->sqty3,2);
+					$s3 = $r->ssatuan1.'<br>'.$r->ssatuan3;
+				}
+				if($r->s_satuan == 3){
+					$s1 = 'TERBESAR<br>TENGAH<br>TERKECIL';
+					$s2 = round($r->sqty1,2).'<br>'.round($r->sqty2,2).'<br>'.round($r->sqty3,2);
+					$s3 = $r->ssatuan1.'<br>'.$r->ssatuan2.'<br>'.$r->ssatuan3;
+				}
+				$x = ((rand(50, 100) * rand(1, 10)) - rand(1, 50)) + rand(1, 50);
+				$html .= '<tr style="background:#f2f2f2;font-weight:bold">
+					<td style="padding:6px">'.$this->m_fungsi->haru($r->tgl_bapb).', '.$this->m_fungsi->tglIndSkt($r->tgl_bapb).'</td>
+					<td style="padding:6px">'.$r->no_opb.'</td>
+					<td style="padding:6px">'.$kd_dpt->nama.'</td>
+					<td style="padding:6px">'.$kd_bagian->nama.'</td>
+					<td style="padding:6px">'.$sup->nm_supp.'</td>
+					<td style="padding:6px;text-align:right">'.number_format($r->sharga,0,',','.').'</td>
+					<td style="padding:6px">'.$ket.'</td>
+					<td style="padding:6px;text-align:center">
+						<button type="button" class="btn btn-sm btn-light" onclick="btnQRCode('."'".$x."'".')"><i class="fas fa-qrcode" style="color:#000"></i></button>
+					</td>
+					<td style="padding:6px">'.$s1.'</td>
+					<td style="padding:6px;text-align:right">'.$s2.'</td>
+					<td style="padding:6px">'.$s3.'</td>
+					<td style="padding:6px">-</td>
+					<td style="padding:6px">-</td>
+				</tr>
+				<tr>
+					<td style="padding:2px" colspan="13"></td>
+				</tr>';
+				// QR CODE
+				$qr = $this->db->query("SELECT*FROM m_qrcode WHERE id_bapb='$r->id_bapb'");
+				if($qr->num_rows() != 0){
+					$html .= '<tr class="qrqr trqr2-'.$x.'" style="display:none">
+						<td style="padding:0;text-align:right" colspan="8">
+							<input type="hidden" id="h_tr" value="">
+							<a href="'.base_url('/Qrcode?v='.$qr->row()->qrcode_data).'" target="_blank">
+								<img src="'.base_url('/assets/qrcode/'.$qr->row()->qrcode_path).'" alt="'.$qr->row()->qrcode_data.'" width="200" height="200">
+							</a>
+						</td>
+						<td style="padding:6px" colspan="5"></td>
+					</tr>';
+				}
+				// CEK SPB
+				$spb = $this->db->query("SELECT h.pemohon_spb,d.* FROM trs_spb_detail d
+				INNER JOIN trs_spb_header h ON d.id_spbh=h.id_spbh AND d.no_spb=h.no_spb
+				WHERE d.id_mbh='$id_mbh' AND d.id_mbd='$id_mbd' AND d.id_stok='$r->id_stok'
+				GROUP BY d.tgl_spb,d.no_spb");
+				if($spb->num_rows() != 0){
+					$n = 0; $sum1 = 0; $sum2 = 0; $sum3 = 0;
+					foreach($spb->result() as $p){
+						$n++;
+						// DEPARTEMEN, BAGIAN, SUPPLIER
+						$xkd_dpt = $this->db->query("SELECT*FROM m_departemen WHERE kode='$p->xkode_dpt'")->row();
+						$xkd_bagian = $this->db->query("SELECT*FROM m_departemen WHERE kode='$p->xkode_bagian'")->row();
+						// SATUAN
+						// SATUAN PENERIMAAN BAPB BARANG
+						if($p->x_satuan == 1){
+							$xp1 = '<span>TERKECIL</span>';
+							$xp2 = '<span>'.round($p->xqty3,2).'</span>';
+							$xp3 = '<span>'.$p->xsatuan3.'</span>';
+						}
+						if($p->x_satuan == 2){
+							if($p->xsatuan == 'TERBESAR'){
+								$p1 = 'style="color:#f00"'; $p3 = '';
+							}
+							if($p->xsatuan == 'TERKECIL'){
+								$p1 = ''; $p3 = 'style="color:#f00"';
+							}
+							$xp1 = '<span '.$p1.'>TERBESAR</span><br><span '.$p3.'>TERKECIL</span>';
+							$xp2 = '<span '.$p1.'>'.round($p->xqty1,2).'</span><br><span '.$p3.'>'.round($p->xqty3,2).'</span>';
+							$xp3 = '<span '.$p1.'>'.$p->xsatuan1.'</span><br><span '.$p3.'>'.$p->xsatuan3.'</span>';
+						}
+						if($p->x_satuan == 3){
+							if($p->xsatuan == 'TERBESAR'){
+								$p1 = 'style="color:#f00"'; $p2 = ''; $p3 = '';
+							}
+							if($p->xsatuan == 'TENGAH'){
+								$p1 = ''; $p2 = 'style="color:#f00"'; $p3 = '';
+							}
+							if($p->xsatuan == 'TERKECIL'){
+								$p1 = ''; $p2 = ''; $p3 = 'style="color:#f00"';
+							}
+							$xp1 = '<span '.$p1.'>TERBESAR</span><br><span '.$p2.'>TENGAH</span><br><span '.$p3.'>TERKECIL</span>';
+							$xp2 = '<span '.$p1.'>'.round($p->xqty1,2).'</span><br><span '.$p2.'>'.round($p->xqty2,2).'</span><br><span '.$p3.'>'.round($p->xqty3,2).'</span>';
+							$xp3 = '<span '.$p1.'>'.$p->xsatuan1.'</span><br><span '.$p2.'>'.$p->xsatuan2.'</span><br><span '.$p3.'>'.$p->xsatuan3.'</span>';
+						}
+						$html .= '<tr style="font-style:italic">
+							<td style="border:0;padding:6px">'.$this->m_fungsi->haru($p->tgl_spb).', '.$this->m_fungsi->tglIndSkt($p->tgl_spb).'</td>
+							<td style="border:0;padding:6px">'.$p->no_spb.'</td>
+							<td style="border:0;padding:6px">'.$xkd_dpt->nama.'</td>
+							<td style="border:0;padding:6px">'.$xkd_bagian->nama.'</td>
+							<td style="border:0;padding:6px">-</td>
+							<td style="border:0;padding:6px">-</td>
+							<td style="border:0;padding:6px" colspan="2">'.$p->xket.'</td>
+							<td style="border:0;padding:6px">'.$xp1.'</td>
+							<td style="border:0;padding:6px;text-align:right">'.$xp2.'</td>
+							<td style="border:0;padding:6px">'.$xp3.'</td>
+							<td style="border:0;padding:6px">'.$p->pemohon_spb.'</td>
+							<td style="border:0;padding:6px">'.$p->creat_by.'</td>
+						</tr>';
+						$sum1 += ($p->xqty1 == null) ? 0 : round($p->xqty1,2);
+						$sum2 += ($p->xqty2 == null) ? 0 : round($p->xqty2,2);
+						$sum3 += ($p->xqty3 == null) ? 0 : round($p->xqty3,2);
+					}
+					// TOTAL
+					$html .= '<tr style="font-weight:bold;font-style:italic">
+						<td style="border:0;padding:2px" colspan="8"></td>';
+						if($r->s_satuan == 1){
+							$hitSum3 = round($r->sqty3,2) - round($sum3,2);
+							$html .= '<td style="border:0;padding:6px">TERKECIL</td>
+								<td style="border:0;padding:6px;text-align:right"><div>'.$hitSum3.' ( '.round($sum3,2).' )</div></td>
+								<td style="border:0;padding:6px">'.$r->ssatuan3.'</td>';
+						}
+						if($r->s_satuan == 2){
+							$hitSum1 = round($r->sqty1,2) - round($sum1,2);
+							$hitSum3 = round($r->sqty3,2) - round($sum3,2);
+							$html .= '<td style="border:0;padding:6px"><div>TERBESAR</div><div>TERKECIL</div></td>
+								<td style="border:0;padding:6px;text-align:right"><div>'.$hitSum1.' ( '.round($sum1,2).' )</div><div>'.$hitSum3.' ( '.round($sum3,2).' )</div></td>
+								<td style="border:0;padding:6px"><div>'.$r->ssatuan1.'</div><div>'.$r->ssatuan3.'</div></td>';
+						}
+						if($r->s_satuan == 3){
+							$hitSum1 = round($r->sqty1,2) - round($sum1,2);
+							$hitSum2 = round($r->sqty2,2) - round($sum2,2);
+							$hitSum3 = round($r->sqty3,2) - round($sum3,2);
+							$html .= '<td style="border:0;padding:6px"><div>TERBESAR</div><div>TENGAH</div><div>TERKECIL</div></td>
+								<td style="border:0;padding:6px;text-align:right"><div>'.$hitSum1.' ( '.round($sum1,2).' )</div><div>'.$hitSum2.' ( '.round($sum2,2).' )</div><div>'.$hitSum3.' ( '.round($sum3,2).' )</div></td>
+								<td style="border:0;padding:6px"><div>'.$r->ssatuan1.'</div><div>'.$r->ssatuan2.'</div><div>'.$r->ssatuan3.'</div></td>';
+						}
+					$html .= '<td style="border:0;padding:6px" colspan="2"></td>';
+					$html .= '<tr>
+						<td style="padding:2px" colspan="13"></td>
+					</tr>';
+				}
+			}
+		$html .= '</table>';
+
+		echo json_encode([
+			'html' => $html,
+		]);
 	}
 
 }

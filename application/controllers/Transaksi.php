@@ -20,7 +20,7 @@ class Transaksi extends CI_Controller
 			'judul' => "OPB",
 		];
 		$this->load->view('header',$data);
-		if(in_array($this->session->userdata('approve'), ['ALL', 'ADMIN', 'ACC', 'OFFICE', 'FINANCE', 'OWNER'])) {
+		if(in_array($this->session->userdata('approve'), ['ALL', 'ADMIN', 'ACC', 'GUDANG', 'OFFICE', 'FINANCE', 'OWNER'])) {
 			$this->load->view('Transaksi/v_opb', $data);
 		}else{
 			$this->load->view('home');
@@ -36,6 +36,20 @@ class Transaksi extends CI_Controller
 		$this->load->view('header',$data);
 		if(in_array($this->session->userdata('approve'), ['ALL', 'GUDANG', 'OFFICE'])) {
 			$this->load->view('Transaksi/v_bapb', $data);
+		}else{
+			$this->load->view('home');
+		}
+		$this->load->view('footer');
+	}
+
+	function Spb()
+	{
+		$data = [
+			'judul' => "SPB",
+		];
+		$this->load->view('header',$data);
+		if(in_array($this->session->userdata('approve'), ['ALL', 'GUDANG', 'OFFICE'])) {
+			$this->load->view('Transaksi/v_spb', $data);
 		}else{
 			$this->load->view('home');
 		}
@@ -1642,7 +1656,7 @@ class Transaksi extends CI_Controller
 										$htmlBarangBeda = '<td style="padding:6px;text-align:right" colspan="'.$cz.'">'.$btnQrc.'</td>';
 									}
 								}
-								// TES QR CODE
+								// QR CODE
 								$htmlQrCode = '';
 								if($opsi == 'edit' && $jenis == 'bapb'){
 									$qr = $this->db->query("SELECT*FROM m_qrcode WHERE id_bapb='$p->id_bapb'");
@@ -1653,7 +1667,9 @@ class Transaksi extends CI_Controller
 										<tr class="qrqr trqr2-'.$x.'" style="display:none">
 											<td style="padding:0;text-align:right" colspan="9">
 												<input type="hidden" id="h_tr" value="">
-												<img src="'.base_url('/assets/qrcode/'.$qr->row()->qrcode_path).'" alt="'.$qr->row()->qrcode_data.'" width="200" height="200">
+												<a href="'.base_url('/Qrcode?v='.$qr->row()->qrcode_data).'" target="_blank">
+													<img src="'.base_url('/assets/qrcode/'.$qr->row()->qrcode_path).'" alt="'.$qr->row()->qrcode_data.'" width="200" height="200">
+												</a>
 											</td>
 											<td style="padding:6px" colspan="14"></td>
 										</tr>';
@@ -1838,5 +1854,36 @@ class Transaksi extends CI_Controller
 		echo json_encode([
 			'opbh' => $opbh->row(),
 		]);
+	}
+
+	// SPB
+
+	function loadDataSPB()
+	{
+		$data = array();
+		$tahun = $_POST["tahun"];
+		$bulan = $_POST["bulan"];
+		($bulan == '') ? $wb = '' : $wb = '-'.$bulan;
+		$th_bln = $tahun.$wb;
+		$username = $this->session->userdata('username');
+		$query = $this->db->query("SELECT*FROM trs_spb_header WHERE creat_by='$username' AND tgl_spb LIKE '%$th_bln%' ORDER BY no_spb DESC")->result();
+			$i = 0;
+			foreach ($query as $r) {
+				$i++;
+				$row = array();
+				$row[] = '<div class="text-center">'.$i.'</div>';
+				$row[] = $this->m_fungsi->haru($r->tgl_spb).', '.$this->m_fungsi->tglIndSkt($r->tgl_spb);
+				$row[] = $r->no_spb;
+				$row[] = $r->pemohon_spb;
+				$row[] = $r->creat_by;
+				$row[] = '<div class="text-center">
+					<button type="button" class="btn btn-info btn-sm" onclick=""><i class="fas fa-search"></i></button>
+				</div>';
+				$data[] = $row;
+			}
+		$output = array(
+			"data" => $data,
+		);
+		echo json_encode($output);
 	}
 }
